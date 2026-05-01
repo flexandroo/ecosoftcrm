@@ -724,6 +724,13 @@
   .status-work      { background: #FEF8EC; color: #B97509; }
   .status-done      { background: #DDF2E5; color: #1B7A3D; }
   .status-declined  { background: #F5E9EA; color: #B53A3F; }
+  .status-tnew      { background: #E6F4FA; color: #0085CA; }
+  .status-twork     { background: #FEF8EC; color: #B97509; }
+  .status-tdone     { background: #DDF2E5; color: #1B7A3D; }
+
+  /* deadline indicators */
+  .deadline-overdue { color: var(--danger); font-weight: 700; }
+  .deadline-soon    { color: var(--warn); font-weight: 600; }
 
   .equip-pill {
     display: inline-flex; align-items: center;
@@ -823,6 +830,9 @@
   .status-option[data-status="work"].selected      { border-color: #B97509; background: #FEF8EC; color: #B97509; }
   .status-option[data-status="done"].selected      { border-color: #1B7A3D; background: #DDF2E5; color: #1B7A3D; }
   .status-option[data-status="declined"].selected  { border-color: #B53A3F; background: #F5E9EA; color: #B53A3F; }
+  .status-option[data-status="tnew"].selected      { border-color: #0085CA; background: #E6F4FA; color: #0085CA; }
+  .status-option[data-status="twork"].selected     { border-color: #B97509; background: #FEF8EC; color: #B97509; }
+  .status-option[data-status="tdone"].selected     { border-color: #1B7A3D; background: #DDF2E5; color: #1B7A3D; }
 
   /* ===== EQUIPMENT SELECTOR ===== */
   .equip-categories { display: flex; flex-direction: column; gap: 14px; }
@@ -830,6 +840,53 @@
     font-size: 12px; font-weight: 700;
     color: var(--ink-soft); margin-bottom: 6px;
   }
+
+  /* Collapsible groups */
+  .equip-groups { display: flex; flex-direction: column; gap: 8px; }
+  .equip-group {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .equip-group-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .equip-group-header:hover { background: var(--surface-alt); }
+  .equip-group-title {
+    font-size: 14px; font-weight: 700;
+    color: var(--ink); flex: 1;
+  }
+  .equip-group-count {
+    font-size: 11px; font-weight: 700;
+    color: var(--text-muted);
+    background: var(--surface-alt);
+    padding: 3px 9px;
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    min-width: 28px;
+    text-align: center;
+  }
+  .equip-group-count.has-selected {
+    background: var(--eco-blue-tint);
+    color: var(--eco-blue);
+  }
+  .equip-group-chevron {
+    transition: transform 0.2s;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .equip-group.open .equip-group-chevron { transform: rotate(180deg); }
+  .equip-group-body {
+    display: none;
+    padding: 6px 16px 14px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .equip-group.open .equip-group-body { display: block; }
   .equip-options {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -982,7 +1039,7 @@
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
         Клієнти
       </a>
-      <a class="nav-item">
+      <a class="nav-item" data-view="tasks" onclick="showView('tasks')" style="cursor:pointer">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
         Задачі
       </a>
@@ -1052,20 +1109,20 @@
               <input type="text" id="clientPhone" value="+380 67 123-45-67">
             </div>
           </div>
-          <div class="client-row">
+          <div class="client-row full">
             <div>
               <div class="field-label">Обʼєкт (адреса)</div>
               <input type="text" id="clientAddr" value="с. Софіївська Борщагівка">
             </div>
+          </div>
+          <div class="client-row">
             <div>
-              <div class="field-label">Тип / люди</div>
-              <select id="usageType">
-                <option value="apartment">Квартира, 2-3 особи</option>
-                <option value="house4" selected>Будинок, 3-4 особи</option>
-                <option value="house6">Будинок, 5-6 осіб</option>
-                <option value="cottage">Котедж, 2-3 санвузли</option>
-                <option value="commercial">Комерційний обʼєкт</option>
-              </select>
+              <div class="field-label">Кількість проживаючих</div>
+              <input type="number" id="people" value="4" min="1" max="20">
+            </div>
+            <div>
+              <div class="field-label">Кількість санвузлів</div>
+              <input type="number" id="bathrooms" value="2" min="1" max="10">
             </div>
           </div>
           <div class="client-row">
@@ -1152,6 +1209,33 @@
       <div id="clientsList"></div>
     </div><!-- /view-clients -->
 
+    <!-- ===== VIEW: TASKS ===== -->
+    <div id="view-tasks" class="view">
+      <header class="header">
+        <div>
+          <h1 class="header-title">Задачі</h1>
+          <div class="header-sub">Робочі задачі з термінами та відповідальними</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="openTaskForm()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Додати задачу
+          </button>
+        </div>
+      </header>
+
+      <div class="clients-toolbar">
+        <div class="search-input">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input id="taskSearch" type="text" placeholder="Пошук за описом або відповідальним..." oninput="renderTasks()">
+        </div>
+      </div>
+
+      <div class="status-filters" id="taskStatusFilters"></div>
+
+      <div id="tasksList"></div>
+    </div><!-- /view-tasks -->
+
   </main>
 </div>
 
@@ -1163,6 +1247,26 @@
       <button class="btn" onclick="closeModal()">Закрити</button>
       <button class="btn" onclick="window.print()">🖨 Друк / PDF</button>
       <button class="btn btn-primary" onclick="alert('У реальній системі: відправка email + Viber клієнту, створення угоди в CRM на стадії «Запропоновано КП»')">📨 Надіслати клієнту</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TASK FORM MODAL ===== -->
+<div class="modal-bg" id="taskModalBg" onclick="if(event.target===this)closeTaskForm()">
+  <div class="modal-form">
+    <div class="modal-form-head">
+      <div class="modal-form-title" id="taskModalTitle">Нова задача</div>
+      <button class="modal-close" onclick="closeTaskForm()" title="Закрити">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-form-body" id="taskModalBody"></div>
+    <div class="modal-form-foot">
+      <button class="btn btn-danger" id="taskDeleteBtn" onclick="deleteCurrentTask()" style="display:none;">🗑 Видалити</button>
+      <div style="margin-left: auto; display: flex; gap: 8px;">
+        <button class="btn" onclick="closeTaskForm()">Скасувати</button>
+        <button class="btn btn-primary" onclick="saveTask()">💾 Зберегти</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1260,7 +1364,7 @@ const CATALOG = {
     category: 'combo'
   },
 
-  // Titanium Gold (компактні кабінети)
+  // Titanium Gold (кабінетного типу — компактні «5 в 1»)
   titanium_250: {
     sku: 'FK1035CABCEMIXCOR',
     name: 'Ecosoft Titanium Gold 250',
@@ -1268,7 +1372,7 @@ const CATALOG = {
     spec: 'компакт · до 1.0 м³/год · Ecomix-C · 18 л',
     capacity: 1.0,
     reason: 'Ультракомпактне рішення «5 в 1» для квартир/невеликих будинків (до 4 осіб, 2 санвузли)',
-    category: 'combo'
+    category: 'cabinet'
   },
   titanium_370: {
     sku: 'FK1235CABCEMIXCOR',
@@ -1277,7 +1381,7 @@ const CATALOG = {
     spec: 'компакт · до 1.4 м³/год · Ecomix-C · 37 л',
     capacity: 1.4,
     reason: 'Компактне рішення «5 в 1» для будинків з 2-3 санвузлами (до 8 осіб)',
-    category: 'combo'
+    category: 'cabinet'
   },
 
   // Зворотний осмос (P'URE / Standard / Absolute)
@@ -1438,68 +1542,83 @@ function loadSample() {
   document.getElementById('input-ph').value = 6.8;
   document.getElementById('input-oxidiz').value = 4.2;
   document.getElementById('waterSource').value = 'well';
+  document.getElementById('people').value = 4;
+  document.getElementById('bathrooms').value = 2;
   updateParamStatus();
   calculate();
 }
 
 // ============== CORE ALGORITHM ==============
+//
+// Picks Ecosoft equipment based on:
+//  - water analysis (hardness, iron, h2s, nitrates, oxidiz, etc.)
+//  - household params (people count, bathrooms count, water source)
+//  - budget tier
+//
+// Sizing logic:
+//  - peak flow (m³/h) ≈ bathrooms × 0.5 + (people-1) × 0.08
+//  - we pick the smallest column whose `capacity` covers the peak flow
+//  - compact (cabinet) format preferred when peak flow ≤ 1.4 м³/год AND bathrooms ≤ 2
+//
 function selectEquipment() {
   const v = {};
   PARAMS.forEach(p => v[p.id] = parseFloat(document.getElementById(`input-${p.id}`).value) || 0);
 
-  const usage = document.getElementById('usageType').value;
-  const source = document.getElementById('waterSource').value;
-  const budget = document.getElementById('budget').value;
+  const people    = parseInt(document.getElementById('people').value) || 3;
+  const bathrooms = parseInt(document.getElementById('bathrooms').value) || 1;
+  const source    = document.getElementById('waterSource').value;
+  const budget    = document.getElementById('budget').value;
 
-  // Determine size class
-  const isLarge = usage === 'house6' || usage === 'cottage' || usage === 'commercial';
-  const isSmall = usage === 'apartment';
+  // Estimated peak flow in m³/h
+  const peakFlow = bathrooms * 0.5 + Math.max(0, people - 1) * 0.08;
 
-  // Determine if compact preferred (apartments, no space)
-  const preferCompact = isSmall || usage === 'house4';
+  // Pick smallest item with capacity >= required, fallback to largest
+  function pickByCapacity(catKey, required) {
+    const candidates = Object.values(CATALOG)
+      .filter(i => i.category === catKey)
+      .sort((a, b) => a.capacity - b.capacity);
+    return candidates.find(c => c.capacity >= required) || candidates[candidates.length - 1];
+  }
 
   const items = [];
   const issues = [];
 
   // 1. ALWAYS: mechanical pre-filter
-  if (source === 'well' || source === 'kolodyaz') {
-    items.push({ ...CATALOG.mech_brass, qty: 1 });
-  } else {
-    items.push({ ...CATALOG.mech_FPV, qty: 1 });
-  }
+  if (source === 'well' || source === 'kolodyaz') items.push({ ...CATALOG.mech_brass, qty: 1 });
+  else items.push({ ...CATALOG.mech_FPV, qty: 1 });
 
-  // 2. Main treatment: combination logic
+  // 2. Main treatment
   const hardnessExceeds = v.hardness > 7;
-  const ironExceeds = v.iron > 0.2 || v.manganese > 0.05;
-  const organicsHigh = v.oxidiz > 5;
+  const ironExceeds     = v.iron > 0.2 || v.manganese > 0.05;
+  const organicsHigh    = v.oxidiz > 5;
+
+  // Cabinet preferred for compact installations (apartments, small houses, low flow)
+  const preferCabinet = peakFlow <= 1.4 && bathrooms <= 2 && budget !== 'economy';
 
   if (hardnessExceeds && ironExceeds) {
-    // Combined treatment with Ecomix
     issues.push('жорсткість', 'залізо/марганець');
-    if (preferCompact && budget !== 'economy') {
-      items.push({ ...(isLarge ? CATALOG.titanium_370 : CATALOG.titanium_250), qty: 1 });
+    if (preferCabinet) {
+      items.push({ ...pickByCapacity('cabinet', peakFlow), qty: 1 });
     } else if (budget === 'premium') {
       items.push({ ...CATALOG.iron_FK1252CE, qty: 1 });
     } else {
-      items.push({ ...(isLarge ? CATALOG.iron_FK1252 : CATALOG.iron_FK1054), qty: 1 });
+      items.push({ ...pickByCapacity('combo', peakFlow), qty: 1 });
     }
   } else if (hardnessExceeds) {
     issues.push('жорсткість');
-    if (isLarge) items.push({ ...CATALOG.softener_FU1665, qty: 1 });
-    else if (usage === 'house4') items.push({ ...CATALOG.softener_FU1054, qty: 1 });
-    else items.push({ ...CATALOG.softener_FU0844, qty: 1 });
+    items.push({ ...pickByCapacity('softener', peakFlow), qty: 1 });
   } else if (ironExceeds) {
     issues.push('залізо/марганець');
-    items.push({ ...(isLarge ? CATALOG.iron_FK1252 : CATALOG.iron_FK1054), qty: 1 });
+    items.push({ ...pickByCapacity('combo', peakFlow), qty: 1 });
   }
 
   // 3. H2S
   if (v.h2s > 0.05) {
     issues.push('сірководень');
-    items.push({ ...(isLarge ? CATALOG.h2s_FPC1252 : CATALOG.h2s_FPC1054), qty: 1 });
+    items.push({ ...pickByCapacity('h2s', peakFlow), qty: 1 });
   }
 
-  // 4. Carbon (if organics high or city water with chlorine)
+  // 4. Carbon
   if (organicsHigh || (source === 'city' && !ironExceeds)) {
     if (organicsHigh) issues.push('окислюваність');
     items.push({ ...CATALOG.carbon_FPB1054, qty: 1 });
@@ -1509,19 +1628,20 @@ function selectEquipment() {
   if (v.nitrates > 50) {
     issues.push('нітрати');
     items.push({ ...CATALOG.ro_pure, qty: 1 });
+  } else if (budget === 'premium' || people >= 4) {
+    items.push({ ...CATALOG.ro_pure, qty: 1, recommended: true });
+  } else if (budget === 'standard') {
+    items.push({ ...CATALOG.ro_pure, qty: 1, recommended: true });
   } else {
-    // Recommend RO based on budget
-    if (budget === 'premium') items.push({ ...CATALOG.ro_pure, qty: 1, recommended: true });
-    else if (budget === 'standard') items.push({ ...CATALOG.ro_pure, qty: 1, recommended: true });
-    else items.push({ ...CATALOG.ro_standard, qty: 1, recommended: true });
+    items.push({ ...CATALOG.ro_standard, qty: 1, recommended: true });
   }
 
   // 6. Installation
-  const colonCount = items.filter(i => i.category === 'softener' || i.category === 'combo' || i.category === 'h2s' || i.category === 'carbon').length;
+  const colonCount = items.filter(i => ['softener', 'combo', 'cabinet', 'h2s', 'carbon'].includes(i.category)).length;
   if (colonCount >= 2) items.push({ ...CATALOG.install_complex, qty: 1 });
   else items.push({ ...CATALOG.install_basic, qty: 1 });
 
-  return { items, issues };
+  return { items, issues, peakFlow, people, bathrooms };
 }
 
 // ============== RENDER RESULTS ==============
@@ -1735,12 +1855,91 @@ const STATUS_MIGRATION = {
 const CATEGORY_NAMES = {
   mech:     'Механічні фільтри',
   softener: 'Помʼякшувачі',
-  combo:    'Комплексне очищення (Ecomix / Titanium)',
+  combo:    'Комплексне очищення (Ecomix)',
+  cabinet:  'Кабінетного типу (Titanium)',
   h2s:      'Видалення сірководню',
   carbon:   'Вугільні фільтри',
   ro:       'Зворотний осмос (питна вода)',
   service:  'Послуги (монтаж)'
 };
+
+// Three top-level groups for equipment selector dropdown
+const EQUIPMENT_GROUPS = [
+  {
+    id: 'column',
+    title: 'Системи колонного типу',
+    subtitle: 'Помʼякшувачі, Ecomix, видалення сірководню, вугільні',
+    categories: ['softener', 'combo', 'h2s', 'carbon']
+  },
+  {
+    id: 'cabinet',
+    title: 'Системи кабінетного типу',
+    subtitle: 'Titanium «5 в 1» — компактні рішення',
+    categories: ['cabinet']
+  },
+  {
+    id: 'ro',
+    title: 'Системи зворотного осмосу',
+    subtitle: 'Питна вода для родини',
+    categories: ['ro']
+  }
+];
+
+function renderEquipmentSelector(selectedKeys) {
+  return EQUIPMENT_GROUPS.map(group => {
+    const items = Object.entries(CATALOG)
+      .filter(([key, item]) => group.categories.includes(item.category))
+      .map(([key, item]) => ({ key, ...item }));
+    if (!items.length) return '';
+    const selectedInGroup = items.filter(it => (selectedKeys || []).includes(it.key)).length;
+    const countLabel = selectedInGroup ? `${selectedInGroup} / ${items.length}` : `${items.length}`;
+    const hasSelected = selectedInGroup > 0;
+
+    return `
+      <div class="equip-group ${hasSelected ? 'open' : ''}" data-group="${group.id}">
+        <div class="equip-group-header" onclick="toggleEquipGroup('${group.id}')">
+          <svg class="equip-group-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          <div>
+            <div class="equip-group-title">${group.title}</div>
+            <div style="font-size:11px;color:var(--text-muted);font-weight:500;margin-top:2px;">${group.subtitle}</div>
+          </div>
+          <div style="flex:1"></div>
+          <div class="equip-group-count ${hasSelected ? 'has-selected' : ''}">${countLabel}</div>
+        </div>
+        <div class="equip-group-body">
+          <div class="equip-options" style="margin-top: 8px;">
+            ${items.map(it => {
+              const checked = (selectedKeys || []).includes(it.key);
+              return `
+                <label class="equip-option ${checked ? 'selected' : ''}">
+                  <input type="checkbox" name="equipment" value="${it.key}" ${checked ? 'checked' : ''}>
+                  <span class="equip-option-name">${escapeHtml(it.name)}</span>
+                  <span class="equip-option-price">${it.price.toLocaleString('uk-UA')} ₴</span>
+                </label>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleEquipGroup(id) {
+  const el = document.querySelector(`.equip-group[data-group="${id}"]`);
+  if (el) el.classList.toggle('open');
+}
+
+function updateEquipGroupCounts() {
+  document.querySelectorAll('.equip-group').forEach(groupEl => {
+    const checkboxes = groupEl.querySelectorAll('input[type=checkbox]');
+    const checked = groupEl.querySelectorAll('input[type=checkbox]:checked').length;
+    const total = checkboxes.length;
+    const badge = groupEl.querySelector('.equip-group-count');
+    if (badge) {
+      badge.textContent = checked ? `${checked} / ${total}` : `${total}`;
+      badge.classList.toggle('has-selected', checked > 0);
+    }
+  });
+}
 
 // ============== STORAGE: localStorage + IndexedDB ==============
 const LS_KEY = 'aquacrm_clients_v1';
@@ -1828,6 +2027,7 @@ function showView(name) {
   const navItem = document.querySelector(`.nav-item[data-view="${name}"]`);
   if (navItem) navItem.classList.add('active');
   if (name === 'clients') renderClients();
+  if (name === 'tasks') renderTasks();
   window.scrollTo(0, 0);
 }
 
@@ -1981,32 +2181,7 @@ function closeClientForm() {
 }
 
 function renderClientForm(c) {
-  const eqByCategory = {};
-  Object.entries(CATALOG).forEach(([key, item]) => {
-    (eqByCategory[item.category] = eqByCategory[item.category] || []).push({ key, ...item });
-  });
-
-  const categoryOrder = ['mech', 'softener', 'combo', 'h2s', 'carbon', 'ro', 'service'];
-  const eqHtml = categoryOrder
-    .filter(cat => eqByCategory[cat])
-    .map(cat => {
-      const items = eqByCategory[cat];
-      return `
-        <div>
-          <div class="equip-category-title">${CATEGORY_NAMES[cat] || cat}</div>
-          <div class="equip-options">
-            ${items.map(it => {
-              const checked = (c.equipment || []).includes(it.key);
-              return `
-                <label class="equip-option ${checked ? 'selected' : ''}">
-                  <input type="checkbox" name="equipment" value="${it.key}" ${checked ? 'checked' : ''}>
-                  <span class="equip-option-name">${escapeHtml(it.name)}</span>
-                  <span class="equip-option-price">${it.price.toLocaleString('uk-UA')} ₴</span>
-                </label>`;
-            }).join('')}
-          </div>
-        </div>`;
-    }).join('');
+  const eqHtml = renderEquipmentSelector(c.equipment || []);
 
   return `
     <div class="form-section">
@@ -2058,7 +2233,7 @@ function renderClientForm(c) {
 
     <div class="form-section">
       <div class="form-section-title">Обладнання, що цікавить</div>
-      <div class="equip-categories">${eqHtml}</div>
+      <div class="equip-groups">${eqHtml}</div>
     </div>
 
     <div class="form-section">
@@ -2114,7 +2289,10 @@ function initFormHandlers() {
   });
 
   document.querySelectorAll('.equip-option input[type=checkbox]').forEach(cb => {
-    cb.onchange = () => cb.closest('.equip-option').classList.toggle('selected', cb.checked);
+    cb.onchange = () => {
+      cb.closest('.equip-option').classList.toggle('selected', cb.checked);
+      updateEquipGroupCounts();
+    };
   });
 
   attachDropHandlers();
@@ -2256,6 +2434,235 @@ async function deleteCurrentClient() {
   saveClientsList(list.filter(x => x.id !== currentClientId));
   closeClientForm();
   renderClients();
+}
+
+// ============== TASKS ==============
+const TASK_STATUSES = [
+  { id: 'tnew',  label: 'Нова' },
+  { id: 'twork', label: 'В роботі' },
+  { id: 'tdone', label: 'Завершена' }
+];
+
+const LS_KEY_TASKS = 'aquacrm_tasks_v1';
+let currentTaskId = null;
+let currentTaskFilter = 'all';
+
+function loadTasks() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY_TASKS)) || []; }
+  catch { return []; }
+}
+function saveTasksList(list) {
+  localStorage.setItem(LS_KEY_TASKS, JSON.stringify(list));
+}
+function taskStatusLabel(id) {
+  const s = TASK_STATUSES.find(x => x.id === id);
+  return s ? s.label : id;
+}
+
+function renderTasks() {
+  const all = loadTasks();
+  renderTaskStatusFilters(all);
+
+  const search = (document.getElementById('taskSearch').value || '').toLowerCase().trim();
+  let filtered = currentTaskFilter === 'all' ? all : all.filter(t => t.status === currentTaskFilter);
+
+  if (search) {
+    filtered = filtered.filter(t =>
+      (t.title || '').toLowerCase().includes(search) ||
+      (t.assignee || '').toLowerCase().includes(search) ||
+      (t.description || '').toLowerCase().includes(search)
+    );
+  }
+
+  // Sort: not done first, then by deadline asc, then by createdAt desc
+  filtered.sort((a, b) => {
+    const aDone = a.status === 'tdone' ? 1 : 0;
+    const bDone = b.status === 'tdone' ? 1 : 0;
+    if (aDone !== bDone) return aDone - bDone;
+    const aD = a.deadline || '9999-12-31';
+    const bD = b.deadline || '9999-12-31';
+    if (aD !== bD) return aD.localeCompare(bD);
+    return (b.createdAt || '').localeCompare(a.createdAt || '');
+  });
+
+  const wrap = document.getElementById('tasksList');
+  if (filtered.length === 0) {
+    wrap.innerHTML = `
+      <div class="clients-table-wrap">
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          </div>
+          <div class="empty-state-title">${all.length === 0 ? 'Поки що немає задач' : 'Нічого не знайдено'}</div>
+          <div>${all.length === 0 ? 'Натисніть «Додати задачу», щоб створити перший запис' : 'Спробуйте інший фільтр або запит'}</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  wrap.innerHTML = `
+    <div class="clients-table-wrap">
+      <table class="clients-table">
+        <thead>
+          <tr>
+            <th>Статус</th>
+            <th>Задача</th>
+            <th>Термін</th>
+            <th>Відповідальний</th>
+            <th>Створено</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered.map(t => `
+            <tr onclick="openTaskForm('${t.id}')">
+              <td><span class="status-badge status-${t.status || 'tnew'}">${escapeHtml(taskStatusLabel(t.status || 'tnew'))}</span></td>
+              <td>
+                <div class="client-name">${escapeHtml(t.title) || '—'}</div>
+                ${t.description ? `<div class="client-meta">${escapeHtml(t.description.length > 80 ? t.description.slice(0, 80) + '…' : t.description)}</div>` : ''}
+              </td>
+              <td>${formatDeadline(t.deadline, t.status)}</td>
+              <td>${t.assignee ? escapeHtml(t.assignee) : '<span style="color:var(--text-dim)">—</span>'}</td>
+              <td><span style="color:var(--text-muted); font-size:12px;">${formatDateShort(t.createdAt)}</span></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderTaskStatusFilters(all) {
+  const counts = { all: all.length };
+  TASK_STATUSES.forEach(s => counts[s.id] = all.filter(t => t.status === s.id).length);
+  const filters = [{ id: 'all', label: 'Усі' }, ...TASK_STATUSES];
+  document.getElementById('taskStatusFilters').innerHTML = filters.map(f => `
+    <button class="filter-chip ${currentTaskFilter === f.id ? 'active' : ''}" onclick="setTaskFilter('${f.id}')">
+      ${f.label}<span class="count">${counts[f.id]}</span>
+    </button>`).join('');
+}
+
+function setTaskFilter(f) {
+  currentTaskFilter = f;
+  renderTasks();
+}
+
+function formatDeadline(d, status) {
+  if (!d) return '<span style="color:var(--text-dim)">—</span>';
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return '<span style="color:var(--text-dim)">—</span>';
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const diff = Math.round((date - today) / (1000 * 60 * 60 * 24));
+  const formatted = date.toLocaleDateString('uk-UA', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  if (status === 'tdone') return `<span style="color:var(--text-muted)">${formatted}</span>`;
+  if (diff < 0) return `<span class="deadline-overdue">${formatted} · прострочено</span>`;
+  if (diff <= 2) return `<span class="deadline-soon">${formatted}${diff === 0 ? ' · сьогодні' : diff === 1 ? ' · завтра' : ' · через ' + diff + ' дні'}</span>`;
+  return `<span style="color:var(--ink-soft)">${formatted}</span>`;
+}
+
+function openTaskForm(id) {
+  currentTaskId = id || null;
+  const blank = { title: '', description: '', deadline: '', status: 'tnew', assignee: '' };
+  const task = id ? loadTasks().find(t => t.id === id) : blank;
+  if (id && !task) return;
+
+  document.getElementById('taskModalTitle').textContent = id ? 'Картка задачі' : 'Нова задача';
+  document.getElementById('taskDeleteBtn').style.display = id ? '' : 'none';
+  document.getElementById('taskModalBody').innerHTML = renderTaskForm(task);
+  document.getElementById('taskModalBg').classList.add('show');
+  initTaskFormHandlers();
+}
+
+function closeTaskForm() {
+  document.getElementById('taskModalBg').classList.remove('show');
+  currentTaskId = null;
+}
+
+function renderTaskForm(t) {
+  return `
+    <div class="form-section">
+      <div class="form-section-title">Задача</div>
+      <div>
+        <div class="field-label">Опис задачі *</div>
+        <input id="t_title" type="text" value="${escapeHtml(t.title)}" placeholder="Наприклад: Зателефонувати клієнту Іваненко">
+      </div>
+      <div style="margin-top: 12px;">
+        <div class="field-label">Деталі (необовʼязково)</div>
+        <textarea id="t_description" placeholder="Додаткові деталі, що зробити, що уточнити...">${escapeHtml(t.description)}</textarea>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Термін виконання</div>
+      <div>
+        <div class="field-label">Дата</div>
+        <input id="t_deadline" type="date" value="${escapeHtml(t.deadline)}">
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Відповідальний</div>
+      <div>
+        <div class="field-label">Імʼя</div>
+        <input id="t_assignee" type="text" value="${escapeHtml(t.assignee)}" placeholder="Хто виконує задачу">
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Статус</div>
+      <div class="status-selector" id="taskStatusSelector">
+        ${TASK_STATUSES.map(s => `
+          <div class="status-option ${t.status === s.id ? 'selected' : ''}" data-status="${s.id}">${s.label}</div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function initTaskFormHandlers() {
+  document.querySelectorAll('#taskStatusSelector .status-option').forEach(el => {
+    el.onclick = () => {
+      document.querySelectorAll('#taskStatusSelector .status-option').forEach(x => x.classList.remove('selected'));
+      el.classList.add('selected');
+    };
+  });
+}
+
+function saveTask() {
+  const title = document.getElementById('t_title').value.trim();
+  if (!title) { alert('Введіть опис задачі'); return; }
+
+  const list = loadTasks();
+  const isNew = !currentTaskId;
+  const existing = isNew ? null : list.find(t => t.id === currentTaskId);
+  const id = currentTaskId || ('t_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
+
+  const data = {
+    id,
+    title,
+    description: document.getElementById('t_description').value.trim(),
+    deadline: document.getElementById('t_deadline').value || '',
+    assignee: document.getElementById('t_assignee').value.trim(),
+    status: (document.querySelector('#taskStatusSelector .status-option.selected') || { dataset: { status: 'tnew' } }).dataset.status,
+    createdAt: existing ? existing.createdAt : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  if (isNew) list.push(data);
+  else {
+    const idx = list.findIndex(t => t.id === currentTaskId);
+    if (idx >= 0) list[idx] = data;
+    else list.push(data);
+  }
+
+  saveTasksList(list);
+  closeTaskForm();
+  renderTasks();
+}
+
+function deleteCurrentTask() {
+  if (!currentTaskId) return;
+  if (!confirm('Видалити задачу? Цю дію неможливо скасувати.')) return;
+  saveTasksList(loadTasks().filter(t => t.id !== currentTaskId));
+  closeTaskForm();
+  renderTasks();
 }
 
 // ============== INIT ==============
