@@ -645,6 +645,297 @@
     .modal { box-shadow: none; max-width: 100%; }
     .modal-actions { display: none; }
   }
+
+  /* ===== VIEW ROUTER ===== */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ===== CLIENTS TOOLBAR ===== */
+  .clients-toolbar {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .search-input { flex: 1; min-width: 240px; position: relative; }
+  .search-input input { padding-left: 38px; }
+  .search-input svg {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-dim); pointer-events: none;
+  }
+
+  .status-filters {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .filter-chip {
+    padding: 7px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-muted);
+    cursor: pointer; transition: all 0.15s;
+    font-family: inherit;
+  }
+  .filter-chip:hover { border-color: var(--eco-blue); color: var(--eco-blue); }
+  .filter-chip.active {
+    background: var(--eco-blue); border-color: var(--eco-blue); color: white;
+  }
+  .filter-chip .count { margin-left: 6px; opacity: 0.8; font-weight: 500; }
+
+  /* ===== CLIENTS TABLE ===== */
+  .clients-table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .clients-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .clients-table th {
+    text-align: left; padding: 14px 18px;
+    background: var(--surface-alt);
+    color: var(--text-muted); font-weight: 700;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+  .clients-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border-soft);
+    color: var(--ink-soft); vertical-align: middle;
+  }
+  .clients-table tr:last-child td { border-bottom: none; }
+  .clients-table tbody tr { cursor: pointer; transition: background 0.1s; }
+  .clients-table tbody tr:hover { background: var(--eco-blue-tint); }
+
+  .client-name { font-weight: 700; color: var(--ink); }
+  .client-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ===== STATUS BADGES ===== */
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 12px;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .status-badge::before {
+    content: ''; width: 6px; height: 6px;
+    border-radius: 50%; background: currentColor;
+  }
+  .status-work      { background: #FEF8EC; color: #B97509; }
+  .status-done      { background: #DDF2E5; color: #1B7A3D; }
+  .status-declined  { background: #F5E9EA; color: #B53A3F; }
+
+  .equip-pill {
+    display: inline-flex; align-items: center;
+    padding: 2px 8px; margin-right: 4px;
+    background: var(--eco-blue-tint); color: var(--eco-blue);
+    border-radius: 6px; font-size: 11px; font-weight: 600;
+    font-family: var(--font-mono);
+  }
+  .pdf-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 12px; color: var(--danger); font-weight: 600;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state { padding: 60px 20px; text-align: center; color: var(--text-muted); }
+  .empty-state-icon {
+    width: 72px; height: 72px;
+    background: var(--eco-blue-tint);
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--eco-blue); margin-bottom: 16px;
+  }
+  .empty-state-title {
+    font-size: 17px; font-weight: 700;
+    color: var(--ink); margin-bottom: 6px;
+  }
+
+  /* ===== CLIENT FORM MODAL ===== */
+  .modal-form {
+    background: white; color: var(--ink);
+    border-radius: 14px;
+    max-width: 760px; width: 100%;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    max-height: calc(100vh - 80px);
+    display: flex; flex-direction: column;
+  }
+  .modal-form-head {
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-form-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .modal-close {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); padding: 4px;
+    border-radius: 6px; transition: all 0.15s;
+  }
+  .modal-close:hover { background: var(--surface-alt); color: var(--ink); }
+
+  .modal-form-body { padding: 24px 28px; overflow-y: auto; flex: 1; }
+
+  .form-section { margin-bottom: 22px; }
+  .form-section:last-child { margin-bottom: 0; }
+  .form-section-title {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-muted);
+    margin-bottom: 12px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .form-section-title::before {
+    content: ''; width: 18px; height: 2px;
+    background: var(--eco-blue); border-radius: 2px;
+  }
+
+  .form-grid { display: grid; gap: 12px; }
+  .form-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  textarea {
+    width: 100%; padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--ink);
+    font-family: inherit; font-size: 14px;
+    resize: vertical; min-height: 80px;
+    transition: all 0.15s;
+  }
+  textarea:focus {
+    outline: none; border-color: var(--eco-blue);
+    box-shadow: 0 0 0 3px var(--eco-blue-soft);
+  }
+
+  /* ===== STATUS SELECTOR ===== */
+  .status-selector { display: flex; gap: 6px; flex-wrap: wrap; }
+  .status-option {
+    padding: 8px 14px; border-radius: 8px;
+    font-size: 12px; font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-muted);
+    cursor: pointer; transition: all 0.15s;
+    user-select: none;
+  }
+  .status-option:hover { border-color: var(--ink-soft); }
+  .status-option.selected { border-width: 2px; padding: 7px 13px; }
+  .status-option[data-status="work"].selected      { border-color: #B97509; background: #FEF8EC; color: #B97509; }
+  .status-option[data-status="done"].selected      { border-color: #1B7A3D; background: #DDF2E5; color: #1B7A3D; }
+  .status-option[data-status="declined"].selected  { border-color: #B53A3F; background: #F5E9EA; color: #B53A3F; }
+
+  /* ===== EQUIPMENT SELECTOR ===== */
+  .equip-categories { display: flex; flex-direction: column; gap: 14px; }
+  .equip-category-title {
+    font-size: 12px; font-weight: 700;
+    color: var(--ink-soft); margin-bottom: 6px;
+  }
+  .equip-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 6px;
+  }
+  .equip-option {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: var(--surface-alt);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    cursor: pointer; transition: all 0.15s;
+    font-size: 13px;
+  }
+  .equip-option:hover { border-color: var(--eco-blue); background: var(--eco-blue-tint); }
+  .equip-option input { width: auto; margin: 0; cursor: pointer; }
+  .equip-option.selected {
+    border-color: var(--eco-blue);
+    background: var(--eco-blue-tint);
+    color: var(--eco-blue);
+    font-weight: 600;
+  }
+  .equip-option-name { flex: 1; line-height: 1.3; }
+  .equip-option-price {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--text-muted); white-space: nowrap;
+  }
+
+  /* ===== PDF UPLOAD ===== */
+  .pdf-upload {
+    display: block;
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 24px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--surface-alt);
+  }
+  .pdf-upload:hover, .pdf-upload.dragover {
+    border-color: var(--eco-blue);
+    background: var(--eco-blue-tint);
+  }
+  .pdf-upload input[type=file] { display: none; }
+  .pdf-upload-icon {
+    width: 44px; height: 44px;
+    background: var(--eco-blue-soft);
+    color: var(--eco-blue);
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pdf-upload-text { font-size: 13px; color: var(--ink-soft); font-weight: 600; }
+  .pdf-upload-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  .pdf-attached {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: #FEF2F3;
+    border: 1px solid #FECACA;
+    border-radius: 10px;
+  }
+  .pdf-attached-icon {
+    width: 36px; height: 36px;
+    background: var(--danger); color: white;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 11px; flex-shrink: 0;
+    letter-spacing: 0.04em;
+  }
+  .pdf-attached-name {
+    font-size: 13px; font-weight: 600; color: var(--ink);
+    word-break: break-word;
+  }
+  .pdf-attached-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .pdf-attached-actions {
+    display: flex; gap: 4px; margin-left: auto; flex-shrink: 0;
+  }
+  .icon-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 13px;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .icon-btn:hover { color: var(--ink); border-color: var(--text-dim); background: white; }
+  .icon-btn.danger:hover { color: var(--danger); border-color: var(--danger); }
+
+  .modal-form-foot {
+    padding: 14px 28px;
+    background: var(--surface-alt);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-danger {
+    color: var(--danger);
+    border-color: var(--border);
+  }
+  .btn-danger:hover { border-color: var(--danger); color: var(--danger); }
 </style>
 </head>
 <body>
@@ -683,11 +974,11 @@
       </a>
 
       <div class="nav-section">Робота</div>
-      <a class="nav-item active">
+      <a class="nav-item active" data-view="calc" onclick="showView('calc')" style="cursor:pointer">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>
         Аналізи + Підбір
       </a>
-      <a class="nav-item">
+      <a class="nav-item" data-view="clients" onclick="showView('clients')" style="cursor:pointer">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
         Клієнти
       </a>
@@ -725,6 +1016,9 @@
 
   <!-- ===== MAIN ===== -->
   <main class="main">
+
+    <!-- ===== VIEW: CALCULATOR ===== -->
+    <div id="view-calc" class="view active">
     <header class="header">
       <div>
         <h1 class="header-title">Підбір обладнання</h1>
@@ -829,6 +1123,35 @@
       <strong>Це робочий прототип системи.</strong> Каталог, ціни та логіка підбору базуються на реальних моделях Ecosoft (станом на 2024-2025), нормативи — за ДСанПіН 2.2.4-171-10.
       У повній версії: інтеграція картки клієнта з історією аналізів обʼєкта, відправка КП у Viber/Telegram, електронний підпис, автостворення задач монтажникам, нагадування про сервіс через рік.
     </div>
+    </div><!-- /view-calc -->
+
+    <!-- ===== VIEW: CLIENTS ===== -->
+    <div id="view-clients" class="view">
+      <header class="header">
+        <div>
+          <h1 class="header-title">Клієнти</h1>
+          <div class="header-sub">Повна база замовників та потенційних клієнтів</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="openClientForm()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Додати клієнта
+          </button>
+        </div>
+      </header>
+
+      <div class="clients-toolbar">
+        <div class="search-input">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input id="clientSearch" type="text" placeholder="Пошук за іменем, телефоном, адресою..." oninput="renderClients()">
+        </div>
+      </div>
+
+      <div class="status-filters" id="statusFilters"></div>
+
+      <div id="clientsList"></div>
+    </div><!-- /view-clients -->
+
   </main>
 </div>
 
@@ -840,6 +1163,26 @@
       <button class="btn" onclick="closeModal()">Закрити</button>
       <button class="btn" onclick="window.print()">🖨 Друк / PDF</button>
       <button class="btn btn-primary" onclick="alert('У реальній системі: відправка email + Viber клієнту, створення угоди в CRM на стадії «Запропоновано КП»')">📨 Надіслати клієнту</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CLIENT FORM MODAL ===== -->
+<div class="modal-bg" id="clientModalBg" onclick="if(event.target===this)closeClientForm()">
+  <div class="modal-form">
+    <div class="modal-form-head">
+      <div class="modal-form-title" id="clientModalTitle">Новий клієнт</div>
+      <button class="modal-close" onclick="closeClientForm()" title="Закрити">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-form-body" id="clientModalBody"></div>
+    <div class="modal-form-foot">
+      <button class="btn btn-danger" id="clientDeleteBtn" onclick="deleteCurrentClient()" style="display:none;">🗑 Видалити</button>
+      <div style="margin-left: auto; display: flex; gap: 8px;">
+        <button class="btn" onclick="closeClientForm()">Скасувати</button>
+        <button class="btn btn-primary" onclick="saveClient()">💾 Зберегти</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1371,6 +1714,549 @@ function generateKP(items, subtotal, discount, total) {
 }
 
 function closeModal() { document.getElementById('modalBg').classList.remove('show'); }
+
+// ============== CLIENTS: CONSTANTS ==============
+const STATUSES = [
+  { id: 'work',     label: 'В роботі' },
+  { id: 'done',     label: 'Завершено' },
+  { id: 'declined', label: 'Відмовився' }
+];
+
+// Map old statuses (from previous version) → new statuses
+const STATUS_MIGRATION = {
+  'new': 'work',
+  'contact': 'work',
+  'proposal': 'work',
+  'ordered': 'work',
+  'installed': 'done',
+  'declined': 'declined'
+};
+
+const CATEGORY_NAMES = {
+  mech:     'Механічні фільтри',
+  softener: 'Помʼякшувачі',
+  combo:    'Комплексне очищення (Ecomix / Titanium)',
+  h2s:      'Видалення сірководню',
+  carbon:   'Вугільні фільтри',
+  ro:       'Зворотний осмос (питна вода)',
+  service:  'Послуги (монтаж)'
+};
+
+// ============== STORAGE: localStorage + IndexedDB ==============
+const LS_KEY = 'aquacrm_clients_v1';
+
+function loadClients() {
+  try {
+    const list = JSON.parse(localStorage.getItem(LS_KEY)) || [];
+    let migrated = false;
+    list.forEach(c => {
+      if (STATUS_MIGRATION[c.status]) {
+        c.status = STATUS_MIGRATION[c.status];
+        migrated = true;
+      }
+      if (!STATUSES.find(s => s.id === c.status)) c.status = 'work';
+    });
+    if (migrated) localStorage.setItem(LS_KEY, JSON.stringify(list));
+    return list;
+  } catch { return []; }
+}
+
+function saveClientsList(list) {
+  localStorage.setItem(LS_KEY, JSON.stringify(list));
+}
+
+const DB_NAME = 'AquaCRM';
+let dbPromise = null;
+
+function openDB() {
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('pdfs')) db.createObjectStore('pdfs');
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  return dbPromise;
+}
+
+async function savePdf(key, blob) {
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('pdfs', 'readwrite');
+    tx.objectStore('pdfs').put(blob, key);
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+}
+
+async function getPdf(key) {
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('pdfs', 'readonly');
+    const req = tx.objectStore('pdfs').get(key);
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+
+async function deletePdf(key) {
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('pdfs', 'readwrite');
+    tx.objectStore('pdfs').delete(key);
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+}
+
+// ============== STATE ==============
+let currentClientId = null;
+let currentFilter = 'all';
+let pendingPdfBlob = null;
+let pendingPdfName = null;
+let pendingPdfRemove = false;
+
+// ============== ROUTING ==============
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const view = document.getElementById('view-' + name);
+  if (view) view.classList.add('active');
+  document.querySelectorAll('.nav-item[data-view]').forEach(n => n.classList.remove('active'));
+  const navItem = document.querySelector(`.nav-item[data-view="${name}"]`);
+  if (navItem) navItem.classList.add('active');
+  if (name === 'clients') renderClients();
+  window.scrollTo(0, 0);
+}
+
+// ============== HELPERS ==============
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+  ));
+}
+
+function statusLabel(id) {
+  const s = STATUSES.find(x => x.id === id);
+  return s ? s.label : id;
+}
+
+function formatAddress(c) {
+  const parts = [c.city, c.district, c.street].filter(p => p && String(p).trim());
+  return parts.length
+    ? escapeHtml(parts.join(', '))
+    : '<span style="color:var(--text-dim)">—</span>';
+}
+
+function formatEquipmentSummary(eqs) {
+  if (!eqs || !eqs.length) return '<span style="color:var(--text-dim)">—</span>';
+  const first = (CATALOG[eqs[0]] || {}).sku || eqs[0];
+  if (eqs.length === 1) return `<span class="equip-pill">${escapeHtml(first)}</span>`;
+  return `<span class="equip-pill">${escapeHtml(first)}</span><span class="equip-pill">+${eqs.length - 1}</span>`;
+}
+
+function formatDateShort(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('uk-UA', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+// ============== CLIENTS RENDER ==============
+function renderClients() {
+  const all = loadClients();
+  renderStatusFilters(all);
+
+  const search = (document.getElementById('clientSearch').value || '').toLowerCase().trim();
+  let filtered = currentFilter === 'all' ? all : all.filter(c => c.status === currentFilter);
+
+  if (search) {
+    filtered = filtered.filter(c =>
+      (c.name || '').toLowerCase().includes(search) ||
+      (c.phone || '').toLowerCase().includes(search) ||
+      (c.email || '').toLowerCase().includes(search) ||
+      (c.city || '').toLowerCase().includes(search) ||
+      (c.district || '').toLowerCase().includes(search) ||
+      (c.street || '').toLowerCase().includes(search)
+    );
+  }
+
+  filtered.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+
+  const wrap = document.getElementById('clientsList');
+  if (filtered.length === 0) {
+    wrap.innerHTML = `
+      <div class="clients-table-wrap">
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div class="empty-state-title">${all.length === 0 ? 'Поки що немає клієнтів' : 'Нічого не знайдено'}</div>
+          <div>${all.length === 0
+            ? 'Натисніть «Додати клієнта», щоб створити перший запис'
+            : 'Спробуйте змінити фільтр або пошуковий запит'}</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  wrap.innerHTML = `
+    <div class="clients-table-wrap">
+      <table class="clients-table">
+        <thead>
+          <tr>
+            <th>Статус</th>
+            <th>Клієнт</th>
+            <th>Адреса</th>
+            <th>Обладнання</th>
+            <th>Аналіз</th>
+            <th>Оновлено</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered.map(c => `
+            <tr onclick="openClientForm('${c.id}')">
+              <td><span class="status-badge status-${c.status || 'work'}">${escapeHtml(statusLabel(c.status || 'work'))}</span></td>
+              <td>
+                <div class="client-name">${escapeHtml(c.name) || '—'}</div>
+                <div class="client-meta">${escapeHtml(c.phone || '')}${c.email ? ' · ' + escapeHtml(c.email) : ''}</div>
+              </td>
+              <td>${formatAddress(c)}</td>
+              <td>${formatEquipmentSummary(c.equipment)}</td>
+              <td>${c.pdfKey ? '<span class="pdf-pill">📄 PDF</span>' : '<span style="color:var(--text-dim)">—</span>'}</td>
+              <td><span style="color:var(--text-muted); font-size:12px;">${formatDateShort(c.updatedAt)}</span></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderStatusFilters(all) {
+  const counts = { all: all.length };
+  STATUSES.forEach(s => counts[s.id] = all.filter(c => c.status === s.id).length);
+  const filters = [{ id: 'all', label: 'Усі' }, ...STATUSES];
+  document.getElementById('statusFilters').innerHTML = filters.map(f => `
+    <button class="filter-chip ${currentFilter === f.id ? 'active' : ''}" onclick="setFilter('${f.id}')">
+      ${f.label}<span class="count">${counts[f.id]}</span>
+    </button>`).join('');
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  renderClients();
+}
+
+// ============== CLIENT FORM ==============
+function openClientForm(id) {
+  currentClientId = id || null;
+  pendingPdfBlob = null;
+  pendingPdfName = null;
+  pendingPdfRemove = false;
+
+  const blank = {
+    name: '', phone: '', email: '',
+    city: '', district: '', street: '',
+    equipment: [], status: 'work', comment: '',
+    pdfKey: null, pdfName: null
+  };
+
+  const client = id ? loadClients().find(c => c.id === id) : blank;
+  if (id && !client) return;
+
+  document.getElementById('clientModalTitle').textContent = id ? 'Картка клієнта' : 'Новий клієнт';
+  document.getElementById('clientDeleteBtn').style.display = id ? '' : 'none';
+  document.getElementById('clientModalBody').innerHTML = renderClientForm(client);
+  document.getElementById('clientModalBg').classList.add('show');
+  initFormHandlers();
+}
+
+function closeClientForm() {
+  document.getElementById('clientModalBg').classList.remove('show');
+  currentClientId = null;
+  pendingPdfBlob = null;
+  pendingPdfName = null;
+  pendingPdfRemove = false;
+}
+
+function renderClientForm(c) {
+  const eqByCategory = {};
+  Object.entries(CATALOG).forEach(([key, item]) => {
+    (eqByCategory[item.category] = eqByCategory[item.category] || []).push({ key, ...item });
+  });
+
+  const categoryOrder = ['mech', 'softener', 'combo', 'h2s', 'carbon', 'ro', 'service'];
+  const eqHtml = categoryOrder
+    .filter(cat => eqByCategory[cat])
+    .map(cat => {
+      const items = eqByCategory[cat];
+      return `
+        <div>
+          <div class="equip-category-title">${CATEGORY_NAMES[cat] || cat}</div>
+          <div class="equip-options">
+            ${items.map(it => {
+              const checked = (c.equipment || []).includes(it.key);
+              return `
+                <label class="equip-option ${checked ? 'selected' : ''}">
+                  <input type="checkbox" name="equipment" value="${it.key}" ${checked ? 'checked' : ''}>
+                  <span class="equip-option-name">${escapeHtml(it.name)}</span>
+                  <span class="equip-option-price">${it.price.toLocaleString('uk-UA')} ₴</span>
+                </label>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }).join('');
+
+  return `
+    <div class="form-section">
+      <div class="form-section-title">Контактні дані</div>
+      <div class="form-grid cols-2">
+        <div>
+          <div class="field-label">Імʼя клієнта *</div>
+          <input id="f_name" type="text" value="${escapeHtml(c.name)}" placeholder="Іваненко Олександр">
+        </div>
+        <div>
+          <div class="field-label">Телефон</div>
+          <input id="f_phone" type="text" value="${escapeHtml(c.phone)}" placeholder="+380 67 123-45-67">
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top: 12px;">
+        <div>
+          <div class="field-label">Email</div>
+          <input id="f_email" type="email" value="${escapeHtml(c.email)}" placeholder="email@example.com">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Адреса</div>
+      <div class="form-grid cols-3">
+        <div>
+          <div class="field-label">Місто / село</div>
+          <input id="f_city" type="text" value="${escapeHtml(c.city)}" placeholder="Київ">
+        </div>
+        <div>
+          <div class="field-label">Район</div>
+          <input id="f_district" type="text" value="${escapeHtml(c.district)}" placeholder="Святошинський">
+        </div>
+        <div>
+          <div class="field-label">Вулиця, будинок</div>
+          <input id="f_street" type="text" value="${escapeHtml(c.street)}" placeholder="вул. Перемоги, 12">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Статус клієнта</div>
+      <div class="status-selector" id="statusSelector">
+        ${STATUSES.map(s => `
+          <div class="status-option ${c.status === s.id ? 'selected' : ''}" data-status="${s.id}">${s.label}</div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Обладнання, що цікавить</div>
+      <div class="equip-categories">${eqHtml}</div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Аналіз води (PDF)</div>
+      <div id="pdfArea">${renderPdfArea(c)}</div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Коментар</div>
+      <textarea id="f_comment" placeholder="Особливості обʼєкту, домовленості, нагадування...">${escapeHtml(c.comment)}</textarea>
+    </div>`;
+}
+
+function renderPdfArea(c) {
+  const hasExisting = c && c.pdfKey && !pendingPdfRemove;
+  const hasPending = !!pendingPdfBlob;
+
+  if (hasPending || hasExisting) {
+    const name = pendingPdfName || (c && c.pdfName) || 'analysis.pdf';
+    return `
+      <div class="pdf-attached">
+        <div class="pdf-attached-icon">PDF</div>
+        <div style="min-width:0; flex:1;">
+          <div class="pdf-attached-name">${escapeHtml(name)}</div>
+          <div class="pdf-attached-meta">${hasPending
+            ? 'Новий файл — буде збережено при «Зберегти»'
+            : 'Прикріплено до клієнта'}</div>
+        </div>
+        <div class="pdf-attached-actions">
+          ${!hasPending && hasExisting ? `<button class="icon-btn" onclick="downloadCurrentPdf()" type="button" title="Завантажити">⬇</button>` : ''}
+          <button class="icon-btn danger" onclick="removePdf()" type="button" title="Видалити">🗑</button>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <label class="pdf-upload" id="pdfDropZone">
+      <input type="file" accept="application/pdf,.pdf" onchange="handlePdfSelect(event)">
+      <div class="pdf-upload-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+      </div>
+      <div class="pdf-upload-text">Натисніть або перетягніть PDF з аналізом</div>
+      <div class="pdf-upload-hint">Лише PDF · до 10 МБ</div>
+    </label>`;
+}
+
+function initFormHandlers() {
+  document.querySelectorAll('#statusSelector .status-option').forEach(el => {
+    el.onclick = () => {
+      document.querySelectorAll('#statusSelector .status-option').forEach(x => x.classList.remove('selected'));
+      el.classList.add('selected');
+    };
+  });
+
+  document.querySelectorAll('.equip-option input[type=checkbox]').forEach(cb => {
+    cb.onchange = () => cb.closest('.equip-option').classList.toggle('selected', cb.checked);
+  });
+
+  attachDropHandlers();
+}
+
+function attachDropHandlers() {
+  const drop = document.getElementById('pdfDropZone');
+  if (!drop) return;
+  drop.ondragover = (e) => { e.preventDefault(); drop.classList.add('dragover'); };
+  drop.ondragleave = () => drop.classList.remove('dragover');
+  drop.ondrop = (e) => {
+    e.preventDefault();
+    drop.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (f) processPdfFile(f);
+  };
+}
+
+function handlePdfSelect(e) {
+  const f = e.target.files[0];
+  if (f) processPdfFile(f);
+}
+
+function processPdfFile(f) {
+  if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
+    alert('Будь ласка, оберіть PDF файл');
+    return;
+  }
+  if (f.size > 10 * 1024 * 1024) {
+    alert('Файл занадто великий (понад 10 МБ)');
+    return;
+  }
+  pendingPdfBlob = f;
+  pendingPdfName = f.name;
+  pendingPdfRemove = false;
+  refreshPdfArea();
+}
+
+function removePdf() {
+  pendingPdfBlob = null;
+  pendingPdfName = null;
+  pendingPdfRemove = true;
+  refreshPdfArea();
+}
+
+function refreshPdfArea() {
+  const c = currentClientId
+    ? (loadClients().find(x => x.id === currentClientId) || {})
+    : {};
+  document.getElementById('pdfArea').innerHTML = renderPdfArea(c);
+  attachDropHandlers();
+}
+
+async function downloadCurrentPdf() {
+  if (!currentClientId) return;
+  const c = loadClients().find(x => x.id === currentClientId);
+  if (!c || !c.pdfKey) return;
+  const blob = await getPdf(c.pdfKey);
+  if (!blob) { alert('Файл не знайдено'); return; }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = c.pdfName || 'analysis.pdf';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function saveClient() {
+  const name = document.getElementById('f_name').value.trim();
+  if (!name) { alert('Введіть імʼя клієнта'); return; }
+
+  const list = loadClients();
+  const isNew = !currentClientId;
+  const existing = isNew ? null : list.find(c => c.id === currentClientId);
+  const id = currentClientId || ('c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
+
+  const data = {
+    id,
+    name,
+    phone: document.getElementById('f_phone').value.trim(),
+    email: document.getElementById('f_email').value.trim(),
+    city: document.getElementById('f_city').value.trim(),
+    district: document.getElementById('f_district').value.trim(),
+    street: document.getElementById('f_street').value.trim(),
+    equipment: Array.from(document.querySelectorAll('.equip-option input[type=checkbox]:checked')).map(cb => cb.value),
+    status: (document.querySelector('#statusSelector .status-option.selected') || { dataset: { status: 'new' } }).dataset.status,
+    comment: document.getElementById('f_comment').value.trim(),
+    pdfKey: existing ? existing.pdfKey : null,
+    pdfName: existing ? existing.pdfName : null,
+    createdAt: existing ? existing.createdAt : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  try {
+    if (pendingPdfRemove && existing && existing.pdfKey) {
+      await deletePdf(existing.pdfKey);
+      data.pdfKey = null;
+      data.pdfName = null;
+    }
+    if (pendingPdfBlob) {
+      if (existing && existing.pdfKey) await deletePdf(existing.pdfKey);
+      const key = id + '_pdf';
+      await savePdf(key, pendingPdfBlob);
+      data.pdfKey = key;
+      data.pdfName = pendingPdfName;
+    }
+  } catch (err) {
+    alert('Помилка збереження PDF: ' + err.message);
+    return;
+  }
+
+  if (isNew) list.push(data);
+  else {
+    const idx = list.findIndex(c => c.id === currentClientId);
+    if (idx >= 0) list[idx] = data;
+    else list.push(data);
+  }
+
+  try { saveClientsList(list); }
+  catch (err) {
+    alert('Помилка збереження: ' + err.message);
+    return;
+  }
+
+  closeClientForm();
+  renderClients();
+}
+
+async function deleteCurrentClient() {
+  if (!currentClientId) return;
+  if (!confirm('Видалити клієнта? Цю дію неможливо скасувати.')) return;
+  const list = loadClients();
+  const c = list.find(x => x.id === currentClientId);
+  if (c && c.pdfKey) {
+    try { await deletePdf(c.pdfKey); } catch {}
+  }
+  saveClientsList(list.filter(x => x.id !== currentClientId));
+  closeClientForm();
+  renderClients();
+}
 
 // ============== INIT ==============
 renderParams();
