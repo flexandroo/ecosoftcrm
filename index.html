@@ -638,6 +638,148 @@
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
+  /* ===== KP ENHANCED SECTIONS ===== */
+  .kp-meta-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .kp-block {
+    background: var(--surface-alt);
+    border-radius: 8px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--eco-blue);
+  }
+  .kp-block-title {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .kp-block-content {
+    font-size: 13px; line-height: 1.6;
+    color: var(--ink);
+  }
+  .kp-block-content strong { font-weight: 700; color: var(--ink); }
+  .kp-block-content .muted { color: var(--text-muted); font-size: 12px; }
+
+  .kp-equipment-details {
+    display: flex; flex-direction: column;
+    gap: 10px; margin-bottom: 22px;
+  }
+  .kp-equipment-detail {
+    background: var(--surface-alt);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .kp-eq-detail-head {
+    display: flex; justify-content: space-between;
+    align-items: baseline; gap: 12px;
+    margin-bottom: 6px;
+  }
+  .kp-eq-detail-name {
+    font-size: 13px; font-weight: 700;
+    color: var(--ink); flex: 1;
+  }
+  .kp-eq-detail-sku {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    background: var(--surface);
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid var(--border-soft);
+    white-space: nowrap;
+  }
+  .kp-eq-detail-spec {
+    font-size: 11px; color: var(--text-muted);
+    font-family: var(--font-mono);
+    margin-bottom: 6px;
+  }
+  .kp-eq-detail-desc {
+    font-size: 12px; color: var(--ink-soft);
+    line-height: 1.55;
+  }
+
+  .kp-savings {
+    background: linear-gradient(135deg, var(--eco-blue-soft) 0%, var(--eco-blue-tint) 100%);
+    border: 1px solid var(--eco-blue);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 22px;
+  }
+  .kp-savings-intro {
+    font-size: 12px; color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 12px;
+    font-style: italic;
+  }
+  .kp-savings-row {
+    display: flex; justify-content: space-between;
+    padding: 6px 0; font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .kp-savings-row .lbl { color: var(--ink-soft); }
+  .kp-savings-row .val {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .kp-savings-row.divider {
+    border-top: 1px solid var(--eco-blue-light);
+    margin-top: 8px;
+    padding-top: 10px;
+  }
+  .kp-savings-row.final .lbl {
+    font-weight: 700; font-size: 14px; color: var(--ink);
+  }
+  .kp-savings-row.final .val {
+    font-size: 18px; font-weight: 800;
+    color: var(--eco-blue);
+    font-family: var(--font-sans);
+  }
+
+  .kp-warnings {
+    background: #FEF8EC;
+    border: 1px solid #FDE7B8;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 22px;
+  }
+  .kp-warnings-intro {
+    font-size: 12px; color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+  .kp-warnings-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .kp-warning-item {
+    background: white;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border-left: 3px solid var(--warn);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .kp-warning-icon {
+    font-size: 14px; margin-right: 4px;
+  }
+  .kp-warning-title {
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 3px;
+  }
+  .kp-warning-desc {
+    color: var(--ink-soft);
+    font-size: 11px;
+  }
+
   /* ===== PRINT ===== */
   @media print {
     body { background: white; }
@@ -1082,7 +1224,7 @@
         <div class="header-sub">Введіть параметри води — система запропонує оптимальне рішення Ecosoft</div>
       </div>
       <div class="header-actions">
-        <button class="btn">📋 Імпорт CSV</button>
+        <button class="btn" onclick="openManagerSettings()">👤 Менеджер</button>
         <button class="btn" onclick="loadSample()">🧪 Зразок: жорстка вода</button>
       </div>
     </header>
@@ -1109,7 +1251,11 @@
               <input type="text" id="clientPhone" value="+380 67 123-45-67">
             </div>
           </div>
-          <div class="client-row full">
+          <div class="client-row">
+            <div>
+              <div class="field-label">Email</div>
+              <input type="email" id="clientEmail" value="" placeholder="email@example.com">
+            </div>
             <div>
               <div class="field-label">Обʼєкт (адреса)</div>
               <input type="text" id="clientAddr" value="с. Софіївська Борщагівка">
@@ -1247,6 +1393,25 @@
       <button class="btn" onclick="closeModal()">Закрити</button>
       <button class="btn" onclick="window.print()">🖨 Друк / PDF</button>
       <button class="btn btn-primary" onclick="alert('У реальній системі: відправка email + Viber клієнту, створення угоди в CRM на стадії «Запропоновано КП»')">📨 Надіслати клієнту</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MANAGER SETTINGS MODAL ===== -->
+<div class="modal-bg" id="managerModalBg" onclick="if(event.target===this)closeManagerSettings()">
+  <div class="modal-form">
+    <div class="modal-form-head">
+      <div class="modal-form-title">Дані менеджера</div>
+      <button class="modal-close" onclick="closeManagerSettings()" title="Закрити">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-form-body" id="managerModalBody"></div>
+    <div class="modal-form-foot">
+      <div style="margin-left:auto; display:flex; gap:8px;">
+        <button class="btn" onclick="closeManagerSettings()">Скасувати</button>
+        <button class="btn btn-primary" onclick="saveManagerSettings()">💾 Зберегти</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1731,11 +1896,20 @@ function formatPrice(n) { return n.toLocaleString('uk-UA') + ' ₴'; }
 
 // ============== KP MODAL ==============
 function generateKP(items, subtotal, discount, total) {
-  const today = new Date().toLocaleDateString('uk-UA', { day: '2-digit', month: 'long', year: 'numeric' });
-  const num = 'КП-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 900) + 100);
-  const client = document.getElementById('clientName').value;
-  const phone = document.getElementById('clientPhone').value;
-  const addr = document.getElementById('clientAddr').value;
+  const today    = new Date().toLocaleDateString('uk-UA', { day: '2-digit', month: 'long', year: 'numeric' });
+  const num      = 'КП-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 900) + 100);
+  const client   = document.getElementById('clientName').value;
+  const phone    = document.getElementById('clientPhone').value;
+  const email    = document.getElementById('clientEmail').value;
+  const addr     = document.getElementById('clientAddr').value;
+  const people   = parseInt(document.getElementById('people').value) || 3;
+  const baths    = parseInt(document.getElementById('bathrooms').value) || 1;
+
+  const manager  = loadManager();
+  const hasRO    = items.some(i => i.category === 'ro');
+  const damageNotes = getDamageNotes(items);
+  const savings  = hasRO ? calculateROSavings(people) : null;
+  const fmt = (n) => n.toLocaleString('uk-UA') + ' ₴';
 
   document.getElementById('kpContent').innerHTML = `
     <div class="kp-header">
@@ -1754,9 +1928,28 @@ function generateKP(items, subtotal, discount, total) {
     </div>
 
     <h2 class="kp-title">Комерційна пропозиція</h2>
-    <div class="kp-client">
-      <strong>${client}</strong> · ${phone}<br>
-      Обʼєкт: ${addr}
+
+    <div class="kp-meta-row">
+      <div class="kp-block">
+        <div class="kp-block-title">Замовник</div>
+        <div class="kp-block-content">
+          <strong>${escapeHtml(client) || '—'}</strong><br>
+          ${phone ? '📞 ' + escapeHtml(phone) + '<br>' : ''}
+          ${email ? '✉ ' + escapeHtml(email) + '<br>' : ''}
+          ${addr ? '<span class="muted">📍 ' + escapeHtml(addr) + '</span><br>' : ''}
+          <span class="muted">Проживає: ${people} ${people === 1 ? 'особа' : (people < 5 ? 'особи' : 'осіб')} · ${baths} ${baths === 1 ? 'санвузол' : (baths < 5 ? 'санвузли' : 'санвузлів')}</span>
+        </div>
+      </div>
+      <div class="kp-block">
+        <div class="kp-block-title">Менеджер</div>
+        <div class="kp-block-content">
+          <strong>${escapeHtml(manager.name) || 'Менеджер не вказаний'}</strong><br>
+          ${manager.position ? '<span class="muted">' + escapeHtml(manager.position) + '</span><br>' : ''}
+          ${manager.phone ? '📞 ' + escapeHtml(manager.phone) + '<br>' : ''}
+          ${manager.email ? '✉ ' + escapeHtml(manager.email) : ''}
+          ${!manager.name ? '<br><span class="muted" style="color:var(--danger)">→ Заповніть «👤 Менеджер»</span>' : ''}
+        </div>
+      </div>
     </div>
 
     <div class="kp-intro">
@@ -1773,12 +1966,12 @@ function generateKP(items, subtotal, discount, total) {
           <tr>
             <td>${idx + 1}</td>
             <td>
-              <div class="item-name">${i.name}</div>
-              <div class="item-spec">${i.spec}</div>
+              <div class="item-name">${escapeHtml(i.name)}</div>
+              <div class="item-spec">${escapeHtml(i.spec)}</div>
             </td>
-            <td style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">${i.sku}</td>
+            <td style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">${escapeHtml(i.sku)}</td>
             <td class="num">${i.qty}</td>
-            <td class="num">${formatPrice(i.price * i.qty)}</td>
+            <td class="num">${fmt(i.price * i.qty)}</td>
           </tr>
         `).join('')}
       </tbody>
@@ -1786,18 +1979,74 @@ function generateKP(items, subtotal, discount, total) {
 
     <div style="margin-top: 14px; font-size: 13px;">
       <div style="display: flex; justify-content: space-between; padding: 4px 0; color: var(--text-muted);">
-        <span>Сума</span><span style="font-family: var(--font-mono); font-weight: 600; color: var(--ink);">${formatPrice(subtotal)}</span>
+        <span>Сума</span><span style="font-family: var(--font-mono); font-weight: 600; color: var(--ink);">${fmt(subtotal)}</span>
       </div>
       ${discount > 0 ? `
       <div style="display: flex; justify-content: space-between; padding: 4px 0; color: var(--text-muted);">
-        <span>Знижка партнера</span><span style="font-family: var(--font-mono); font-weight: 600; color: var(--success);">−${formatPrice(discount)}</span>
+        <span>Знижка партнера</span><span style="font-family: var(--font-mono); font-weight: 600; color: var(--success);">−${fmt(discount)}</span>
       </div>` : ''}
     </div>
 
     <div class="kp-total">
       <span class="kp-total-label">До сплати</span>
-      <span class="kp-total-value">${formatPrice(total)}</span>
+      <span class="kp-total-value">${fmt(total)}</span>
     </div>
+
+    <div class="kp-section-title">Опис обладнання</div>
+    <div class="kp-equipment-details">
+      ${items.map(i => `
+        <div class="kp-equipment-detail">
+          <div class="kp-eq-detail-head">
+            <span class="kp-eq-detail-name">${escapeHtml(i.name)}</span>
+            <span class="kp-eq-detail-sku">${escapeHtml(i.sku)}</span>
+          </div>
+          <div class="kp-eq-detail-spec">${escapeHtml(i.spec)}</div>
+          <div class="kp-eq-detail-desc">${escapeHtml(i.reason)}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    ${savings ? `
+    <div class="kp-section-title">Економія завдяки осмосу</div>
+    <div class="kp-savings">
+      <div class="kp-savings-intro">
+        Розрахунок виходить з потреби <strong>${savings.dailyLiters} л питної води на день</strong> для родини з ${people} ${people === 1 ? 'особи' : (people < 5 ? 'осіб' : 'осіб')}. Замість того, щоб купувати бутильовану воду, осмос Ecosoft дає чисту питну воду прямо з крана.
+      </div>
+      <div class="kp-savings-row">
+        <span class="lbl">Літрів питної води на рік</span>
+        <span class="val">${savings.yearlyLiters.toLocaleString('uk-UA')} л</span>
+      </div>
+      <div class="kp-savings-row">
+        <span class="lbl">Витрати на бутильовану воду (10 ₴/л)</span>
+        <span class="val">${fmt(savings.yearlyMoneyOnWater)}</span>
+      </div>
+      <div class="kp-savings-row">
+        <span class="lbl">Час на закупівлю/доставку (≈ ${savings.yearlyHoursLost} год/рік)</span>
+        <span class="val">${fmt(savings.yearlyTimeValue)}</span>
+      </div>
+      <div class="kp-savings-row divider final">
+        <span class="lbl">Економія за рік</span>
+        <span class="val">${fmt(savings.yearlyTotal)}</span>
+      </div>
+    </div>
+    ` : ''}
+
+    ${damageNotes.length ? `
+    <div class="kp-section-title">Що ця система рятує від «смерті»</div>
+    <div class="kp-warnings">
+      <div class="kp-warnings-intro">
+        Без водопідготовки жорстка вода, залізо та хлор поступово знищують побутову техніку та сантехніку. Ось що ваша система запобігає:
+      </div>
+      <div class="kp-warnings-list">
+        ${damageNotes.map(n => `
+          <div class="kp-warning-item">
+            <div class="kp-warning-title"><span class="kp-warning-icon">${n.icon}</span>${escapeHtml(n.title)}</div>
+            <div class="kp-warning-desc">${escapeHtml(n.desc)}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ` : ''}
 
     <div class="kp-section-title">Що входить у вартість</div>
     <ul class="kp-list">
@@ -1824,9 +2073,9 @@ function generateKP(items, subtotal, discount, total) {
 
     <div class="kp-sign">
       З повагою,<br><br>
-      <strong>Менеджер AquaCRM</strong><br>
-      ${phone} · info@aquacrm.ua<br>
-      <span style="color:var(--eco-blue);">Авторизований партнер Ecosoft / BWT Group</span>
+      <strong>${escapeHtml(manager.name) || 'Менеджер AquaCRM'}</strong>${manager.position ? ', ' + escapeHtml(manager.position) : ''}<br>
+      ${manager.phone ? escapeHtml(manager.phone) : ''}${manager.phone && manager.email ? ' · ' : ''}${manager.email ? escapeHtml(manager.email) : ''}<br>
+      <span style="color:var(--eco-blue);">${escapeHtml(manager.company) || 'AquaCRM — Авторизований партнер Ecosoft'}</span>
     </div>
   `;
 
@@ -2663,6 +2912,165 @@ function deleteCurrentTask() {
   saveTasksList(loadTasks().filter(t => t.id !== currentTaskId));
   closeTaskForm();
   renderTasks();
+}
+
+// ============== MANAGER PROFILE ==============
+const LS_KEY_MANAGER = 'aquacrm_manager_v1';
+const DEFAULT_MANAGER = {
+  name: '',
+  position: 'Менеджер з продажу',
+  phone: '',
+  email: '',
+  company: 'AquaCRM — Авторизований партнер Ecosoft / BWT Group'
+};
+
+function loadManager() {
+  try {
+    const m = JSON.parse(localStorage.getItem(LS_KEY_MANAGER));
+    return m && typeof m === 'object' ? { ...DEFAULT_MANAGER, ...m } : { ...DEFAULT_MANAGER };
+  } catch { return { ...DEFAULT_MANAGER }; }
+}
+
+function saveManager(data) {
+  localStorage.setItem(LS_KEY_MANAGER, JSON.stringify(data));
+}
+
+function openManagerSettings() {
+  const m = loadManager();
+  document.getElementById('managerModalBody').innerHTML = `
+    <div class="form-section">
+      <div class="form-section-title">Як вас бачитиме клієнт у КП</div>
+      <div class="form-grid cols-2">
+        <div>
+          <div class="field-label">Імʼя та прізвище *</div>
+          <input id="m_name" type="text" value="${escapeHtml(m.name)}" placeholder="Олександр Петренко">
+        </div>
+        <div>
+          <div class="field-label">Посада</div>
+          <input id="m_position" type="text" value="${escapeHtml(m.position)}" placeholder="Менеджер з продажу">
+        </div>
+      </div>
+      <div class="form-grid cols-2" style="margin-top: 12px;">
+        <div>
+          <div class="field-label">Телефон</div>
+          <input id="m_phone" type="text" value="${escapeHtml(m.phone)}" placeholder="+380 67 123-45-67">
+        </div>
+        <div>
+          <div class="field-label">Email</div>
+          <input id="m_email" type="email" value="${escapeHtml(m.email)}" placeholder="manager@aquacrm.ua">
+        </div>
+      </div>
+      <div style="margin-top: 12px;">
+        <div class="field-label">Компанія / підпис</div>
+        <input id="m_company" type="text" value="${escapeHtml(m.company)}" placeholder="AquaCRM — Авторизований партнер Ecosoft">
+      </div>
+    </div>
+    <div style="font-size: 12px; color: var(--text-muted); padding: 12px 14px; background: var(--eco-blue-tint); border-radius: 8px; line-height: 1.5;">
+      💡 Ці дані автоматично підставляються у комерційні пропозиції замість стандартного шаблону.
+    </div>`;
+  document.getElementById('managerModalBg').classList.add('show');
+}
+
+function closeManagerSettings() {
+  document.getElementById('managerModalBg').classList.remove('show');
+}
+
+function saveManagerSettings() {
+  const data = {
+    name: document.getElementById('m_name').value.trim(),
+    position: document.getElementById('m_position').value.trim(),
+    phone: document.getElementById('m_phone').value.trim(),
+    email: document.getElementById('m_email').value.trim(),
+    company: document.getElementById('m_company').value.trim()
+  };
+  if (!data.name) { alert('Введіть імʼя менеджера'); return; }
+  saveManager(data);
+  closeManagerSettings();
+}
+
+// ============== KP: SAVINGS & WARNINGS ==============
+//
+// Realistic Ukrainian assumptions:
+//  - drinking water needs: 1.5 L/person/day
+//  - bottled water cost: 10 UAH/L (between store and home delivery)
+//  - 4 trips/month for water, 30 min each, 200 UAH/h time value
+//
+function calculateROSavings(people) {
+  const litersPerPersonPerDay = 1.5;
+  const pricePerLiter         = 10;
+  const tripsPerMonth         = 4;
+  const minutesPerTrip        = 30;
+  const hourlyValue           = 200;
+
+  const dailyLiters         = people * litersPerPersonPerDay;
+  const yearlyLiters        = Math.round(dailyLiters * 365);
+  const yearlyMoneyOnWater  = Math.round(yearlyLiters * pricePerLiter);
+  const yearlyHoursLost     = Math.round((tripsPerMonth * minutesPerTrip * 12) / 60);
+  const yearlyTimeValue     = yearlyHoursLost * hourlyValue;
+
+  return {
+    dailyLiters: Math.round(dailyLiters * 10) / 10,
+    yearlyLiters,
+    yearlyMoneyOnWater,
+    yearlyHoursLost,
+    yearlyTimeValue,
+    yearlyTotal: yearlyMoneyOnWater + yearlyTimeValue
+  };
+}
+
+// Build list of "what this saves you from" notes based on selected equipment
+function getDamageNotes(items) {
+  const notes = [];
+  const cats = new Set(items.map(i => i.category));
+  const hasHardness = cats.has('softener') || cats.has('combo') || cats.has('cabinet');
+  const hasIron     = cats.has('combo') || cats.has('cabinet');
+  const hasH2s      = cats.has('h2s');
+  const hasCarbon   = cats.has('carbon');
+
+  if (hasHardness) {
+    notes.push({
+      icon: '🔥',
+      title: 'Бойлер та водонагрівачі',
+      desc: 'Без помʼякшення накип на ТЕНі скорочує ресурс з 7-10 до 2-3 років, споживання електрики зростає на 30%.'
+    });
+    notes.push({
+      icon: '🚿',
+      title: 'Пральна та посудомийна машини',
+      desc: 'Жорстка вода руйнує ТЕН, насос і шланги. Помʼякшення продовжує життя на 30-40% та зменшує витрати порошку вдвічі.'
+    });
+    notes.push({
+      icon: '☕',
+      title: 'Кавомашина, чайник, праска',
+      desc: 'Без помʼякшення накип забиває техніку за 6-12 місяців. З нашою системою — служить 5-7 років.'
+    });
+    notes.push({
+      icon: '💧',
+      title: 'Сантехніка та змішувачі',
+      desc: 'Зникає накип на крана́х, душові головки не забиваються, плитка у ванній чиста і блискуча.'
+    });
+  }
+  if (hasIron) {
+    notes.push({
+      icon: '🟠',
+      title: 'Чисті раковини й сантехніка',
+      desc: 'Видалення заліза прибирає рудуваті патьоки на ваннах, унітазі та в пральній машині.'
+    });
+  }
+  if (hasH2s) {
+    notes.push({
+      icon: '🌬',
+      title: 'Запах тухлих яєць — геть',
+      desc: 'Сірководень повністю видаляється, повертається нормальний смак та аромат води у будинку.'
+    });
+  }
+  if (hasCarbon) {
+    notes.push({
+      icon: '🧪',
+      title: 'Безпечна вода для шкіри й волосся',
+      desc: 'Видалення хлору та органіки — зникає сухість шкіри, волосся не «пушиться» після душу.'
+    });
+  }
+  return notes;
 }
 
 // ============== INIT ==============
