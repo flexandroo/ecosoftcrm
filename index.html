@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaCRM — Підбір обладнання Ecosoft</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ===== ECOSOFT BRAND PALETTE ===== */
+  :root {
+    --eco-blue:        #0085CA;   /* Ecosoft signature blue */
+    --eco-blue-dark:   #006BA6;
+    --eco-blue-light:  #00A3E0;
+    --eco-blue-soft:   #E6F4FA;
+    --eco-blue-tint:   #F4FAFD;
+    --eco-cyan:        #00C4E6;
+    --eco-green:       #6CB33F;   /* Ecosoft green accent */
+
+    --ink:             #0E1E2B;
+    --ink-soft:        #2A3F52;
+    --text-muted:      #5C7283;
+    --text-dim:        #8FA3B5;
+
+    --surface:         #FFFFFF;
+    --surface-alt:     #F8FAFC;
+    --surface-elev:    #FFFFFF;
+    --border:          #E2E9EF;
+    --border-soft:     #EDF2F6;
+
+    --warn:            #E89B2B;
+    --danger:          #E5484D;
+    --success:         #2E9F5C;
+
+    --font-sans:       'Manrope', system-ui, sans-serif;
+    --font-mono:       'JetBrains Mono', monospace;
+
+    --shadow-sm:       0 1px 2px rgba(14, 30, 43, 0.04);
+    --shadow:          0 2px 8px rgba(14, 30, 43, 0.06);
+    --shadow-lg:       0 12px 32px rgba(0, 133, 202, 0.10);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--surface-alt);
+    color: var(--ink);
+    min-height: 100vh;
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== LAYOUT ===== */
+  .app { display: grid; grid-template-columns: 256px 1fr; min-height: 100vh; }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 8px 24px;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 16px;
+  }
+
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  .brand-text { line-height: 1.1; }
+  .brand-name {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .brand-name .accent { color: var(--eco-blue); }
+  .brand-sub { font-size: 10px; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 3px; }
+
+  .nav { display: flex; flex-direction: column; gap: 1px; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 8px;
+    color: var(--ink-soft); cursor: pointer;
+    font-size: 14px; font-weight: 500;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+  .nav-item:hover { background: var(--eco-blue-tint); color: var(--eco-blue); }
+  .nav-item.active {
+    background: var(--eco-blue-soft);
+    color: var(--eco-blue);
+    font-weight: 600;
+  }
+  .nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
+
+  .nav-section {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    padding: 18px 12px 6px;
+    font-weight: 700;
+  }
+
+  .sidebar-foot {
+    margin-top: auto;
+    padding: 16px;
+    background: var(--eco-blue-tint);
+    border-radius: 10px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .sidebar-foot strong { color: var(--eco-blue); }
+
+  /* ===== MAIN ===== */
+  .main { padding: 28px 36px 60px; max-width: 1480px; }
+
+  .header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 28px; padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-title {
+    font-size: 28px; font-weight: 800;
+    letter-spacing: -0.02em; color: var(--ink);
+  }
+  .header-sub { color: var(--text-muted); font-size: 14px; margin-top: 6px; }
+
+  .header-actions { display: flex; gap: 8px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--ink-soft);
+    cursor: pointer; transition: all 0.15s;
+    font-family: inherit;
+    box-shadow: var(--shadow-sm);
+  }
+  .btn:hover { border-color: var(--eco-blue); color: var(--eco-blue); }
+  .btn-primary {
+    background: var(--eco-blue);
+    color: white;
+    border-color: var(--eco-blue);
+  }
+  .btn-primary:hover {
+    background: var(--eco-blue-dark);
+    border-color: var(--eco-blue-dark);
+    color: white;
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* ===== WORKSPACE ===== */
+  .workspace { display: grid; grid-template-columns: 1fr 1.05fr; gap: 20px; }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .panel-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 4px;
+  }
+  .panel-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--eco-blue-soft);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--eco-blue);
+  }
+  .panel-title {
+    font-size: 18px; font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .panel-sub {
+    font-size: 13px; color: var(--text-muted);
+    margin-bottom: 22px; margin-left: 42px;
+  }
+
+  /* ===== CLIENT CARD ===== */
+  .client-card {
+    background: var(--surface-alt);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 22px;
+    border: 1px solid var(--border-soft);
+  }
+  .client-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .client-row:last-child { margin-bottom: 0; }
+  .client-row.full { grid-template-columns: 1fr; }
+
+  .field-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 5px;
+    font-weight: 600;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 14px;
+    transition: all 0.15s;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--eco-blue);
+    box-shadow: 0 0 0 3px var(--eco-blue-soft);
+  }
+
+  /* ===== PARAMS GRID ===== */
+  .section-title {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-muted);
+    margin-bottom: 12px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::before {
+    content: ''; width: 18px; height: 2px;
+    background: var(--eco-blue); border-radius: 2px;
+  }
+
+  .params-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .param {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .param::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--success);
+    opacity: 0.5;
+  }
+  .param.alert { background: #FEF2F3; border-color: #FECACA; }
+  .param.alert::before { background: var(--danger); opacity: 1; }
+  .param.warn { background: #FEF8EC; border-color: #FDE7B8; }
+  .param.warn::before { background: var(--warn); opacity: 1; }
+
+  .param-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .param-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .param-norm { font-size: 11px; color: var(--text-dim); font-family: var(--font-mono); }
+
+  .param-input { display: flex; align-items: center; gap: 6px; }
+  .param-input input {
+    padding: 6px 10px; font-size: 14px;
+    font-family: var(--font-mono); font-weight: 500;
+  }
+  .param-unit { font-size: 11px; color: var(--text-muted); white-space: nowrap; font-weight: 500; }
+
+  .param-status {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    margin-top: 6px;
+  }
+  .param-status.ok { color: var(--success); }
+  .param-status.alert { color: var(--danger); }
+  .param-status.warn { color: var(--warn); }
+
+  .calc-btn {
+    width: 100%; margin-top: 22px;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--eco-blue) 0%, var(--eco-cyan) 100%);
+    color: white;
+    border: none; border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px; font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 133, 202, 0.25);
+  }
+  .calc-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0, 133, 202, 0.35);
+  }
+
+  /* ===== RESULTS ===== */
+  .results-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 480px; color: var(--text-muted);
+    text-align: center; padding: 40px 20px;
+  }
+  .results-empty-icon {
+    width: 80px; height: 80px;
+    background: var(--eco-blue-tint);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+    color: var(--eco-blue);
+  }
+  .results-empty-title {
+    font-size: 16px; font-weight: 700;
+    color: var(--ink); margin-bottom: 6px;
+  }
+  .results-empty-text {
+    font-size: 13px; max-width: 280px; line-height: 1.5;
+  }
+
+  .summary-banner {
+    background: linear-gradient(135deg, var(--eco-blue-soft) 0%, var(--eco-blue-tint) 100%);
+    border: 1px solid var(--eco-blue);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .summary-banner.alert {
+    background: linear-gradient(135deg, #FEF2F3 0%, #FEF8EC 100%);
+    border-color: var(--warn);
+  }
+  .summary-icon {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    background: var(--eco-blue);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .summary-banner.alert .summary-icon { background: var(--warn); }
+  .summary-text { font-size: 13px; line-height: 1.55; color: var(--ink-soft); }
+  .summary-strong { color: var(--eco-blue); font-weight: 700; }
+  .summary-banner.alert .summary-strong { color: var(--warn); }
+
+  .equipment-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+
+  .equipment {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 14px;
+    align-items: start;
+    transition: all 0.15s;
+  }
+  .equipment:hover { border-color: var(--eco-blue); box-shadow: var(--shadow); }
+
+  .equipment-img {
+    width: 56px; height: 56px;
+    background: var(--eco-blue-tint);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--eco-blue);
+    flex-shrink: 0;
+  }
+
+  .equipment-head {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .equipment-name { font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+  .equipment-sku {
+    font-family: var(--font-mono);
+    font-size: 10px; color: var(--text-muted);
+    padding: 2px 7px; background: var(--surface-alt);
+    border-radius: 4px; font-weight: 500;
+    border: 1px solid var(--border-soft);
+  }
+  .equipment-reason { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; line-height: 1.45; }
+  .equipment-specs { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+  .equipment-price {
+    font-size: 16px; font-weight: 800;
+    color: var(--ink); white-space: nowrap;
+    text-align: right;
+  }
+  .equipment-price small {
+    display: block;
+    font-size: 11px; font-weight: 500;
+    color: var(--text-muted); margin-top: 2px;
+  }
+
+  .total {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .total-row {
+    display: flex; justify-content: space-between;
+    padding: 6px 0; font-size: 13px; color: var(--ink-soft);
+  }
+  .total-row.divider {
+    border-top: 1px solid var(--border);
+    padding-top: 12px; margin-top: 6px;
+  }
+  .total-label { color: var(--text-muted); font-weight: 500; }
+  .total-value { font-family: var(--font-mono); font-weight: 600; }
+
+  .total-final .total-label {
+    font-size: 14px; font-weight: 700;
+    color: var(--ink);
+  }
+  .total-final .total-value {
+    font-size: 22px; font-weight: 800;
+    color: var(--eco-blue);
+    font-family: var(--font-sans);
+  }
+
+  .actions-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* ===== KP MODAL ===== */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(14, 30, 43, 0.55);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    overflow-y: auto;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: white;
+    color: var(--ink);
+    border-radius: 14px;
+    max-width: 760px;
+    width: 100%;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+  }
+
+  /* ===== KP DOCUMENT ===== */
+  .kp { padding: 48px 56px; font-family: var(--font-sans); }
+
+  .kp-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--eco-blue);
+    margin-bottom: 24px;
+  }
+  .kp-brand { display: flex; align-items: center; gap: 12px; }
+  .kp-brand-mark { width: 44px; height: 44px; }
+  .kp-brand-name {
+    font-size: 24px; font-weight: 800;
+    letter-spacing: -0.02em; color: var(--ink);
+    line-height: 1.1;
+  }
+  .kp-brand-name .accent { color: var(--eco-blue); }
+  .kp-brand-sub {
+    font-size: 10px; color: var(--text-muted);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-top: 2px; font-weight: 600;
+  }
+
+  .kp-meta { text-align: right; font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+  .kp-meta strong { color: var(--ink); }
+
+  .kp-title {
+    font-size: 28px; font-weight: 800;
+    margin-bottom: 8px; color: var(--ink);
+    letter-spacing: -0.025em;
+  }
+  .kp-client {
+    color: var(--text-muted); margin-bottom: 24px;
+    font-size: 14px; line-height: 1.6;
+  }
+  .kp-client strong { color: var(--ink); font-weight: 700; }
+
+  .kp-intro {
+    background: var(--eco-blue-tint);
+    padding: 14px 18px;
+    border-radius: 8px;
+    border-left: 4px solid var(--eco-blue);
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .kp-section-title {
+    font-size: 16px; font-weight: 700;
+    margin: 24px 0 14px; color: var(--ink);
+    letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .kp-section-title::before {
+    content: ''; width: 4px; height: 18px;
+    background: var(--eco-blue);
+    border-radius: 2px;
+  }
+
+  .kp-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 12px;
+  }
+  .kp-table th {
+    text-align: left;
+    padding: 10px 12px;
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+  .kp-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-soft);
+    color: var(--ink-soft);
+  }
+  .kp-table .num { text-align: right; font-family: var(--font-mono); font-weight: 600; color: var(--ink); }
+  .kp-table tr:last-child td { border-bottom: none; }
+  .kp-table .item-name { color: var(--ink); font-weight: 600; }
+  .kp-table .item-spec { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+  .kp-total {
+    background: var(--ink);
+    color: white;
+    padding: 18px 22px;
+    border-radius: 10px;
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .kp-total-label { font-size: 14px; opacity: 0.85; }
+  .kp-total-value {
+    font-size: 26px; font-weight: 800;
+    color: var(--eco-blue-light);
+    letter-spacing: -0.02em;
+  }
+
+  .kp-list {
+    font-size: 13px; color: var(--ink-soft);
+    line-height: 1.8; padding-left: 20px;
+  }
+  .kp-list li { margin-bottom: 4px; }
+
+  .kp-foot {
+    margin-top: 28px; padding-top: 20px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 11px; color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .kp-sign {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--border);
+    font-size: 13px; color: var(--ink-soft);
+    line-height: 1.7;
+  }
+  .kp-sign strong { color: var(--ink); }
+
+  .modal-actions {
+    padding: 16px 24px;
+    background: var(--surface-alt);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* ===== DEMO NOTE ===== */
+  .demo-note {
+    margin-top: 28px;
+    padding: 18px 22px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .demo-note strong { color: var(--ink); }
+  .demo-note .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--eco-blue-soft);
+    color: var(--eco-blue);
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-right: 8px;
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--surface-alt); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+  /* ===== PRINT ===== */
+  @media print {
+    body { background: white; }
+    .modal-bg { position: static; padding: 0; background: white; }
+    .modal { box-shadow: none; max-width: 100%; }
+    .modal-actions { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Reusable SVG drop logo -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="drop" viewBox="0 0 40 40">
+      <defs>
+        <linearGradient id="dropGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#00C4E6"/>
+          <stop offset="100%" stop-color="#0085CA"/>
+        </linearGradient>
+      </defs>
+      <path d="M20 4 C20 4, 6 18, 6 27 C6 34.5, 12.5 40, 20 40 C27.5 40, 34 34.5, 34 27 C34 18, 20 4, 20 4 Z" fill="url(#dropGrad)"/>
+      <path d="M14 26 C14 22, 17 18, 20 16" stroke="white" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.7"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="brand-mark"><use href="#drop"/></svg>
+      <div class="brand-text">
+        <div class="brand-name">Aqua<span class="accent">CRM</span></div>
+        <div class="brand-sub">Ecosoft Partner</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Дашборд
+      </a>
+
+      <div class="nav-section">Робота</div>
+      <a class="nav-item active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>
+        Аналізи + Підбір
+      </a>
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        Клієнти
+      </a>
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+        Задачі
+      </a>
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        КП та угоди
+      </a>
+
+      <div class="nav-section">Каталог</div>
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        Обладнання Ecosoft
+      </a>
+
+      <div class="nav-section">Аналітика</div>
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Звіти
+      </a>
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Фінанси
+      </a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <strong>Авторизований партнер</strong><br>
+      Ecosoft · BWT Group
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+    <header class="header">
+      <div>
+        <h1 class="header-title">Підбір обладнання</h1>
+        <div class="header-sub">Введіть параметри води — система запропонує оптимальне рішення Ecosoft</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn">📋 Імпорт CSV</button>
+        <button class="btn" onclick="loadSample()">🧪 Зразок: жорстка вода</button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <!-- LEFT: Input -->
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </div>
+          <div class="panel-title">Дані по обʼєкту</div>
+        </div>
+        <div class="panel-sub">Клієнт, обʼєкт, аналіз води</div>
+
+        <div class="client-card">
+          <div class="client-row">
+            <div>
+              <div class="field-label">Клієнт</div>
+              <input type="text" id="clientName" value="Іваненко Олександр">
+            </div>
+            <div>
+              <div class="field-label">Телефон</div>
+              <input type="text" id="clientPhone" value="+380 67 123-45-67">
+            </div>
+          </div>
+          <div class="client-row">
+            <div>
+              <div class="field-label">Обʼєкт (адреса)</div>
+              <input type="text" id="clientAddr" value="с. Софіївська Борщагівка">
+            </div>
+            <div>
+              <div class="field-label">Тип / люди</div>
+              <select id="usageType">
+                <option value="apartment">Квартира, 2-3 особи</option>
+                <option value="house4" selected>Будинок, 3-4 особи</option>
+                <option value="house6">Будинок, 5-6 осіб</option>
+                <option value="cottage">Котедж, 2-3 санвузли</option>
+                <option value="commercial">Комерційний обʼєкт</option>
+              </select>
+            </div>
+          </div>
+          <div class="client-row">
+            <div>
+              <div class="field-label">Джерело води</div>
+              <select id="waterSource">
+                <option value="city">Міський водопровід</option>
+                <option value="well" selected>Свердловина</option>
+                <option value="kolodyaz">Колодязь</option>
+              </select>
+            </div>
+            <div>
+              <div class="field-label">Бюджет</div>
+              <select id="budget">
+                <option value="economy">Економ (до 30 000 ₴)</option>
+                <option value="standard" selected>Стандарт (30-80 000 ₴)</option>
+                <option value="premium">Преміум (80 000+ ₴)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Аналіз води — основні показники</div>
+        <div class="params-grid" id="paramsGrid"></div>
+
+        <button class="calc-btn" onclick="calculate()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
+          Підібрати обладнання Ecosoft
+        </button>
+      </section>
+
+      <!-- RIGHT: Results -->
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <div class="panel-title">Рекомендоване рішення</div>
+        </div>
+        <div class="panel-sub" id="resultSub">Натисніть «Підібрати», щоб побачити пропозицію</div>
+        <div id="results">
+          <div class="results-empty">
+            <div class="results-empty-icon">
+              <svg width="40" height="40"><use href="#drop"/></svg>
+            </div>
+            <div class="results-empty-title">Очікую дані</div>
+            <div class="results-empty-text">Введіть або змініть показники аналізу — система автоматично підбере оптимальний комплект Ecosoft та сформує комерційну пропозицію.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="demo-note">
+      <span class="badge">Прототип</span>
+      <strong>Це робочий прототип системи.</strong> Каталог, ціни та логіка підбору базуються на реальних моделях Ecosoft (станом на 2024-2025), нормативи — за ДСанПіН 2.2.4-171-10.
+      У повній версії: інтеграція картки клієнта з історією аналізів обʼєкта, відправка КП у Viber/Telegram, електронний підпис, автостворення задач монтажникам, нагадування про сервіс через рік.
+    </div>
+  </main>
+</div>
+
+<!-- ===== KP MODAL ===== -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="kp" id="kpContent"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Закрити</button>
+      <button class="btn" onclick="window.print()">🖨 Друк / PDF</button>
+      <button class="btn btn-primary" onclick="alert('У реальній системі: відправка email + Viber клієнту, створення угоди в CRM на стадії «Запропоновано КП»')">📨 Надіслати клієнту</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============== PARAMS (DSanPiN 2.2.4-171-10) ==============
+const PARAMS = [
+  { id: 'hardness', name: 'Жорсткість',     unit: 'ммоль/л',  norm: 7,    default: 9.5, warn: 5,    icon: '💎' },
+  { id: 'iron',     name: 'Залізо заг.',    unit: 'мг/л',     norm: 0.2,  default: 0.8, warn: 0.15, icon: '⚙' },
+  { id: 'manganese',name: 'Марганець',      unit: 'мг/л',     norm: 0.05, default: 0.02,warn: 0.04, icon: '🔬' },
+  { id: 'nitrates', name: 'Нітрати',        unit: 'мг/л',     norm: 50,   default: 35,  warn: 40,   icon: '🌱' },
+  { id: 'h2s',      name: 'Сірководень',    unit: 'мг/л',     norm: 0.05, default: 0,   warn: 0.04, icon: '💨' },
+  { id: 'turbidity',name: 'Каламутність',   unit: 'NTU',      norm: 1.0,  default: 1.5, warn: 0.8,  icon: '🌫' },
+  { id: 'ph',       name: 'pH',             unit: '',         norm_min: 6.5, norm_max: 8.5, default: 7.2, icon: '⚖' },
+  { id: 'oxidiz',   name: 'Окислюваність',  unit: 'мгО₂/л',   norm: 5,    default: 3.5, warn: 4,    icon: '🧪' }
+];
+
+// ============== ECOSOFT REAL CATALOG (2024-2025 prices) ==============
+const CATALOG = {
+  // Помʼякшувачі (FU series)
+  softener_FU0844: {
+    sku: 'FU0844CECE',
+    name: 'Помʼякшувач Ecosoft FU 0844',
+    price: 28500,
+    spec: 'до 1.0 м³/год · смола Dowex · кабінет',
+    capacity: 1.0,
+    reason: 'Іонообмінне помʼякшення — видалення солей жорсткості (Ca²⁺, Mg²⁺)',
+    category: 'softener'
+  },
+  softener_FU1054: {
+    sku: 'FU1054CIMV',
+    name: 'Помʼякшувач Ecosoft FU 1054',
+    price: 36900,
+    spec: 'до 1.5 м³/год · 25 л смоли · регенерація сіллю',
+    capacity: 1.5,
+    reason: 'Іонообмінне помʼякшення для будинку 3-5 осіб',
+    category: 'softener'
+  },
+  softener_FU1665: {
+    sku: 'FU1665CI',
+    name: 'Помʼякшувач Ecosoft FU 1665 CI',
+    price: 75800,
+    spec: 'до 5.0 м³/год · 75 л · колона + сольовий бак',
+    capacity: 5.0,
+    reason: 'Промислове помʼякшення — для котеджу або комерційного обʼєкту',
+    category: 'softener'
+  },
+
+  // Знезалізнення (FK series, Ecomix)
+  iron_FK1054: {
+    sku: 'FK1054CIMIXA',
+    name: 'Фільтр Ecosoft FK 1054 (Ecomix-A)',
+    price: 35325,
+    spec: 'до 1.5 м³/год · засипка Ecomix-A · 5в1',
+    capacity: 1.5,
+    reason: 'Комплексне очищення Ecomix: залізо + марганець + жорсткість + органіка + амоній',
+    category: 'combo'
+  },
+  iron_FK1252: {
+    sku: 'FK1252CIMIXA',
+    name: 'Фільтр Ecosoft FK 1252 (Ecomix-A)',
+    price: 48464,
+    spec: 'до 1.8 м³/год · засипка Ecomix-A · 5в1',
+    capacity: 1.8,
+    reason: 'Комплексне очищення для будинку — 5 типів забруднень в одній колоні',
+    category: 'combo'
+  },
+  iron_FK1252CE: {
+    sku: 'FK1252CEMIXA',
+    name: 'Фільтр Ecosoft FK 1252 CE (Ecomix-A)',
+    price: 62419,
+    spec: 'до 1.8 м³/год · клапан Clack США · автоматика',
+    capacity: 1.8,
+    reason: 'Комплексне очищення з преміум-клапаном Clack — підвищена надійність',
+    category: 'combo'
+  },
+
+  // Titanium Gold (компактні кабінети)
+  titanium_250: {
+    sku: 'FK1035CABCEMIXCOR',
+    name: 'Ecosoft Titanium Gold 250',
+    price: 55484,
+    spec: 'компакт · до 1.0 м³/год · Ecomix-C · 18 л',
+    capacity: 1.0,
+    reason: 'Ультракомпактне рішення «5 в 1» для квартир/невеликих будинків (до 4 осіб, 2 санвузли)',
+    category: 'combo'
+  },
+  titanium_370: {
+    sku: 'FK1235CABCEMIXCOR',
+    name: 'Ecosoft Titanium Gold 370',
+    price: 72076,
+    spec: 'компакт · до 1.4 м³/год · Ecomix-C · 37 л',
+    capacity: 1.4,
+    reason: 'Компактне рішення «5 в 1» для будинків з 2-3 санвузлами (до 8 осіб)',
+    category: 'combo'
+  },
+
+  // Зворотний осмос (P'URE / Standard / Absolute)
+  ro_standard: {
+    sku: 'MO550MECOSTD',
+    name: 'Ecosoft Standard 5-50M',
+    price: 5385,
+    spec: '5 ступенів · 7 л бак · базова мінералізація',
+    capacity: 0.012,
+    reason: 'Базовий зворотний осмос — питна вода для родини',
+    category: 'ro'
+  },
+  ro_pure: {
+    sku: 'MO675PSMACECO',
+    name: "Ecosoft P'URE AquaCalcium",
+    price: 13800,
+    spec: '6 ступенів · мінералізація Ca/Mg · WQA Gold Seal',
+    capacity: 0.012,
+    reason: 'Преміум осмос з мінералізацією — кальцій/магній для здоровʼя',
+    category: 'ro'
+  },
+  ro_absolute: {
+    sku: 'MO675MPSECO',
+    name: 'Ecosoft Absolute з помпою',
+    price: 18900,
+    spec: '6 ступенів · вбудована помпа · USA сертифікат',
+    capacity: 0.012,
+    reason: 'Осмос для низького тиску води — з помпою для стабільної роботи',
+    category: 'ro'
+  },
+
+  // Сірководень
+  h2s_FPC1054: {
+    sku: 'FPC1054CT',
+    name: 'Фільтр від сірководню Ecosoft FPC 1054',
+    price: 26900,
+    spec: 'каталітичне вугілля Centaur · до 1.5 м³/год',
+    capacity: 1.5,
+    reason: 'Окислення H₂S до безпечних сполук без запаху',
+    category: 'h2s'
+  },
+  h2s_FPC1252: {
+    sku: 'FPC1252CT',
+    name: 'Фільтр від сірководню Ecosoft FPC 1252',
+    price: 32500,
+    spec: 'каталітичне вугілля Centaur · до 1.8 м³/год',
+    capacity: 1.8,
+    reason: 'Окислення сірководню для будинку з помітним запахом',
+    category: 'h2s'
+  },
+
+  // Вугільні
+  carbon_FPB1054: {
+    sku: 'FPB1054CECT',
+    name: 'Вугільний фільтр Ecosoft FPB 1054',
+    price: 24900,
+    spec: 'кокосове вугілля · хлор/органіка/смак',
+    capacity: 1.5,
+    reason: 'Видалення хлору, органічних домішок, поліпшення смаку води',
+    category: 'carbon'
+  },
+
+  // Механічні
+  mech_FPV: {
+    sku: 'FPV12ECO',
+    name: 'Магістральний фільтр Ecosoft 1/2"',
+    price: 515,
+    spec: '10 мкм · поліпропіленовий картридж',
+    capacity: 1.5,
+    reason: 'Базовий захист від механічних домішок (пісок, іржа)',
+    category: 'mech'
+  },
+  mech_brass: {
+    sku: 'FPV34ECO',
+    name: 'Промивний фільтр Ecosoft 3/4"',
+    price: 4900,
+    spec: '100 мкм · нерж. сітка · промивний',
+    capacity: 2.0,
+    reason: 'Захист обладнання від крупних механічних домішок з можливістю промивання',
+    category: 'mech'
+  },
+
+  // Послуги
+  install_basic: {
+    sku: 'INST-STD',
+    name: 'Монтаж + пуско-наладка',
+    price: 7500,
+    spec: 'виїзд + 4-6 годин · сертифіковані спеціалісти',
+    capacity: 0,
+    reason: 'Стандартна установка системи з налаштуванням автоматики',
+    category: 'service'
+  },
+  install_complex: {
+    sku: 'INST-COMPLEX',
+    name: 'Монтаж комплексної системи',
+    price: 12500,
+    spec: 'обвʼязка колон · послідовність фільтрів · 1 день',
+    capacity: 0,
+    reason: 'Монтаж багатоступеневої системи водопідготовки',
+    category: 'service'
+  }
+};
+
+// ============== UI: render parameters ==============
+function renderParams() {
+  const grid = document.getElementById('paramsGrid');
+  grid.innerHTML = PARAMS.map(p => `
+    <div class="param" id="param-${p.id}">
+      <div class="param-head">
+        <span class="param-name">${p.name}</span>
+        <span class="param-norm">${p.norm_min !== undefined ? `${p.norm_min}–${p.norm_max}` : `≤ ${p.norm}`} ${p.unit}</span>
+      </div>
+      <div class="param-input">
+        <input type="number" step="0.01" id="input-${p.id}" value="${p.default}" oninput="updateParamStatus()">
+        <span class="param-unit">${p.unit}</span>
+      </div>
+      <div class="param-status ok" id="status-${p.id}">в нормі</div>
+    </div>
+  `).join('');
+  updateParamStatus();
+}
+
+function getParamStatus(p, v) {
+  if (p.norm_min !== undefined) {
+    if (v < p.norm_min || v > p.norm_max) return 'alert';
+    return 'ok';
+  }
+  if (v > p.norm) return 'alert';
+  if (v > p.warn) return 'warn';
+  return 'ok';
+}
+
+function updateParamStatus() {
+  PARAMS.forEach(p => {
+    const v = parseFloat(document.getElementById(`input-${p.id}`).value) || 0;
+    const status = getParamStatus(p, v);
+    const card = document.getElementById(`param-${p.id}`);
+    const lbl = document.getElementById(`status-${p.id}`);
+    card.classList.remove('alert', 'warn');
+    lbl.classList.remove('ok', 'alert', 'warn');
+    if (status === 'alert') {
+      card.classList.add('alert'); lbl.classList.add('alert'); lbl.textContent = '⚠ перевищення';
+    } else if (status === 'warn') {
+      card.classList.add('warn'); lbl.classList.add('warn'); lbl.textContent = '⚠ на межі';
+    } else {
+      lbl.classList.add('ok'); lbl.textContent = '✓ в нормі';
+    }
+  });
+}
+
+function loadSample() {
+  document.getElementById('input-hardness').value = 12.5;
+  document.getElementById('input-iron').value = 1.4;
+  document.getElementById('input-manganese').value = 0.12;
+  document.getElementById('input-nitrates').value = 28;
+  document.getElementById('input-h2s').value = 0.08;
+  document.getElementById('input-turbidity').value = 2.1;
+  document.getElementById('input-ph').value = 6.8;
+  document.getElementById('input-oxidiz').value = 4.2;
+  document.getElementById('waterSource').value = 'well';
+  updateParamStatus();
+  calculate();
+}
+
+// ============== CORE ALGORITHM ==============
+function selectEquipment() {
+  const v = {};
+  PARAMS.forEach(p => v[p.id] = parseFloat(document.getElementById(`input-${p.id}`).value) || 0);
+
+  const usage = document.getElementById('usageType').value;
+  const source = document.getElementById('waterSource').value;
+  const budget = document.getElementById('budget').value;
+
+  // Determine size class
+  const isLarge = usage === 'house6' || usage === 'cottage' || usage === 'commercial';
+  const isSmall = usage === 'apartment';
+
+  // Determine if compact preferred (apartments, no space)
+  const preferCompact = isSmall || usage === 'house4';
+
+  const items = [];
+  const issues = [];
+
+  // 1. ALWAYS: mechanical pre-filter
+  if (source === 'well' || source === 'kolodyaz') {
+    items.push({ ...CATALOG.mech_brass, qty: 1 });
+  } else {
+    items.push({ ...CATALOG.mech_FPV, qty: 1 });
+  }
+
+  // 2. Main treatment: combination logic
+  const hardnessExceeds = v.hardness > 7;
+  const ironExceeds = v.iron > 0.2 || v.manganese > 0.05;
+  const organicsHigh = v.oxidiz > 5;
+
+  if (hardnessExceeds && ironExceeds) {
+    // Combined treatment with Ecomix
+    issues.push('жорсткість', 'залізо/марганець');
+    if (preferCompact && budget !== 'economy') {
+      items.push({ ...(isLarge ? CATALOG.titanium_370 : CATALOG.titanium_250), qty: 1 });
+    } else if (budget === 'premium') {
+      items.push({ ...CATALOG.iron_FK1252CE, qty: 1 });
+    } else {
+      items.push({ ...(isLarge ? CATALOG.iron_FK1252 : CATALOG.iron_FK1054), qty: 1 });
+    }
+  } else if (hardnessExceeds) {
+    issues.push('жорсткість');
+    if (isLarge) items.push({ ...CATALOG.softener_FU1665, qty: 1 });
+    else if (usage === 'house4') items.push({ ...CATALOG.softener_FU1054, qty: 1 });
+    else items.push({ ...CATALOG.softener_FU0844, qty: 1 });
+  } else if (ironExceeds) {
+    issues.push('залізо/марганець');
+    items.push({ ...(isLarge ? CATALOG.iron_FK1252 : CATALOG.iron_FK1054), qty: 1 });
+  }
+
+  // 3. H2S
+  if (v.h2s > 0.05) {
+    issues.push('сірководень');
+    items.push({ ...(isLarge ? CATALOG.h2s_FPC1252 : CATALOG.h2s_FPC1054), qty: 1 });
+  }
+
+  // 4. Carbon (if organics high or city water with chlorine)
+  if (organicsHigh || (source === 'city' && !ironExceeds)) {
+    if (organicsHigh) issues.push('окислюваність');
+    items.push({ ...CATALOG.carbon_FPB1054, qty: 1 });
+  }
+
+  // 5. RO for drinking water
+  if (v.nitrates > 50) {
+    issues.push('нітрати');
+    items.push({ ...CATALOG.ro_pure, qty: 1 });
+  } else {
+    // Recommend RO based on budget
+    if (budget === 'premium') items.push({ ...CATALOG.ro_pure, qty: 1, recommended: true });
+    else if (budget === 'standard') items.push({ ...CATALOG.ro_pure, qty: 1, recommended: true });
+    else items.push({ ...CATALOG.ro_standard, qty: 1, recommended: true });
+  }
+
+  // 6. Installation
+  const colonCount = items.filter(i => i.category === 'softener' || i.category === 'combo' || i.category === 'h2s' || i.category === 'carbon').length;
+  if (colonCount >= 2) items.push({ ...CATALOG.install_complex, qty: 1 });
+  else items.push({ ...CATALOG.install_basic, qty: 1 });
+
+  return { items, issues };
+}
+
+// ============== RENDER RESULTS ==============
+function calculate() {
+  const { items, issues } = selectEquipment();
+  const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
+  const discount = subtotal > 50000 ? Math.round(subtotal * 0.05) : 0;
+  const total = subtotal - discount;
+
+  const hasIssues = issues.length > 0;
+
+  document.getElementById('resultSub').textContent = `${items.length} позицій · сформовано автоматично · ${new Date().toLocaleTimeString('uk-UA', {hour:'2-digit', minute:'2-digit'})}`;
+
+  document.getElementById('results').innerHTML = `
+    <div class="summary-banner ${hasIssues ? 'alert' : ''}">
+      <div class="summary-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          ${hasIssues ? '<path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0l-7.1 12.25A2 2 0 005 19z"/>' : '<path d="M5 13l4 4L19 7"/>'}
+        </svg>
+      </div>
+      <div class="summary-text">
+        ${hasIssues
+          ? `Виявлено перевищення: <span class="summary-strong">${issues.join(', ')}</span>. Підібрано комплект Ecosoft для повного очищення.`
+          : `Всі показники в нормі. Запропоновано базовий комплект Ecosoft для поліпшення смаку та подовження ресурсу побутової техніки.`}
+      </div>
+    </div>
+
+    <div class="equipment-list">
+      ${items.map(i => `
+        <div class="equipment">
+          <div class="equipment-img">
+            ${getCategoryIcon(i.category)}
+          </div>
+          <div>
+            <div class="equipment-head">
+              <span class="equipment-name">${i.name}</span>
+              <span class="equipment-sku">${i.sku}</span>
+            </div>
+            <div class="equipment-reason">${i.reason}</div>
+            <div class="equipment-specs">${i.spec}</div>
+          </div>
+          <div class="equipment-price">
+            ${formatPrice(i.price)}
+            ${i.qty > 1 ? `<small>${i.qty} шт.</small>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="total">
+      <div class="total-row">
+        <span class="total-label">Сума обладнання та робіт</span>
+        <span class="total-value">${formatPrice(subtotal)}</span>
+      </div>
+      ${discount > 0 ? `
+      <div class="total-row">
+        <span class="total-label">Знижка партнера (5% від суми &gt; 50 000)</span>
+        <span class="total-value" style="color: var(--success)">−${formatPrice(discount)}</span>
+      </div>` : ''}
+      <div class="total-row divider total-final">
+        <span class="total-label">До сплати</span>
+        <span class="total-value">${formatPrice(total)}</span>
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <button class="btn" onclick="alert('✓ Збережено угоду в CRM на стадії «Запропоновано КП».\\nКлієнту відправлено сповіщення в Viber.\\nСтворено задачу менеджеру: «Зателефонувати через 2 дні»')">💾 Зберегти у CRM</button>
+      <button class="btn btn-primary" onclick='generateKP(${JSON.stringify(items).replace(/"/g, "&quot;")}, ${subtotal}, ${discount}, ${total})'>📄 Згенерувати КП</button>
+    </div>
+  `;
+}
+
+function getCategoryIcon(cat) {
+  const icons = {
+    mech:     '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6m11-11h-6M7 12H1m17.07-7.07l-4.24 4.24M9.17 14.83l-4.24 4.24m0-14.14l4.24 4.24m5.66 5.66l4.24 4.24"/></svg>',
+    softener: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h6"/></svg>',
+    combo:    '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v6m0 8v6m-9-9h6m4 0h6"/><circle cx="12" cy="12" r="3"/></svg>',
+    h2s:      '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8c2-3 7-3 9 0s7 3 9 0M3 14c2-3 7-3 9 0s7 3 9 0"/></svg>',
+    carbon:   '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>',
+    ro:       '<svg width="28" height="28"><use href="#drop"/></svg>',
+    service:  '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>'
+  };
+  return icons[cat] || icons.mech;
+}
+
+function formatPrice(n) { return n.toLocaleString('uk-UA') + ' ₴'; }
+
+// ============== KP MODAL ==============
+function generateKP(items, subtotal, discount, total) {
+  const today = new Date().toLocaleDateString('uk-UA', { day: '2-digit', month: 'long', year: 'numeric' });
+  const num = 'КП-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 900) + 100);
+  const client = document.getElementById('clientName').value;
+  const phone = document.getElementById('clientPhone').value;
+  const addr = document.getElementById('clientAddr').value;
+
+  document.getElementById('kpContent').innerHTML = `
+    <div class="kp-header">
+      <div class="kp-brand">
+        <svg class="kp-brand-mark"><use href="#drop"/></svg>
+        <div>
+          <div class="kp-brand-name">Aqua<span class="accent">CRM</span></div>
+          <div class="kp-brand-sub">Авторизований партнер Ecosoft</div>
+        </div>
+      </div>
+      <div class="kp-meta">
+        <strong>${num}</strong><br>
+        ${today}<br>
+        <span style="color:var(--eco-blue)">Дійсне 14 днів</span>
+      </div>
+    </div>
+
+    <h2 class="kp-title">Комерційна пропозиція</h2>
+    <div class="kp-client">
+      <strong>${client}</strong> · ${phone}<br>
+      Обʼєкт: ${addr}
+    </div>
+
+    <div class="kp-intro">
+      На основі проведеного аналізу води ми підготували для Вас оптимальне рішення системи водопідготовки на базі обладнання <strong>Ecosoft</strong> — українського виробника №1, частини міжнародної групи BWT. Усе обладнання має сертифікати <strong>WQA Gold Seal (США), TÜV SÜD, EAC</strong> та офіційну гарантію виробника.
+    </div>
+
+    <div class="kp-section-title">Склад комплекту</div>
+    <table class="kp-table">
+      <thead>
+        <tr><th>№</th><th>Найменування</th><th>Артикул</th><th class="num">К-сть</th><th class="num">Вартість, ₴</th></tr>
+      </thead>
+      <tbody>
+        ${items.map((i, idx) => `
+          <tr>
+            <td>${idx + 1}</td>
+            <td>
+              <div class="item-name">${i.name}</div>
+              <div class="item-spec">${i.spec}</div>
+            </td>
+            <td style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">${i.sku}</td>
+            <td class="num">${i.qty}</td>
+            <td class="num">${formatPrice(i.price * i.qty)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+
+    <div style="margin-top: 14px; font-size: 13px;">
+      <div style="display: flex; justify-content: space-between; padding: 4px 0; color: var(--text-muted);">
+        <span>Сума</span><span style="font-family: var(--font-mono); font-weight: 600; color: var(--ink);">${formatPrice(subtotal)}</span>
+      </div>
+      ${discount > 0 ? `
+      <div style="display: flex; justify-content: space-between; padding: 4px 0; color: var(--text-muted);">
+        <span>Знижка партнера</span><span style="font-family: var(--font-mono); font-weight: 600; color: var(--success);">−${formatPrice(discount)}</span>
+      </div>` : ''}
+    </div>
+
+    <div class="kp-total">
+      <span class="kp-total-label">До сплати</span>
+      <span class="kp-total-value">${formatPrice(total)}</span>
+    </div>
+
+    <div class="kp-section-title">Що входить у вартість</div>
+    <ul class="kp-list">
+      <li>Доставка обладнання Ecosoft на обʼєкт по Київській області</li>
+      <li>Професійний монтаж сертифікованими спеціалістами Ecosoft</li>
+      <li>Пуско-наладка та налаштування автоматики</li>
+      <li>Інструктаж клієнта щодо експлуатації та обслуговування</li>
+      <li>Гарантія виробника: <strong>5 років на корпус</strong>, 2 роки на електроніку</li>
+      <li>Безкоштовний сервісний візит протягом перших 12 місяців</li>
+      <li>Аналіз води після монтажу для підтвердження якості очищення</li>
+    </ul>
+
+    <div class="kp-section-title">Умови співпраці</div>
+    <ul class="kp-list">
+      <li>Передплата: 50% при підписанні договору</li>
+      <li>Остаточний розрахунок: після пуско-наладки та підпису акту</li>
+      <li>Можлива оплата частинами: 0-0-12 (Privat24, monobank, sense bank)</li>
+      <li>Безкоштовна сервісна підтримка через Viber/Telegram</li>
+    </ul>
+
+    <div class="kp-foot">
+      Пропозиція дійсна 14 календарних днів з дати формування. Ціни вказані з урахуванням ПДВ. Можливі зміни специфікації за домовленістю після додаткового обстеження обʼєкта.
+    </div>
+
+    <div class="kp-sign">
+      З повагою,<br><br>
+      <strong>Менеджер AquaCRM</strong><br>
+      ${phone} · info@aquacrm.ua<br>
+      <span style="color:var(--eco-blue);">Авторизований партнер Ecosoft / BWT Group</span>
+    </div>
+  `;
+
+  document.getElementById('modalBg').classList.add('show');
+}
+
+function closeModal() { document.getElementById('modalBg').classList.remove('show'); }
+
+// ============== INIT ==============
+renderParams();
+</script>
+</body>
+</html>
