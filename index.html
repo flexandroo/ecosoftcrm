@@ -781,6 +781,39 @@
   }
 
   /* ===== PRINT ===== */
+  /* ===== CATALOG VIEW ===== */
+  .catalog-section-title {
+    font-size: 13px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .06em;
+    margin: 28px 0 12px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px; margin-bottom: 8px;
+  }
+  .catalog-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; display: flex; flex-direction: column;
+    gap: 6px; transition: box-shadow .15s, border-color .15s;
+  }
+  .catalog-card:hover { box-shadow: var(--shadow); border-color: var(--eco-blue-light); }
+  .catalog-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .catalog-card-sku {
+    font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);
+    background: var(--surface-alt); border: 1px solid var(--border-soft);
+    padding: 2px 6px; border-radius: 4px; white-space: nowrap; flex-shrink: 0;
+  }
+  .catalog-card-name { font-size: 13px; font-weight: 700; color: var(--ink); line-height: 1.35; }
+  .catalog-card-spec { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+  .catalog-card-reason { font-size: 11px; color: var(--ink-soft); line-height: 1.5; flex: 1; }
+  .catalog-card-price {
+    font-size: 16px; font-weight: 800; color: var(--eco-blue);
+    font-family: var(--font-mono); margin-top: 4px;
+  }
+  .catalog-empty { text-align:center; padding: 48px; color: var(--text-muted); }
+
   @media print {
     body { background: white; }
     .modal-bg { position: static; padding: 0; background: white; }
@@ -1192,7 +1225,7 @@
       </a>
 
       <div class="nav-section">Каталог</div>
-      <a class="nav-item">
+      <a class="nav-item" data-view="catalog" onclick="showView('catalog')" style="cursor:pointer">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
         Обладнання Ecosoft
       </a>
@@ -1392,6 +1425,23 @@
 
       <div id="tasksList"></div>
     </div><!-- /view-tasks -->
+
+    <!-- ===== VIEW: CATALOG ===== -->
+    <div id="view-catalog" class="view">
+      <header class="header">
+        <div>
+          <h1 class="header-title">Обладнання Ecosoft</h1>
+          <div class="header-sub">Актуальний каталог · ціни 2025</div>
+        </div>
+        <div class="header-actions">
+          <div class="search-input" style="min-width:260px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input id="catalogSearch" type="text" placeholder="Пошук за назвою або артикулом…" oninput="renderCatalog()">
+          </div>
+        </div>
+      </header>
+      <div id="catalogContent"></div>
+    </div><!-- /view-catalog -->
 
   </main>
 </div>
@@ -1694,50 +1744,122 @@ const CATALOG = {
     category: 'h2s'
   },
 
-  // ===== ЗВОРОТНИЙ ОСМОС =====
+  // ===== ЗВОРОТНИЙ ОСМОС (реальні ціни з ecosoft.ua, 2025) =====
   ro_standard: {
-    sku: 'MO550ECOSTD',
-    name: 'Зворотний осмос Ecosoft Standard',
-    price: 6006,
-    spec: '5 ступенів · 8 л/год · бак 7 л · мембрана Ecosoft UA',
+    sku: 'MO550MECOSTD',
+    name: 'Ecosoft Standard PRO з мінералізацією',
+    price: 6335,
+    spec: '6 ступенів · мінералізатор · 8 л/год · бак 7 л · для норм. тиску',
     capacity: 0.012,
-    reason: 'Базова система зворотного осмосу — питна вода очисткою 99.8% для сімʼї.',
+    reason: 'Базова система зворотного осмосу з мінералізацією — питна вода 99.8% очистки для сімʼї.',
     category: 'ro'
   },
   ro_standard_min: {
     sku: 'MO650MECOSTD',
     name: 'Ecosoft Standard з мінералізатором',
-    price: 6468,
-    spec: '6 ступенів · картридж-мінералізатор · 8 л/год · бак 7 л',
+    price: 6822,
+    spec: '6 ступенів · мінералізатор · 8 л/год · бак 7 л',
     capacity: 0.012,
     reason: 'Осмос з мінералізацією — відновлення природного мінерального складу після очищення.',
     category: 'ro'
   },
+  ro_standard_pump: {
+    sku: 'MO550MPECOSTD',
+    name: 'Ecosoft Standard PRO з мінерал. та помпою',
+    price: 10233,
+    spec: '6 ступенів · помпа · мінералізатор · бак 7 л · для низького тиску',
+    capacity: 0.012,
+    reason: 'Осмос з помпою — стабільна робота при низькому тиску (свердловина, верхні поверхи).',
+    category: 'ro'
+  },
+  ro_absolute: {
+    sku: 'MO675MECO',
+    name: 'Ecosoft Absolute з мінералізатором',
+    price: 9979,
+    spec: '6 ступенів · Смарт-індикація · мінерал. Ca · компактний',
+    capacity: 0.012,
+    reason: 'Компактний осмос нового покоління зі смарт-індикацією заміни картриджів.',
+    category: 'ro'
+  },
   ro_pure: {
-    sku: 'MO675MACPUREECO',
-    name: "Ecosoft P'URE AquaCalcium",
-    price: 10342,
-    spec: '6 ступенів · Ca/Mg мінералізація · 190 л/добу · WQA Gold Seal',
+    sku: 'MO675PUREMACECO',
+    name: "Ecosoft PURE AQUACALCIUM Mint",
+    price: 16834,
+    spec: '6 ступенів · Ca/Mg мінералізація · для низького тиску · WQA',
     capacity: 0.012,
     reason: 'Преміум осмос з кальцієво-магнієвою мінералізацією — смачна здорова вода. Сертифікат WQA (США).',
     category: 'ro'
   },
-  ro_standard_pro: {
-    sku: 'MO550MPECOSTD',
-    name: 'Ecosoft Standard PRO з помпою',
-    price: 9646,
-    spec: '6 ступенів · вбудована помпа · мінералізатор · для низького тиску',
+  ro_pure_balance: {
+    sku: 'MO675MPUREBALECO',
+    name: 'Ecosoft PURE BALANCE',
+    price: 25694,
+    spec: '6 ступенів · бак 7 л · збагачення Ca · сервіс 2р/рік',
     capacity: 0.012,
-    reason: 'Осмос з помпою для систем з низьким тиском (свердловина, верхні поверхи) — стабільна робота.',
+    reason: 'Преміум осмос з балансуванням мінералів — оптимальний склад питної води.',
     category: 'ro'
   },
-  ro_absolute: {
+  ro_pure_balance_pump: {
+    sku: 'MO675MBALPSECO',
+    name: 'Ecosoft PURE BALANCE з помпою',
+    price: 30567,
+    spec: '6 ступенів · помпа · збагачення мінералами · для низького тиску',
+    capacity: 0.012,
+    reason: 'Преміум осмос з помпою та мінеральним балансом — для будь-якого тиску в мережі.',
+    category: 'ro'
+  },
+  ro_absolute_pump: {
     sku: 'MO675MPSECO',
     name: 'Ecosoft Absolute з помпою та мінерал.',
-    price: 12070,
-    spec: '6 ступенів · помпа + мінералізатор · 190 л/добу · преміум',
+    price: 13368,
+    spec: '6 ступенів · помпа · збагачення Ca · для низького тиску',
     capacity: 0.012,
-    reason: 'Найпродуктивніший осмос Ecosoft — помпа, мінералізація, максимальна продуктивність.',
+    reason: 'Absolute з помпою для низького тиску — стабільна робота + мінералізація.',
+    category: 'ro'
+  },
+  ro_pure_aquacalcium_pump: {
+    sku: 'MO675PSMACECO',
+    name: 'Ecosoft PURE AquaCalcium Mint з помпою',
+    price: 22593,
+    spec: '6 ступенів · помпа · Ca/Mg мінерал. · Смарт-індикація',
+    capacity: 0.012,
+    reason: 'PURE AquaCalcium з помпою — кальцієво-магнієва мінералізація при будь-якому тиску.',
+    category: 'ro'
+  },
+  ro_cross_solo: {
+    sku: 'MO1500PECO',
+    name: 'CROSS Solo (компактний смарт)',
+    price: 14575,
+    spec: 'Смарт-індикація · 120 Вт · компактний · без бака',
+    capacity: 0.012,
+    reason: 'Ультракомпактний розумний осмос нового покоління — смарт-моніторинг якості води.',
+    category: 'ro'
+  },
+  ro_cross60: {
+    sku: 'MO3400PECO',
+    name: 'CROSS60 (компактний смарт)',
+    price: 22150,
+    spec: 'Смарт-індикація · бак 7 л · 120 Вт · компактний',
+    capacity: 0.012,
+    reason: 'Компактний смарт-осмос з баком — зручний моніторинг через додаток.',
+    category: 'ro'
+  },
+  ro_cross90: {
+    sku: 'MO3600PECO',
+    name: 'CROSS90 (смарт + Ca/Mg)',
+    price: 30789,
+    spec: 'Смарт · збагачення Ca/Mg · сервіс 2р/рік · гарантія',
+    capacity: 0.012,
+    reason: 'Флагманський смарт-осмос з повною мінералізацією Ca та Mg + сервісне обслуговування.',
+    category: 'ro'
+  },
+  ro_cross90_balance: {
+    sku: 'MO3600MPECO',
+    name: 'CROSS90 Balance (смарт + помпа)',
+    price: 32738,
+    spec: 'Смарт · помпа 30 Вт · бак 7 л · для низького тиску',
+    capacity: 0.012,
+    reason: 'Флагманський смарт-осмос з вбудованою помпою — для будь-яких умов тиску.',
     category: 'ro'
   },
 
@@ -2420,7 +2542,49 @@ function showView(name) {
   if (navItem) navItem.classList.add('active');
   if (name === 'clients') renderClients();
   if (name === 'tasks') renderTasks();
+  if (name === 'catalog') renderCatalog();
   window.scrollTo(0, 0);
+}
+
+// ============== CATALOG VIEW ==============
+const CATALOG_GROUPS = [
+  { key: 'mech',     label: 'Механічні фільтри' },
+  { key: 'softener', label: "Помʼякшувачі (FU series)" },
+  { key: 'cabinet',  label: 'Кабінетні компактні системи (Titanium / Anthracite Gold)' },
+  { key: 'combo',    label: 'Колонне знезалізнення + помʼякшення (FK Ecomix)' },
+  { key: 'carbon',   label: 'Вугільні фільтри від хлору (FPA series)' },
+  { key: 'h2s',      label: 'Фільтри від сірководню H₂S (FPC series)' },
+  { key: 'ro',       label: 'Зворотний осмос' },
+  { key: 'service',  label: 'Послуги монтажу' },
+];
+
+function renderCatalog() {
+  const q = (document.getElementById('catalogSearch')?.value || '').toLowerCase();
+  const items = Object.values(CATALOG);
+  const el = document.getElementById('catalogContent');
+
+  let html = '';
+  for (const group of CATALOG_GROUPS) {
+    const filtered = items.filter(i => i.category === group.key && (
+      !q || i.name.toLowerCase().includes(q) || i.sku.toLowerCase().includes(q) || i.spec.toLowerCase().includes(q)
+    ));
+    if (!filtered.length) continue;
+    html += `<div class="catalog-section-title">${group.label}</div><div class="catalog-grid">`;
+    for (const item of filtered) {
+      html += `
+        <div class="catalog-card">
+          <div class="catalog-card-head">
+            <div class="catalog-card-name">${escapeHtml(item.name)}</div>
+            <div class="catalog-card-sku">${escapeHtml(item.sku)}</div>
+          </div>
+          <div class="catalog-card-spec">${escapeHtml(item.spec)}</div>
+          <div class="catalog-card-reason">${escapeHtml(item.reason)}</div>
+          <div class="catalog-card-price">${item.price ? item.price.toLocaleString('uk-UA') + ' ₴' : '—'}</div>
+        </div>`;
+    }
+    html += '</div>';
+  }
+  el.innerHTML = html || '<div class="catalog-empty">Нічого не знайдено</div>';
 }
 
 // ============== HELPERS ==============
