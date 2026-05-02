@@ -1290,6 +1290,16 @@
               </select>
             </div>
           </div>
+          <div class="client-row">
+            <div>
+              <div class="field-label">Тип корпусу фільтрів</div>
+              <select id="filterType">
+                <option value="auto">Автоматично (за розміром)</option>
+                <option value="column">Колонний фільтр</option>
+                <option value="cabinet">Кабінет (компактний)</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <div class="section-title">Аналіз води — основні показники</div>
@@ -1459,6 +1469,12 @@
 </div>
 
 <script>
+// ============== KP STATE ==============
+let _kpItems = null, _kpSubtotal = 0, _kpDiscount = 0, _kpTotal = 0;
+function generateLastKP() {
+  if (_kpItems) generateKP(_kpItems, _kpSubtotal, _kpDiscount, _kpTotal);
+}
+
 // ============== PARAMS (DSanPiN 2.2.4-171-10) ==============
 const PARAMS = [
   { id: 'hardness', name: 'Жорсткість',     unit: 'ммоль/л',  norm: 7,    default: 9.5, warn: 5,    icon: '💎' },
@@ -1759,8 +1775,10 @@ function selectEquipment() {
   const ironExceeds     = v.iron > 0.2 || v.manganese > 0.05;
   const organicsHigh    = v.oxidiz > 5;
 
-  // Cabinet preferred for compact installations (apartments, small houses, low flow)
-  const preferCabinet = peakFlow <= 1.4 && bathrooms <= 2 && budget !== 'economy';
+  // Cabinet vs column: manual override or auto by flow
+  const filterType = document.getElementById('filterType').value;
+  const preferCabinet = filterType === 'cabinet' ||
+    (filterType === 'auto' && peakFlow <= 1.4 && bathrooms <= 2 && budget !== 'economy');
 
   if (hardnessExceeds && ironExceeds) {
     issues.push('жорсткість', 'залізо/марганець');
@@ -1817,6 +1835,7 @@ function calculate() {
   const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
   const discount = subtotal > 50000 ? Math.round(subtotal * 0.05) : 0;
   const total = subtotal - discount;
+  _kpItems = items; _kpSubtotal = subtotal; _kpDiscount = discount; _kpTotal = total;
 
   const hasIssues = issues.length > 0;
 
@@ -1876,7 +1895,7 @@ function calculate() {
 
     <div class="actions-row">
       <button class="btn" onclick="alert('✓ Збережено угоду в CRM на стадії «Запропоновано КП».\\nКлієнту відправлено сповіщення в Viber.\\nСтворено задачу менеджеру: «Зателефонувати через 2 дні»')">💾 Зберегти у CRM</button>
-      <button class="btn btn-primary" onclick='generateKP(${JSON.stringify(items).replace(/"/g, "&quot;")}, ${subtotal}, ${discount}, ${total})'>📄 Згенерувати КП</button>
+      <button class="btn btn-primary" onclick="generateLastKP()">📄 Згенерувати КП</button>
     </div>
   `;
 }
