@@ -1136,6 +1136,7 @@
   }
   .btn-danger:hover { border-color: var(--danger); color: var(--danger); }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -1391,7 +1392,8 @@
     <div class="kp" id="kpContent"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal()">Закрити</button>
-      <button class="btn" onclick="window.print()">🖨 Друк / PDF</button>
+      <button class="btn" onclick="window.print()">🖨 Друк</button>
+      <button class="btn btn-primary" id="downloadPdfBtn" onclick="downloadKPPdf()">📄 Завантажити PDF</button>
       <button class="btn btn-primary" onclick="alert('У реальній системі: відправка email + Viber клієнту, створення угоди в CRM на стадії «Запропоновано КП»')">📨 Надіслати клієнту</button>
     </div>
   </div>
@@ -2083,6 +2085,34 @@ function generateKP(items, subtotal, discount, total) {
 }
 
 function closeModal() { document.getElementById('modalBg').classList.remove('show'); }
+
+async function downloadKPPdf() {
+  const el  = document.getElementById('kpContent');
+  const num = el.querySelector('.kp-meta strong')?.textContent || 'КП';
+  const btn = document.getElementById('downloadPdfBtn');
+
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Генерую…';
+
+  try {
+    await html2pdf()
+      .set({
+        margin:     [12, 12, 12, 12],
+        filename:   num + '.pdf',
+        image:      { type: 'jpeg', quality: 0.97 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF:      { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:  { mode: ['avoid-all', 'css', 'legacy'] }
+      })
+      .from(el)
+      .save();
+  } catch (err) {
+    alert('Помилка генерації PDF: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '📄 Завантажити PDF';
+  }
+}
 
 // ============== CLIENTS: CONSTANTS ==============
 const STATUSES = [
