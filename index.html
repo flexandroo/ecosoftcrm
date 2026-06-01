@@ -503,7 +503,9 @@
   }
 
   /* ===== KP DOCUMENT ===== */
-  .kp { padding: 48px 56px; font-family: var(--font-sans); }
+  .kp { padding: 48px 56px; font-family: var(--font-sans); color: var(--ink); }
+  .kp > * + * { margin-top: 0; }
+  .kp > *  { box-sizing: border-box; }
 
   .kp-header {
     display: flex; justify-content: space-between; align-items: flex-start;
@@ -551,15 +553,23 @@
   }
 
   .kp-section-title {
-    font-size: 16px; font-weight: 700;
-    margin: 24px 0 14px; color: var(--ink);
+    font-size: 15px; font-weight: 700;
+    margin: 28px 0 12px; color: var(--ink);
     letter-spacing: -0.01em;
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center; gap: 10px;
+    line-height: 1.2;
   }
   .kp-section-title::before {
-    content: ''; width: 4px; height: 18px;
+    content: ''; width: 3px; height: 16px;
     background: var(--eco-blue);
     border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .kp-section-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.55;
+    margin: -6px 0 14px 13px;
   }
 
   .kp-table {
@@ -588,20 +598,22 @@
   .kp-table .item-spec { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
 
   .kp-total {
-    background: var(--ink);
-    color: white;
-    padding: 18px 22px;
+    background: var(--eco-blue-tint);
+    color: var(--ink);
+    padding: 16px 20px;
     border-radius: 10px;
-    margin-top: 16px;
+    border: 1px solid var(--eco-blue);
+    margin-top: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-  .kp-total-label { font-size: 14px; opacity: 0.85; }
+  .kp-total-label { font-size: 13px; font-weight: 600; color: var(--ink-soft); letter-spacing: 0.005em; }
   .kp-total-value {
-    font-size: 26px; font-weight: 800;
-    color: var(--eco-blue-light);
+    font-size: 24px; font-weight: 800;
+    color: var(--eco-blue-dark);
     letter-spacing: -0.02em;
+    font-family: var(--font-sans);
   }
 
   .kp-list {
@@ -700,7 +712,7 @@
     background: var(--surface-alt);
     border: 1px solid var(--border-soft);
     border-radius: 8px;
-    padding: 12px 14px;
+    padding: 14px 16px;
     page-break-inside: avoid;
     break-inside: avoid;
   }
@@ -772,44 +784,35 @@
     font-family: var(--font-sans);
   }
 
-  .kp-warnings {
-    background: #FEF8EC;
-    border: 1px solid #FDE7B8;
-    border-radius: 10px;
-    padding: 16px 20px;
+  /* ===== KP BENEFITS (replaces emotional "damage notes" block) ===== */
+  .kp-benefits {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 10px;
     margin-bottom: 22px;
   }
-  .kp-warnings-intro {
-    font-size: 12px; color: var(--ink-soft);
-    line-height: 1.5;
-    margin-bottom: 10px;
-    font-style: italic;
-  }
-  .kp-warnings-list {
+  .kp-benefit-item {
+    background: var(--surface-alt);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 14px 16px;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: 36px 1fr;
+    gap: 12px;
+    align-items: start;
+    page-break-inside: avoid; break-inside: avoid;
   }
-  .kp-warning-item {
-    background: white;
-    padding: 10px 12px;
-    border-radius: 6px;
-    border-left: 3px solid var(--warn);
-    font-size: 12px;
-    line-height: 1.5;
+  .kp-benefit-icon {
+    width: 36px; height: 36px;
+    background: var(--eco-blue-soft);
+    color: var(--eco-blue-dark);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
   }
-  .kp-warning-icon {
-    font-size: 14px; margin-right: 4px;
-  }
-  .kp-warning-title {
-    font-weight: 700;
-    color: var(--ink);
-    margin-bottom: 3px;
-  }
-  .kp-warning-desc {
-    color: var(--ink-soft);
-    font-size: 11px;
-  }
+  .kp-benefit-icon svg { width: 18px; height: 18px; }
+  .kp-benefit-title { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 4px; line-height: 1.3; }
+  .kp-benefit-desc { font-size: 12px; color: var(--ink-soft); line-height: 1.55; }
 
   /* ===== PRINT ===== */
   /* ===== CATALOG VIEW ===== */
@@ -2673,9 +2676,29 @@ function generateKP(items, subtotal, discount, total) {
 
   const manager  = loadManager();
   const hasRO    = items.some(i => i.category === 'ro');
-  const damageNotes = getDamageNotes(items);
   const savings  = hasRO ? calculateROSavings(people) : null;
   const fmt = (n) => n.toLocaleString('uk-UA') + ' ₴';
+
+  // Universal benefits — same for every КП, не залежить від набору товарів
+  const BENEFIT_ICONS = {
+    appliance: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16"/><circle cx="9" cy="15" r="2"/><circle cx="15" cy="6" r=".5" fill="currentColor"/></svg>',
+    spots:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>',
+    home:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
+    drink:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14l-2 18H7L5 3z"/><path d="M5 8h14"/></svg>',
+    savings:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>'
+  };
+  const BENEFITS = [
+    { icon: BENEFIT_ICONS.appliance, title: 'Захист побутової техніки',
+      desc: 'Зменшує утворення накипу у бойлері, пральній машині, посудомийці та іншій техніці, яка контактує з водою.' },
+    { icon: BENEFIT_ICONS.spots, title: 'Менше рудих слідів і нальоту',
+      desc: 'Допомагає зменшити сліди заліза, жовтизну, плями на сантехніці, плитці, змішувачах і душових поверхнях.' },
+    { icon: BENEFIT_ICONS.home, title: 'Комфортніша вода для побуту',
+      desc: 'Помʼякшена вода краще підходить для щоденного використання: прання, прибирання, душу та догляду за речами.' },
+    { icon: BENEFIT_ICONS.drink, title: 'Якісна питна вода',
+      desc: 'Зворотний осмос додатково очищує воду для пиття та приготування їжі, покращуючи її смак, запах і прозорість.' },
+    { icon: BENEFIT_ICONS.savings, title: 'Менше витрат на обслуговування',
+      desc: 'Система допомагає зменшити навантаження на техніку та сантехніку, що може знизити частоту сервісу й заміни деталей.' }
+  ];
 
   document.getElementById('kpContent').innerHTML = `
     <div class="kp-header">
@@ -2797,41 +2820,19 @@ function generateKP(items, subtotal, discount, total) {
     </div>
     ` : ''}
 
-    ${damageNotes.length ? `
-    <div class="kp-section-title">Що ця система рятує від «смерті»</div>
-    <div class="kp-warnings">
-      <div class="kp-warnings-intro">
-        Без водопідготовки жорстка вода, залізо та хлор поступово знищують побутову техніку та сантехніку. Ось що ваша система запобігає:
-      </div>
-      <div class="kp-warnings-list">
-        ${damageNotes.map(n => `
-          <div class="kp-warning-item">
-            <div class="kp-warning-title"><span class="kp-warning-icon">${n.icon}</span>${escapeHtml(n.title)}</div>
-            <div class="kp-warning-desc">${escapeHtml(n.desc)}</div>
+    <div class="kp-section-title">Які проблеми вирішує ця система</div>
+    <div class="kp-section-sub">Комплексне очищення води зменшує вплив домішок на техніку, сантехніку, побутові поверхні та якість питної води.</div>
+    <div class="kp-benefits">
+      ${BENEFITS.map(b => `
+        <div class="kp-benefit-item">
+          <div class="kp-benefit-icon">${b.icon}</div>
+          <div>
+            <div class="kp-benefit-title">${escapeHtml(b.title)}</div>
+            <div class="kp-benefit-desc">${escapeHtml(b.desc)}</div>
           </div>
-        `).join('')}
-      </div>
+        </div>
+      `).join('')}
     </div>
-    ` : ''}
-
-    <div class="kp-section-title">Що входить у вартість</div>
-    <ul class="kp-list">
-      <li>Доставка обладнання Ecosoft на обʼєкт по Київській області</li>
-      <li>Професійний монтаж сертифікованими спеціалістами Ecosoft</li>
-      <li>Пуско-наладка та налаштування автоматики</li>
-      <li>Інструктаж клієнта щодо експлуатації та обслуговування</li>
-      <li>Гарантія виробника: <strong>5 років на корпус</strong>, 2 роки на електроніку</li>
-      <li>Безкоштовний сервісний візит протягом перших 12 місяців</li>
-      <li>Аналіз води після монтажу для підтвердження якості очищення</li>
-    </ul>
-
-    <div class="kp-section-title">Умови співпраці</div>
-    <ul class="kp-list">
-      <li>Передплата: 50% при підписанні договору</li>
-      <li>Остаточний розрахунок: після пуско-наладки та підпису акту</li>
-      <li>Можлива оплата частинами: 0-0-12 (Privat24, monobank, sense bank)</li>
-      <li>Безкоштовна сервісна підтримка через Viber/Telegram</li>
-    </ul>
 
     <div class="kp-foot">
       Пропозиція дійсна 14 календарних днів з дати формування. Ціни вказані з урахуванням ПДВ. Можливі зміни специфікації за домовленістю після додаткового обстеження обʼєкта.
