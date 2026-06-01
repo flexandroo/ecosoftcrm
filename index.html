@@ -2511,6 +2511,10 @@ async function importAnalysisPDF(file) {
   try {
     const lib = await ensurePdfJs();
     const buf = await file.arrayBuffer();
+    // Make a stable, independent copy NOW — pdf.js will transfer (detach) the
+    // original buffer below, and File references can lose their backing on
+    // navigation. The copy is what we persist to IndexedDB later.
+    const stableBlob = new Blob([buf.slice(0)], { type: 'application/pdf' });
     const pdf = await lib.getDocument({ data: buf }).promise;
 
     // Build rows by y-coordinate (cluster within ±3px), preserve x + width
@@ -2588,7 +2592,7 @@ async function importAnalysisPDF(file) {
     });
 
     updateParamStatus();
-    _pendingAnalysisPdfBlob = file;
+    _pendingAnalysisPdfBlob = stableBlob;
     _pendingAnalysisPdfName = file.name;
 
     info.style.color = found > 0 ? 'var(--success)' : 'var(--warn)';
