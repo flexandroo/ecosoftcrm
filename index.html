@@ -701,7 +701,10 @@
     border: 1px solid var(--border-soft);
     border-radius: 8px;
     padding: 12px 14px;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
+  .kp-block, .kp-savings-row, .kp-foot, .kp-sign { page-break-inside: avoid; break-inside: avoid; }
   .kp-eq-detail-head {
     display: flex; justify-content: space-between;
     align-items: baseline; gap: 12px;
@@ -2833,21 +2836,31 @@ async function downloadKPPdf() {
   btn.disabled = true;
   btn.innerHTML = '⏳ Генерую…';
 
+  // Clone the KP content into a detached wrapper sized to A4 width.
+  // That way html2canvas captures the full document at a known width,
+  // and html2pdf can paginate naturally (no «avoid-all» = no empty pages).
+  const A4_PX = 794; // ~210mm at 96dpi
+  const wrap = document.createElement('div');
+  wrap.style.cssText = `position:fixed;left:-10000px;top:0;width:${A4_PX}px;background:white;`;
+  wrap.innerHTML = el.outerHTML;
+  document.body.appendChild(wrap);
+
   try {
     await html2pdf()
       .set({
-        margin:     [12, 12, 12, 12],
+        margin:     [10, 10, 10, 10],
         filename:   num + '.pdf',
         image:      { type: 'jpeg', quality: 0.97 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF:      { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:  { mode: ['avoid-all', 'css', 'legacy'] }
+        html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: A4_PX, scrollX: 0, scrollY: 0 },
+        jsPDF:      { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
+        pagebreak:  { mode: ['css', 'legacy'] }
       })
-      .from(el)
+      .from(wrap.firstElementChild)
       .save();
   } catch (err) {
     alert('Помилка генерації PDF: ' + err.message);
   } finally {
+    document.body.removeChild(wrap);
     btn.disabled = false;
     btn.innerHTML = '📄 Завантажити PDF';
   }
