@@ -2413,20 +2413,35 @@ function upsertClientFromCalculator(items, totals) {
   return { name, created: true };
 }
 
-// Re-open KP modal with the saved snapshot from a client record
+// Re-open KP modal — uses saved snapshot if available, otherwise rebuilds from
+// the client's equipment selection + current catalog prices.
 function regenerateKPFromClient(clientId) {
   const c = loadClients().find(x => x.id === clientId);
-  if (!c || !c.lastKP) {
-    alert('Для цього клієнта ще не згенеровано КП.');
+  if (!c) return;
+
+  let items, subtotal, discount, total;
+  if (c.lastKP && c.lastKP.items && c.lastKP.items.length) {
+    ({ items, subtotal, discount, total } = c.lastKP);
+  } else if (c.equipment && c.equipment.length) {
+    items = c.equipment
+      .map(key => CATALOG[key])
+      .filter(Boolean)
+      .map(it => ({ ...it, qty: 1 }));
+    if (!items.length) { alert('Обладнання клієнта не знайдено в поточному каталозі.'); return; }
+    subtotal = items.reduce((s, i) => s + (i.price || 0) * i.qty, 0);
+    discount = subtotal > 50000 ? Math.round(subtotal * 0.05) : 0;
+    total = subtotal - discount;
+  } else {
+    alert('У клієнта не вказано обладнання — нема з чого формувати КП.');
     return;
   }
-  // Pre-fill calculator form so generateKP uses correct contacts
+
+  // Pre-fill calculator form so generateKP renders correct contacts
   if (document.getElementById('clientName'))  document.getElementById('clientName').value  = c.name || '';
   if (document.getElementById('clientPhone')) document.getElementById('clientPhone').value = c.phone || '';
   if (document.getElementById('clientEmail')) document.getElementById('clientEmail').value = c.email || '';
   if (document.getElementById('clientAddr'))  document.getElementById('clientAddr').value  = c.city || '';
   closeClientForm();
-  const { items, subtotal, discount, total } = c.lastKP;
   _kpItems = items; _kpSubtotal = subtotal; _kpDiscount = discount; _kpTotal = total;
   generateKP(items, subtotal, discount, total);
 }
@@ -3055,10 +3070,15 @@ function openClientForm(id) {
   document.getElementById('clientDeleteBtn').style.display = id ? '' : 'none';
   const reKPBtn = document.getElementById('clientReKPBtn');
   if (reKPBtn) {
-    if (id && client.lastKP) {
+    const canRegen = id && (client.lastKP || (client.equipment && client.equipment.length));
+    if (canRegen) {
       reKPBtn.style.display = '';
-      const d = new Date(client.lastKP.date);
-      reKPBtn.title = 'Згенеровано ' + d.toLocaleDateString('uk-UA') + ' · ' + (client.lastKP.total || 0).toLocaleString('uk-UA') + ' ₴';
+      if (client.lastKP) {
+        const d = new Date(client.lastKP.date);
+        reKPBtn.title = 'Згенеровано ' + d.toLocaleDateString('uk-UA') + ' · ' + (client.lastKP.total || 0).toLocaleString('uk-UA') + ' ₴';
+      } else {
+        reKPBtn.title = 'КП буде зібране з обладнання клієнта за поточними цінами';
+      }
     } else {
       reKPBtn.style.display = 'none';
     }
