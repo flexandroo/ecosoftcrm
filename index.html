@@ -1353,7 +1353,14 @@
           </div>
         </div>
 
-        <div class="section-title">Аналіз води — основні показники</div>
+        <div class="section-title" style="display:flex;align-items:center;gap:8px;justify-content:space-between">
+          <span>Аналіз води — основні показники</span>
+          <label class="btn" style="font-size:12px;padding:6px 10px;cursor:pointer">
+            📄 Імпорт PDF
+            <input type="file" accept="application/pdf" onchange="importAnalysisPDF(this.files[0]); this.value=''" style="display:none">
+          </label>
+        </div>
+        <div id="pdfImportInfo" style="margin-bottom:10px;font-size:12px;color:var(--text-muted)"></div>
         <div class="params-grid" id="paramsGrid"></div>
 
         <button class="calc-btn" onclick="calculate()">
@@ -2332,7 +2339,7 @@ function updateKpEditTotal() {
     </div>`;
 }
 
-function confirmKpGeneration() {
+async function confirmKpGeneration() {
   const { subtotal, discount, total } = calcKpEditTotals();
   // Persist edited prices back to CATALOG so future picks default to these prices
   _kpEditPicks.forEach(i => {
@@ -2345,7 +2352,7 @@ function confirmKpGeneration() {
   _kpItems = items; _kpSubtotal = subtotal; _kpDiscount = discount; _kpTotal = total;
 
   // Auto-save / update client record from calculator form (also stores KP snapshot)
-  const saveResult = upsertClientFromCalculator(items, { subtotal, discount, total });
+  const saveResult = await upsertClientFromCalculator(items, { subtotal, discount, total });
 
   closeKpEdit();
   generateKP(items, subtotal, discount, total);
@@ -2356,7 +2363,7 @@ function confirmKpGeneration() {
 }
 
 // Create or update a client record from calculator form fields when КП is generated.
-function upsertClientFromCalculator(items, totals) {
+async function upsertClientFromCalculator(items, totals) {
   const name  = (document.getElementById('clientName')?.value || '').trim();
   const phone = (document.getElementById('clientPhone')?.value || '').trim();
   const email = (document.getElementById('clientEmail')?.value || '').trim();
@@ -2386,6 +2393,21 @@ function upsertClientFromCalculator(items, totals) {
     date:     now
   };
 
+  // Attach pending analysis PDF (if user imported one) to the client record
+  async function attachPdfIfPending(targetId, target) {
+    if (!_pendingAnalysisPdfBlob) return;
+    try {
+      const key = targetId + '_analysis_pdf';
+      // Remove old pdf if it had one
+      if (target.pdfKey && target.pdfKey !== key) {
+        try { await deletePdf(target.pdfKey); } catch {}
+      }
+      await savePdf(key, _pendingAnalysisPdfBlob);
+      target.pdfKey = key;
+      target.pdfName = _pendingAnalysisPdfName || 'analysis.pdf';
+    } catch (e) { console.error('PDF save failed', e); }
+  }
+
   if (existing) {
     existing.name     = name;
     existing.phone    = phone     || existing.phone;
@@ -2394,12 +2416,15 @@ function upsertClientFromCalculator(items, totals) {
     existing.equipment = equipKeys.length ? equipKeys : existing.equipment;
     existing.lastKP    = lastKP;
     existing.updatedAt = now;
+    await attachPdfIfPending(existing.id, existing);
     saveClientsList(list);
+    _pendingAnalysisPdfBlob = null;
+    _pendingAnalysisPdfName = null;
     return { name, created: false };
   }
 
   const id = 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-  list.push({
+  const newClient = {
     id, name, phone, email,
     city: addr, district: '', street: '',
     equipment: equipKeys,
@@ -2408,8 +2433,12 @@ function upsertClientFromCalculator(items, totals) {
     pdfKey: null, pdfName: null,
     lastKP,
     createdAt: now, updatedAt: now
-  });
+  };
+  await attachPdfIfPending(id, newClient);
+  list.push(newClient);
   saveClientsList(list);
+  _pendingAnalysisPdfBlob = null;
+  _pendingAnalysisPdfName = null;
   return { name, created: true };
 }
 
@@ -2444,6 +2473,104 @@ function regenerateKPFromClient(clientId) {
   closeClientForm();
   _kpItems = items; _kpSubtotal = subtotal; _kpDiscount = discount; _kpTotal = total;
   generateKP(items, subtotal, discount, total);
+}
+
+// ============== PDF ANALYSIS IMPORT ==============
+let _pendingAnalysisPdfBlob = null;
+let _pendingAnalysisPdfName = null;
+
+const PDF_LABEL_MATCHERS = {
+  hardness:  [/жорсткість\s+загальн/i, /жорсткість/i],
+  iron:      [/залізо\s+загальне/i, /залізо/i],
+  manganese: [/марганець/i, /\bмангану?\b/i],
+  nitrates:  [/нітрати/i, /\bNO3\b/i],
+  h2s:       [/сірководень/i, /\bH2S\b/i],
+  turbidity: [/каламутність/i],
+  ph:        [/водневий\s+показник/i, /^\s*pH\b/i, /^\s*рН\b/i],
+  oxidiz:    [/перманганатна\s+окиснюваність/i, /окиснюваність/i]
+};
+
+async function ensurePdfJs() {
+  if (window.pdfjsLib) return window.pdfjsLib;
+  await new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload = res; s.onerror = () => rej(new Error('Не вдалося завантажити pdf.js'));
+    document.head.appendChild(s);
+  });
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  return window.pdfjsLib;
+}
+
+async function importAnalysisPDF(file) {
+  if (!file) return;
+  const info = document.getElementById('pdfImportInfo');
+  info.style.color = 'var(--text-muted)';
+  info.textContent = '⏳ Читаю PDF…';
+  try {
+    const lib = await ensurePdfJs();
+    const buf = await file.arrayBuffer();
+    const pdf = await lib.getDocument({ data: buf }).promise;
+
+    // Build rows by y-coordinate (cluster within ±3px)
+    const rows = [];
+    for (let p = 1; p <= pdf.numPages; p++) {
+      const page = await pdf.getPage(p);
+      const content = await page.getTextContent();
+      content.items.forEach(it => {
+        if (!it.str || !it.str.trim()) return;
+        const x = it.transform[4], y = Math.round(it.transform[5]);
+        let row = rows.find(r => Math.abs(r.y - y) < 4);
+        if (!row) { row = { y, items: [] }; rows.push(row); }
+        row.items.push({ x, str: it.str });
+      });
+    }
+    rows.forEach(r => r.items.sort((a, b) => a.x - b.x));
+
+    // Match params to row labels
+    let found = 0;
+    const filled = [];
+    PARAMS.forEach(p => {
+      const matchers = PDF_LABEL_MATCHERS[p.id] || [];
+      if (!matchers.length) return;
+      for (const row of rows) {
+        const text = row.items.map(i => i.str).join(' ').trim();
+        if (!matchers.some(rx => rx.test(text))) continue;
+        // Extract numeric values from row. Skip leading row number (1-99 standalone)
+        const nums = [...text.matchAll(/(-?\d+[.,]\d+|-?\d+)/g)]
+          .map(m => ({ raw: m[0], idx: m.index, val: parseFloat(m[0].replace(',', '.')) }))
+          .filter(n => isFinite(n.val));
+        // Drop the first number if it's a small integer in 1-50 range AND appears right at the row start (row index)
+        if (nums.length && /^\d+\s/.test(text) && nums[0].val >= 1 && nums[0].val <= 50 && Number.isInteger(nums[0].val)) {
+          nums.shift();
+        }
+        // Pick the first plausible number (>0, <100000)
+        const pick = nums.find(n => n.val > 0 && n.val < 100000);
+        if (pick != null) {
+          const input = document.getElementById('input-' + p.id);
+          if (input) {
+            input.value = pick.val;
+            found++;
+            filled.push(p.name);
+          }
+          break;
+        }
+      }
+    });
+
+    updateParamStatus();
+    _pendingAnalysisPdfBlob = file;
+    _pendingAnalysisPdfName = file.name;
+
+    info.style.color = found > 0 ? 'var(--success)' : 'var(--warn)';
+    info.innerHTML = found > 0
+      ? `✓ Імпортовано <strong>${found}</strong> ${found === 1 ? 'показник' : (found < 5 ? 'показники' : 'показників')}: ${filled.join(', ')}. PDF буде прикріплено до клієнта при генерації КП (${escapeHtml(file.name)}).`
+      : `⚠ Не вдалось розпізнати показники. PDF буде додано до клієнта (${escapeHtml(file.name)}), заповніть значення вручну.`;
+  } catch (e) {
+    info.style.color = 'var(--danger)';
+    info.textContent = '❌ Помилка читання PDF: ' + e.message;
+  }
 }
 
 // Simple toast notification
