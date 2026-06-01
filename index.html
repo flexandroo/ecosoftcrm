@@ -1820,47 +1820,62 @@ const _COMBO_FULL = ['hardness', 'iron', 'manganese', 'ammonium', 'organics', 'c
 const _COMBO_BASIC = ['hardness', 'iron', 'manganese'];
 const _CARBON_CI = ['chlorine', 'smell', 'color', 'organics'];
 
-// For each item: solves[] (issue tags), people range, bathrooms range (null = N/A for under-sink RO)
+// Sizing rules (per Ecosoft guidelines):
+//   Cabinet 250 → 1-2 people, 1 bathroom
+//   Cabinet 370 → 2-4 people, 1-2 bathrooms
+//   Column 1054 → 2-4 people, 1 bathroom
+//   Column 1252 → 3-5 people, 1-2 bathrooms
+//   Column 1354 → 4-6 people, 2 bathrooms
+//   Column 1465 → 5-8 people, 2-3 bathrooms
+//   Column 1665 → 7-10 people, 3+ bathrooms
+// RO is under-sink drinking — household size NOT a constraint.
+const ROMETA = { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: null, bathrooms: null };
+const SIZE_250  = { people: {min:1, max:2}, bathrooms: {min:1, max:1} };
+const SIZE_370  = { people: {min:2, max:4}, bathrooms: {min:1, max:2} };
+const SIZE_1054 = { people: {min:2, max:4}, bathrooms: {min:1, max:1} };
+const SIZE_1252 = { people: {min:3, max:5}, bathrooms: {min:1, max:2} };
+const SIZE_1354 = { people: {min:4, max:6}, bathrooms: {min:2, max:2} };
+const SIZE_1465 = { people: {min:5, max:8}, bathrooms: {min:2, max:3} };
+const SIZE_1665 = { people: {min:7, max:10}, bathrooms: {min:3, max:10} };
+
 const ITEM_SOLVES = {
-  // RO (питна система під мийку — bathrooms N/A)
-  ro_pure_balance:           { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
-  ro_pure_aquacalcium:       { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
-  ro_absolute:               { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
-  ro_absolute_pump:          { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
-  ro_standard_min:           { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
-  ro_standard_pro:           { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:5}, bathrooms: null },
-  ro_standard_pro_pump:      { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:5}, bathrooms: null },
-  ro_pure_balance_pump:      { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
-  ro_pure_aquacalcium_pump:  { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
-  ro_cross_solo:             { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:3}, bathrooms: null },
-  ro_cross90:                { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:5}, bathrooms: null },
-  ro_cross60:                { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
-  ro_cross90_balance:        { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:5}, bathrooms: null },
-  ro_cross_max:              { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:6}, bathrooms: null },
+  // RO — household size not constrained
+  ro_pure_balance: ROMETA, ro_pure_aquacalcium: ROMETA,
+  ro_absolute: ROMETA, ro_absolute_pump: ROMETA,
+  ro_standard_min: ROMETA, ro_standard_pro: ROMETA, ro_standard_pro_pump: ROMETA,
+  ro_pure_balance_pump: ROMETA, ro_pure_aquacalcium_pump: ROMETA,
+  ro_cross_solo: ROMETA, ro_cross90: ROMETA, ro_cross60: ROMETA,
+  ro_cross90_balance: ROMETA, ro_cross_max: ROMETA,
 
-  // Cabinet (compact)
-  cabinet_titanium_250:      { solves: _COMBO_FULL, people: {min:1, max:3}, bathrooms: {min:1, max:1} },
-  cabinet_titanium_370:      { solves: _COMBO_FULL, people: {min:3, max:5}, bathrooms: {min:1, max:2} },
-  cabinet_anthracite_250CI:  { solves: _CARBON_CI, people: {min:1, max:3}, bathrooms: {min:1, max:1} },
-  cabinet_anthracite_370CI:  { solves: _CARBON_CI, people: {min:3, max:5}, bathrooms: {min:1, max:2} },
+  // Cabinet compact (full complex / chlorine variant — same household ranges per size)
+  cabinet_titanium_250:      { solves: _COMBO_FULL, ...SIZE_250 },
+  cabinet_titanium_370:      { solves: _COMBO_FULL, ...SIZE_370 },
+  cabinet_anthracite_250CI:  { solves: _CARBON_CI,  ...SIZE_250 },
+  cabinet_anthracite_370CI:  { solves: _CARBON_CI,  ...SIZE_370 },
 
-  // FK column series (CIMIXA / basic CE — only hardness+iron+manganese)
-  combo_FK1054CIMIXA:  { solves: _COMBO_BASIC, people: {min:1, max:3}, bathrooms: {min:1, max:1} },
-  combo_FK1054CE:      { solves: _COMBO_BASIC, people: {min:1, max:3}, bathrooms: {min:1, max:1} },
-  combo_FK1054CEMIXC:  { solves: _COMBO_BASIC, people: {min:1, max:3}, bathrooms: {min:1, max:1} },
-  combo_FK1252CIMIXA:  { solves: _COMBO_BASIC, people: {min:3, max:4}, bathrooms: {min:1, max:2} },
-  combo_FK1354CIMIXA:  { solves: _COMBO_BASIC, people: {min:4, max:5}, bathrooms: {min:2, max:3} },
-  combo_FK1465CIMIXA:  { solves: _COMBO_BASIC, people: {min:5, max:6}, bathrooms: {min:3, max:4} },
+  // FK 1054 (basic — hardness/iron/manganese)
+  combo_FK1054CIMIXA: { solves: _COMBO_BASIC, ...SIZE_1054 },
+  combo_FK1054CE:     { solves: _COMBO_BASIC, ...SIZE_1054 },
+  combo_FK1054CEMIXC: { solves: _COMBO_BASIC, ...SIZE_1054 },
 
-  // FK комплексного очищення (CE / CEMIXC — full spectrum)
-  combo_FK1252CE:      { solves: _COMBO_FULL, people: {min:3, max:4}, bathrooms: {min:1, max:2} },
-  combo_FK1252CEMIXC:  { solves: _COMBO_FULL, people: {min:3, max:4}, bathrooms: {min:1, max:2} },
-  combo_FK1354CE:      { solves: _COMBO_FULL, people: {min:4, max:5}, bathrooms: {min:2, max:3} },
-  combo_FK1354CEMIXC:  { solves: _COMBO_FULL, people: {min:4, max:5}, bathrooms: {min:2, max:3} },
-  combo_FK1465CE:      { solves: _COMBO_FULL, people: {min:5, max:6}, bathrooms: {min:3, max:4} },
-  combo_FK1465CEMIXC:  { solves: _COMBO_FULL, people: {min:5, max:6}, bathrooms: {min:3, max:4} },
-  combo_FK1665CE:      { solves: _COMBO_FULL, people: {min:6, max:8}, bathrooms: {min:4, max:5} },
-  combo_FK1665CEMIXC:  { solves: _COMBO_FULL, people: {min:6, max:8}, bathrooms: {min:4, max:5} }
+  // FK 1252
+  combo_FK1252CIMIXA: { solves: _COMBO_BASIC, ...SIZE_1252 },
+  combo_FK1252CE:     { solves: _COMBO_FULL,  ...SIZE_1252 },
+  combo_FK1252CEMIXC: { solves: _COMBO_FULL,  ...SIZE_1252 },
+
+  // FK 1354
+  combo_FK1354CIMIXA: { solves: _COMBO_BASIC, ...SIZE_1354 },
+  combo_FK1354CE:     { solves: _COMBO_FULL,  ...SIZE_1354 },
+  combo_FK1354CEMIXC: { solves: _COMBO_FULL,  ...SIZE_1354 },
+
+  // FK 1465
+  combo_FK1465CIMIXA: { solves: _COMBO_BASIC, ...SIZE_1465 },
+  combo_FK1465CE:     { solves: _COMBO_FULL,  ...SIZE_1465 },
+  combo_FK1465CEMIXC: { solves: _COMBO_FULL,  ...SIZE_1465 },
+
+  // FK 1665 (large)
+  combo_FK1665CE:     { solves: _COMBO_FULL, ...SIZE_1665 },
+  combo_FK1665CEMIXC: { solves: _COMBO_FULL, ...SIZE_1665 }
 };
 
 const ISSUE_LABELS = {
