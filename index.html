@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AquaCRM — Підбір обладнання Ecosoft</title>
+<title>Ecosoft — Центр чистої води</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -1251,8 +1251,8 @@
     <div class="brand">
       <svg class="brand-mark"><use href="#drop"/></svg>
       <div class="brand-text">
-        <div class="brand-name">Aqua<span class="accent">CRM</span></div>
-        <div class="brand-sub">Ecosoft Partner</div>
+        <div class="brand-name"><span class="accent">eco</span>soft</div>
+        <div class="brand-sub">Центр чистої води</div>
       </div>
     </div>
 
@@ -1298,8 +1298,8 @@
     </nav>
 
     <div class="sidebar-foot">
-      <strong>Авторизований партнер</strong><br>
-      Ecosoft · BWT Group
+      <strong>Центр чистої води</strong><br>
+      BWT Water Professionals
     </div>
   </aside>
 
@@ -2705,8 +2705,8 @@ function generateKP(items, subtotal, discount, total) {
       <div class="kp-brand">
         <svg class="kp-brand-mark"><use href="#drop"/></svg>
         <div>
-          <div class="kp-brand-name">Aqua<span class="accent">CRM</span></div>
-          <div class="kp-brand-sub">Авторизований партнер Ecosoft</div>
+          <div class="kp-brand-name"><span class="accent">eco</span>soft</div>
+          <div class="kp-brand-sub">Центр чистої води · BWT Water Professionals</div>
         </div>
       </div>
       <div class="kp-meta">
@@ -2840,10 +2840,11 @@ function generateKP(items, subtotal, discount, total) {
 
     <div class="kp-sign">
       З повагою,<br><br>
-      <strong>${escapeHtml(manager.name) || 'Менеджер AquaCRM'}</strong>${manager.position ? ', ' + escapeHtml(manager.position) : ''}<br>
+      <strong>${escapeHtml(manager.name) || 'Менеджер Ecosoft'}</strong>${manager.position ? ', ' + escapeHtml(manager.position) : ''}<br>
       ${manager.phone ? escapeHtml(manager.phone) : ''}${manager.phone && manager.email ? ' · ' : ''}${manager.email ? escapeHtml(manager.email) : ''}<br>
-      <span style="color:var(--eco-blue);">${escapeHtml(manager.company) || 'AquaCRM — Авторизований партнер Ecosoft'}</span>
+      <span style="color:var(--eco-blue);">${escapeHtml(manager.company) || 'Ecosoft — Центр чистої води'}</span>
     </div>
+    <div style="height: 2em;"></div>
   `;
 
   document.getElementById('modalBg').classList.add('show');
@@ -3830,7 +3831,7 @@ const DEFAULT_MANAGER = {
   position: 'Менеджер з продажу',
   phone: '',
   email: '',
-  company: 'AquaCRM — Авторизований партнер Ecosoft / BWT Group'
+  company: 'Ecosoft — Центр чистої води / BWT Water Professionals'
 };
 
 function loadManager() {
@@ -3866,12 +3867,12 @@ function openManagerSettings() {
         </div>
         <div>
           <div class="field-label">Email</div>
-          <input id="m_email" type="email" value="${escapeHtml(m.email)}" placeholder="manager@aquacrm.ua">
+          <input id="m_email" type="email" value="${escapeHtml(m.email)}" placeholder="manager@ecosoft.ua">
         </div>
       </div>
       <div style="margin-top: 12px;">
         <div class="field-label">Компанія / підпис</div>
-        <input id="m_company" type="text" value="${escapeHtml(m.company)}" placeholder="AquaCRM — Авторизований партнер Ecosoft">
+        <input id="m_company" type="text" value="${escapeHtml(m.company)}" placeholder="Ecosoft — Центр чистої води">
       </div>
     </div>
     <div style="font-size: 12px; color: var(--text-muted); padding: 12px 14px; background: var(--eco-blue-tint); border-radius: 8px; line-height: 1.5;">
