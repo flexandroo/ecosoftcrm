@@ -1221,6 +1221,8 @@
   .btn-danger:hover { border-color: var(--danger); color: var(--danger); }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -2857,33 +2859,88 @@ function printKP() {
   window.print();
 }
 
-// «📄 Завантажити PDF» — direct download via html2pdf (no print dialog)
+// «📄 Завантажити PDF» — direct download (no print dialog).
+// Manually drive html2canvas + jsPDF to bypass html2pdf's flaky pagebreak,
+// so we can guarantee a non-empty render or surface a clear error.
 async function downloadKPPdf() {
   const el  = document.getElementById('kpContent');
   const num = el.querySelector('.kp-meta strong')?.textContent || 'КП';
   const btn = document.getElementById('downloadPdfBtn');
+  const modal = el.closest('.modal');
+  const modalBg = document.getElementById('modalBg');
+
   btn.disabled = true;
   btn.innerHTML = '⏳ Генерую…';
+
+  // Snapshot constraints, then unlock so the full element renders
+  const origScroll = modalBg ? modalBg.scrollTop : 0;
+  const origMaxH   = modal ? modal.style.maxHeight : '';
+  const origOverflow = modal ? modal.style.overflow : '';
+  if (modal) { modal.style.overflow = 'visible'; modal.style.maxHeight = 'none'; }
+  if (modalBg) modalBg.scrollTop = 0;
+
   try {
-    await html2pdf()
-      .set({
-        margin:      [10, 10, 10, 10],
-        filename:    num + '.pdf',
-        image:       { type: 'jpeg', quality: 0.96 },
-        html2canvas: {
-          scale: 2, useCORS: true, logging: false,
-          backgroundColor: '#ffffff',
-          // capture the element at its natural rendered width (760px in modal)
-          windowWidth: el.offsetWidth || 760
-        },
-        jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
-        pagebreak:   { mode: ['css', 'legacy'] }
-      })
-      .from(el)
-      .save();
+    if (!window.html2canvas) throw new Error('html2canvas не завантажений');
+    const jsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    if (!jsPDFCtor) throw new Error('jsPDF не завантажений');
+
+    const width  = el.scrollWidth  || el.offsetWidth  || 760;
+    const height = el.scrollHeight || el.offsetHeight || 1000;
+
+    // Render the full element at high DPI
+    const canvas = await window.html2canvas(el, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      windowWidth: width,
+      width, height
+    });
+
+    if (!canvas || !canvas.width || !canvas.height) {
+      throw new Error('html2canvas повернув порожній canvas');
+    }
+
+    // Sanity: check that the rendered image isn't fully white
+    const ctx = canvas.getContext('2d');
+    const sample = ctx.getImageData(0, 0, canvas.width, Math.min(200, canvas.height)).data;
+    let nonWhite = 0;
+    for (let i = 0; i < sample.length; i += 4) {
+      if (sample[i] < 245 || sample[i+1] < 245 || sample[i+2] < 245) { nonWhite++; if (nonWhite > 100) break; }
+    }
+    if (nonWhite < 50) {
+      throw new Error('Render порожній — спробуйте натиснути «🖨 Друк» і зберегти PDF звідти');
+    }
+
+    // Assemble multipage A4 PDF with white margins clipping each slice
+    const pdf = new jsPDFCtor({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+    const pageW = 210, pageH = 297, margin = 10;
+    const usableW = pageW - margin * 2;
+    const usableH = pageH - margin * 2;
+    const imgH = canvas.height * usableW / canvas.width;
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+    let yOffset = 0;
+    let page = 0;
+    while (yOffset < imgH) {
+      if (page > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', margin, margin - yOffset, usableW, imgH);
+      // Cover any image bleed into the margins
+      pdf.setFillColor(255, 255, 255);
+      pdf.rect(0, 0, pageW, margin, 'F');
+      pdf.rect(0, pageH - margin, pageW, margin, 'F');
+      pdf.rect(0, 0, margin, pageH, 'F');
+      pdf.rect(pageW - margin, 0, margin, pageH, 'F');
+      yOffset += usableH;
+      page++;
+    }
+
+    pdf.save(num + '.pdf');
   } catch (err) {
     alert('Помилка генерації PDF: ' + err.message);
   } finally {
+    if (modal) { modal.style.overflow = origOverflow; modal.style.maxHeight = origMaxH; }
+    if (modalBg) modalBg.scrollTop = origScroll;
     btn.disabled = false;
     btn.innerHTML = '📄 Завантажити PDF';
   }
