@@ -1507,7 +1507,8 @@
     <div class="kp" id="kpContent"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal()">Закрити</button>
-      <button class="btn btn-primary" id="downloadPdfBtn" onclick="downloadKPPdf()" title="Відкриє діалог друку — у браузері виберіть «Зберегти як PDF»">🖨 Друк / Зберегти PDF</button>
+      <button class="btn" onclick="printKP()" title="Відкриє діалог друку (у браузері можна зберегти як PDF)">🖨 Друк</button>
+      <button class="btn btn-primary" id="downloadPdfBtn" onclick="downloadKPPdf()" title="Згенерує і одразу завантажить PDF-файл">📄 Завантажити PDF</button>
       <button class="btn btn-primary" onclick="alert('У реальній системі: відправка email + Viber клієнту, створення угоди в CRM на стадії «Запропоновано КП»')">📨 Надіслати клієнту</button>
     </div>
   </div>
@@ -2847,16 +2848,45 @@ function generateKP(items, subtotal, discount, total) {
 
 function closeModal() { document.getElementById('modalBg').classList.remove('show'); }
 
-function downloadKPPdf() {
-  // Native print is far more reliable than html2pdf for rich layouts.
-  // We rename the document so the print dialog suggests «КП-XXX.pdf» as
-  // the file name when the user picks «Зберегти як PDF».
+// «🖨 Друк» — native print dialog (reliable vector PDF via Save-as-PDF)
+function printKP() {
   const num = document.querySelector('#kpContent .kp-meta strong')?.textContent || 'КП';
   const original = document.title;
   document.title = num;
-  // Restore title shortly after the dialog opens
   setTimeout(() => { document.title = original; }, 1500);
   window.print();
+}
+
+// «📄 Завантажити PDF» — direct download via html2pdf (no print dialog)
+async function downloadKPPdf() {
+  const el  = document.getElementById('kpContent');
+  const num = el.querySelector('.kp-meta strong')?.textContent || 'КП';
+  const btn = document.getElementById('downloadPdfBtn');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Генерую…';
+  try {
+    await html2pdf()
+      .set({
+        margin:      [10, 10, 10, 10],
+        filename:    num + '.pdf',
+        image:       { type: 'jpeg', quality: 0.96 },
+        html2canvas: {
+          scale: 2, useCORS: true, logging: false,
+          backgroundColor: '#ffffff',
+          // capture the element at its natural rendered width (760px in modal)
+          windowWidth: el.offsetWidth || 760
+        },
+        jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
+        pagebreak:   { mode: ['css', 'legacy'] }
+      })
+      .from(el)
+      .save();
+  } catch (err) {
+    alert('Помилка генерації PDF: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '📄 Завантажити PDF';
+  }
 }
 
 // ============== CLIENTS: CONSTANTS ==============
