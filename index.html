@@ -2342,8 +2342,76 @@ function confirmKpGeneration() {
   saveCatalog();
   const items = _kpEditPicks.map(i => ({ ...i, price: i.editPrice }));
   _kpItems = items; _kpSubtotal = subtotal; _kpDiscount = discount; _kpTotal = total;
+
+  // Auto-save / update client record from calculator form
+  const saveResult = upsertClientFromCalculator(items);
+
   closeKpEdit();
   generateKP(items, subtotal, discount, total);
+
+  if (saveResult) showToast(saveResult.created
+    ? `✓ Клієнта «${saveResult.name}» додано в базу`
+    : `✓ Клієнта «${saveResult.name}» оновлено в базі`);
+}
+
+// Create or update a client record from calculator form fields when КП is generated.
+function upsertClientFromCalculator(items) {
+  const name  = (document.getElementById('clientName')?.value || '').trim();
+  const phone = (document.getElementById('clientPhone')?.value || '').trim();
+  const email = (document.getElementById('clientEmail')?.value || '').trim();
+  const addr  = (document.getElementById('clientAddr')?.value || '').trim();
+  if (!name) return null;
+
+  const list = loadClients();
+  const norm = s => (s || '').toLowerCase().replace(/[\s\-()]/g, '');
+  const normPhone = norm(phone);
+  const normEmail = email.toLowerCase();
+  const existing = list.find(c =>
+    (normPhone && norm(c.phone) === normPhone) ||
+    (normEmail && (c.email || '').toLowerCase() === normEmail)
+  );
+
+  const equipKeys = (items || []).map(i => i.key).filter(Boolean);
+  const now = new Date().toISOString();
+
+  if (existing) {
+    existing.name     = name;
+    existing.phone    = phone     || existing.phone;
+    existing.email    = email     || existing.email;
+    existing.city     = addr      || existing.city;
+    existing.equipment = equipKeys.length ? equipKeys : existing.equipment;
+    existing.updatedAt = now;
+    saveClientsList(list);
+    return { name, created: false };
+  }
+
+  const id = 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+  list.push({
+    id, name, phone, email,
+    city: addr, district: '', street: '',
+    equipment: equipKeys,
+    status: 'work',
+    comment: 'Додано автоматично після генерації КП',
+    pdfKey: null, pdfName: null,
+    createdAt: now, updatedAt: now
+  });
+  saveClientsList(list);
+  return { name, created: true };
+}
+
+// Simple toast notification
+function showToast(text) {
+  let el = document.getElementById('aquaToast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'aquaToast';
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:white;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600;box-shadow:var(--shadow-lg);z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none';
+    document.body.appendChild(el);
+  }
+  el.textContent = text;
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.opacity = '0'; }, 3000);
 }
 
 function getCategoryIcon(cat) {
