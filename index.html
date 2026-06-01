@@ -1438,6 +1438,11 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             <input id="catalogSearch" type="text" placeholder="Пошук за назвою або артикулом…" oninput="renderCatalog()">
           </div>
+          <button class="btn" onclick="resetCatalogToDefaults()" title="Скинути каталог до фабричних значень">↻ Скинути</button>
+          <button class="btn btn-primary" onclick="openEquipmentForm()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Додати обладнання
+          </button>
         </div>
       </header>
       <div id="catalogContent"></div>
@@ -1498,6 +1503,26 @@
   </div>
 </div>
 
+<!-- ===== EQUIPMENT FORM MODAL ===== -->
+<div class="modal-bg" id="equipmentModalBg" onclick="if(event.target===this)closeEquipmentForm()">
+  <div class="modal-form">
+    <div class="modal-form-head">
+      <div class="modal-form-title" id="equipmentModalTitle">Нове обладнання</div>
+      <button class="modal-close" onclick="closeEquipmentForm()" title="Закрити">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-form-body" id="equipmentModalBody"></div>
+    <div class="modal-form-foot">
+      <button class="btn btn-danger" id="equipmentDeleteBtn" onclick="deleteCurrentEquipment()" style="display:none;">🗑 Видалити</button>
+      <div style="margin-left: auto; display: flex; gap: 8px;">
+        <button class="btn" onclick="closeEquipmentForm()">Скасувати</button>
+        <button class="btn btn-primary" onclick="saveEquipment()">💾 Зберегти</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== CLIENT FORM MODAL ===== -->
 <div class="modal-bg" id="clientModalBg" onclick="if(event.target===this)closeClientForm()">
   <div class="modal-form">
@@ -1538,7 +1563,8 @@ const PARAMS = [
 ];
 
 // ============== ECOSOFT CATALOG (реальні ціни з ecosoft.ua / дилери, 2025) ==============
-const CATALOG = {
+// CATALOG_DEFAULTS — seed-дані; CATALOG зберігається в localStorage і редагується через вкладку «Обладнання»
+const CATALOG_DEFAULTS = {
 
   // ===== МЕХАНІЧНІ ФІЛЬТРИ =====
   mech_FPV: {
@@ -1883,6 +1909,21 @@ const CATALOG = {
     category: 'service'
   }
 };
+
+// Dynamic catalog: loads from localStorage; seeds with defaults on first run.
+const CATALOG_LS_KEY = 'aquacrm_catalog_v1';
+function loadCatalog() {
+  try {
+    const raw = localStorage.getItem(CATALOG_LS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  localStorage.setItem(CATALOG_LS_KEY, JSON.stringify(CATALOG_DEFAULTS));
+  return JSON.parse(JSON.stringify(CATALOG_DEFAULTS));
+}
+function saveCatalog() {
+  localStorage.setItem(CATALOG_LS_KEY, JSON.stringify(CATALOG));
+}
+let CATALOG = loadCatalog();
 
 // ============== UI: render parameters ==============
 function renderParams() {
@@ -2560,25 +2601,25 @@ const CATALOG_GROUPS = [
 
 function renderCatalog() {
   const q = (document.getElementById('catalogSearch')?.value || '').toLowerCase();
-  const items = Object.values(CATALOG);
+  const entries = Object.entries(CATALOG);
   const el = document.getElementById('catalogContent');
 
   let html = '';
   for (const group of CATALOG_GROUPS) {
-    const filtered = items.filter(i => i.category === group.key && (
-      !q || i.name.toLowerCase().includes(q) || i.sku.toLowerCase().includes(q) || i.spec.toLowerCase().includes(q)
+    const filtered = entries.filter(([k, i]) => i.category === group.key && (
+      !q || i.name.toLowerCase().includes(q) || i.sku.toLowerCase().includes(q) || (i.spec || '').toLowerCase().includes(q)
     ));
     if (!filtered.length) continue;
     html += `<div class="catalog-section-title">${group.label}</div><div class="catalog-grid">`;
-    for (const item of filtered) {
+    for (const [key, item] of filtered) {
       html += `
-        <div class="catalog-card">
+        <div class="catalog-card" onclick="openEquipmentForm('${escapeHtml(key)}')" style="cursor:pointer">
           <div class="catalog-card-head">
             <div class="catalog-card-name">${escapeHtml(item.name)}</div>
             <div class="catalog-card-sku">${escapeHtml(item.sku)}</div>
           </div>
-          <div class="catalog-card-spec">${escapeHtml(item.spec)}</div>
-          <div class="catalog-card-reason">${escapeHtml(item.reason)}</div>
+          <div class="catalog-card-spec">${escapeHtml(item.spec || '')}</div>
+          <div class="catalog-card-reason">${escapeHtml(item.reason || '')}</div>
           <div class="catalog-card-price">${item.price ? item.price.toLocaleString('uk-UA') + ' ₴' : '—'}</div>
         </div>`;
     }
@@ -3378,6 +3419,110 @@ function getDamageNotes(items) {
     });
   }
   return notes;
+}
+
+// ============== EQUIPMENT CRUD ==============
+let currentEquipmentKey = null;
+
+function openEquipmentForm(key) {
+  currentEquipmentKey = key || null;
+  const it = key ? CATALOG[key] : null;
+  document.getElementById('equipmentModalTitle').textContent = key ? 'Редагувати обладнання' : 'Нове обладнання';
+  document.getElementById('equipmentDeleteBtn').style.display = key ? '' : 'none';
+
+  const categoryOptions = CATALOG_GROUPS.map(g =>
+    `<option value="${g.key}" ${it && it.category === g.key ? 'selected' : ''}>${escapeHtml(g.label)}</option>`
+  ).join('');
+
+  document.getElementById('equipmentModalBody').innerHTML = `
+    <div class="client-card">
+      <div class="client-row">
+        <div>
+          <div class="field-label">SKU / артикул *</div>
+          <input type="text" id="eq-sku" value="${escapeHtml(it?.sku || '')}" placeholder="наприклад, FU1054CIMV">
+        </div>
+        <div>
+          <div class="field-label">Категорія *</div>
+          <select id="eq-category">${categoryOptions}</select>
+        </div>
+      </div>
+      <div class="client-row">
+        <div style="grid-column: 1 / -1">
+          <div class="field-label">Назва *</div>
+          <input type="text" id="eq-name" value="${escapeHtml(it?.name || '')}" placeholder="наприклад, Помʼякшувач Ecosoft FU 1054">
+        </div>
+      </div>
+      <div class="client-row">
+        <div>
+          <div class="field-label">Ціна, ₴ *</div>
+          <input type="number" id="eq-price" value="${it?.price ?? ''}" min="0" step="1">
+        </div>
+        <div>
+          <div class="field-label">Продуктивність, м³/год</div>
+          <input type="number" id="eq-capacity" value="${it?.capacity ?? ''}" min="0" step="0.01">
+        </div>
+      </div>
+      <div class="client-row">
+        <div style="grid-column: 1 / -1">
+          <div class="field-label">Короткий опис (spec)</div>
+          <input type="text" id="eq-spec" value="${escapeHtml(it?.spec || '')}" placeholder="до 1.5 м³/год · 25 л смоли · регенерація сіллю">
+        </div>
+      </div>
+      <div class="client-row">
+        <div style="grid-column: 1 / -1">
+          <div class="field-label">Призначення / для чого</div>
+          <textarea id="eq-reason" rows="3" style="width:100%;font-family:inherit;font-size:14px;padding:10px;border:1px solid var(--border);border-radius:8px;resize:vertical">${escapeHtml(it?.reason || '')}</textarea>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('equipmentModalBg').classList.add('show');
+}
+
+function closeEquipmentForm() {
+  document.getElementById('equipmentModalBg').classList.remove('show');
+  currentEquipmentKey = null;
+}
+
+function saveEquipment() {
+  const sku = document.getElementById('eq-sku').value.trim();
+  const name = document.getElementById('eq-name').value.trim();
+  const category = document.getElementById('eq-category').value;
+  const price = parseFloat(document.getElementById('eq-price').value) || 0;
+  const capacity = parseFloat(document.getElementById('eq-capacity').value) || 0;
+  const spec = document.getElementById('eq-spec').value.trim();
+  const reason = document.getElementById('eq-reason').value.trim();
+
+  if (!sku) { alert('Вкажіть SKU'); return; }
+  if (!name) { alert('Вкажіть назву'); return; }
+  if (!category) { alert('Виберіть категорію'); return; }
+
+  const key = currentEquipmentKey || (category + '_' + sku.replace(/[^a-zA-Z0-9]/g, '_'));
+  if (!currentEquipmentKey && CATALOG[key]) {
+    if (!confirm('Обладнання з таким ключем вже існує. Перезаписати?')) return;
+  }
+
+  CATALOG[key] = { sku, name, price, capacity, spec, reason, category };
+  saveCatalog();
+  closeEquipmentForm();
+  renderCatalog();
+}
+
+function deleteCurrentEquipment() {
+  if (!currentEquipmentKey) return;
+  const it = CATALOG[currentEquipmentKey];
+  if (!confirm(`Видалити "${it?.name || currentEquipmentKey}"?`)) return;
+  delete CATALOG[currentEquipmentKey];
+  saveCatalog();
+  closeEquipmentForm();
+  renderCatalog();
+}
+
+function resetCatalogToDefaults() {
+  if (!confirm('Скинути каталог до фабричних значень? Усі ваші зміни буде втрачено.')) return;
+  CATALOG = JSON.parse(JSON.stringify(CATALOG_DEFAULTS));
+  saveCatalog();
+  renderCatalog();
 }
 
 // ============== INIT ==============
