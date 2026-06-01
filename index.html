@@ -2887,7 +2887,21 @@ async function downloadKPPdf() {
     const width  = el.scrollWidth  || el.offsetWidth  || 760;
     const height = el.scrollHeight || el.offsetHeight || 1000;
 
-    // Render the full element at high DPI
+    // Collect break-point candidates BEFORE html2canvas runs — these are the
+    // bottoms of EVERY laid-out descendant (in CSS px relative to .kp top).
+    // The picker later snaps each page end to the latest one that fits.
+    const kpRect0 = el.getBoundingClientRect();
+    const seen = new Set();
+    el.querySelectorAll('*').forEach(e => {
+      const r = e.getBoundingClientRect();
+      if (r.height < 1) return;
+      const bottom = Math.round(r.bottom - kpRect0.top);
+      if (bottom > 0) seen.add(bottom);
+    });
+    const atomicBottoms = [...seen].sort((a, b) => a - b);
+
+    // Render the full element to one canvas at the SAME width we just measured,
+    // so DOM ↔ canvas ratio is exactly el.scrollHeight ↔ canvas.height.
     const canvas = await window.html2canvas(el, {
       scale: 2,
       useCORS: true,
@@ -2896,37 +2910,17 @@ async function downloadKPPdf() {
       windowWidth: width,
       width, height
     });
+    if (!canvas.width || !canvas.height) throw new Error('html2canvas повернув порожній canvas');
 
-    if (!canvas || !canvas.width || !canvas.height) {
-      throw new Error('html2canvas повернув порожній canvas');
-    }
-
-    // Sanity: check that the rendered image isn't fully white
-    const ctx = canvas.getContext('2d');
-    const sample = ctx.getImageData(0, 0, canvas.width, Math.min(200, canvas.height)).data;
+    // Sanity: render isn't fully white
+    const sample = canvas.getContext('2d').getImageData(0, 0, canvas.width, Math.min(200, canvas.height)).data;
     let nonWhite = 0;
     for (let i = 0; i < sample.length; i += 4) {
       if (sample[i] < 245 || sample[i+1] < 245 || sample[i+2] < 245) { nonWhite++; if (nonWhite > 100) break; }
     }
-    if (nonWhite < 50) {
-      throw new Error('Render порожній — спробуйте натиснути «🖨 Друк» і зберегти PDF звідти');
-    }
+    if (nonWhite < 50) throw new Error('Render порожній — спробуйте «🖨 Друк» і збережіть як PDF');
 
-    // Universal break-point collection: bottom of every descendant element
-    // that has actual layout. The pagination picker then chooses the latest
-    // one that fits a page — naturally handling tables (each <tr>), lists,
-    // deeply nested cards, etc., without us hard-coding container classes.
-    const kpRect = el.getBoundingClientRect();
-    const seen = new Set();
-    el.querySelectorAll('*').forEach(e => {
-      const r = e.getBoundingClientRect();
-      if (r.height < 1) return;                 // hidden / collapsed
-      const bottom = Math.round(r.bottom - kpRect.top);
-      if (bottom > 0) seen.add(bottom);
-    });
-    const atomicBottoms = [...seen].sort((a, b) => a - b);
-
-    // Assemble multipage A4 PDF with smart page splits
+    // Assemble multi-page A4 PDF; each page ends at the latest break ≤ A4 fit
     const pdf = new jsPDFCtor({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
     const pageW = 210, pageH = 297, margin = 10;
     const usableW = pageW - margin * 2;
@@ -2934,25 +2928,23 @@ async function downloadKPPdf() {
     const cssToCanvas = canvas.height / (el.scrollHeight || height);
     const cssToMm     = usableW / (el.scrollWidth || width);
     const fullImgHmm  = canvas.height * usableW / canvas.width;
-    const pageHcanvas = usableH / cssToMm * cssToCanvas; // page height in canvas px
+    const pageHcanvas = usableH / cssToMm * cssToCanvas;
     const imgData     = canvas.toDataURL('image/jpeg', 0.95);
 
     const pages = [];
-    let pageStart = 0; // in canvas px
-    let safety = 0;
-    while (pageStart < canvas.height && safety++ < 100) {
+    let pageStart = 0, safety = 0;
+    while (pageStart < canvas.height && safety++ < 200) {
       const ideal = pageStart + pageHcanvas;
-      let chosen = ideal;
-      if (ideal < canvas.height) {
-        // Find the latest atomic break <= ideal and > pageStart
+      let chosen;
+      if (ideal >= canvas.height) {
+        chosen = canvas.height;
+      } else {
         let best = -1;
         for (const cssY of atomicBottoms) {
           const canvasY = cssY * cssToCanvas;
           if (canvasY > pageStart + 50 && canvasY <= ideal && canvasY > best) best = canvasY;
         }
-        if (best > 0) chosen = best;
-      } else {
-        chosen = canvas.height;
+        chosen = best > 0 ? best : ideal;
       }
       pages.push({ start: pageStart, end: chosen });
       pageStart = chosen;
@@ -2963,7 +2955,6 @@ async function downloadKPPdf() {
       const startMm = pg.start / canvas.width * usableW;
       const sliceMm = (pg.end - pg.start) / canvas.width * usableW;
       pdf.addImage(imgData, 'JPEG', margin, margin - startMm, usableW, fullImgHmm);
-      // Cover everything outside [margin, margin+sliceMm] vertical band
       pdf.setFillColor(255, 255, 255);
       pdf.rect(0, 0, pageW, margin, 'F');
       pdf.rect(0, margin + sliceMm, pageW, pageH - margin - sliceMm, 'F');
