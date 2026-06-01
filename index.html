@@ -2887,9 +2887,9 @@ async function downloadKPPdf() {
     const width  = el.scrollWidth  || el.offsetWidth  || 760;
     const height = el.scrollHeight || el.offsetHeight || 1000;
 
-    // Render the full element to one canvas
+    // Render the full element to one canvas at 3× DPR for crisp output
     const canvas = await window.html2canvas(el, {
-      scale: 2,
+      scale: 3,
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff',
@@ -2898,84 +2898,31 @@ async function downloadKPPdf() {
     });
     if (!canvas.width || !canvas.height) throw new Error('html2canvas повернув порожній canvas');
 
-    // Find break candidates from the RENDERED canvas (not the DOM) — scan rows
-    // of pixels and flag runs of all-white rows ≥ minGap tall. The midpoint of
-    // each such gap is a guaranteed-safe split point because nothing visual
-    // crosses it. This is invariant to any html2canvas text-reflow drift.
+    // Sanity: render isn't fully white
     const ctx = canvas.getContext('2d');
-    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-    const W = canvas.width, H = canvas.height;
-    const WHITE = 245;
-    const isWhite = new Uint8Array(H);
-    for (let y = 0; y < H; y++) {
-      const base = y * W * 4;
-      let allWhite = 1;
-      for (let i = base; i < base + W * 4; i += 4) {
-        if (data[i] < WHITE || data[i+1] < WHITE || data[i+2] < WHITE) { allWhite = 0; break; }
-      }
-      isWhite[y] = allWhite;
+    const sample = ctx.getImageData(0, 0, canvas.width, Math.min(200, canvas.height)).data;
+    let nonWhite = 0;
+    for (let i = 0; i < sample.length; i += 4) {
+      if (sample[i] < 245 || sample[i+1] < 245 || sample[i+2] < 245) { nonWhite++; if (nonWhite > 100) break; }
     }
-    // Quick sanity: must have non-white pixels somewhere
-    let coloredRows = 0;
-    for (let y = 0; y < H; y++) if (!isWhite[y]) coloredRows++;
-    if (coloredRows < 20) throw new Error('Render порожній — спробуйте «🖨 Друк» і збережіть як PDF');
+    if (nonWhite < 50) throw new Error('Render порожній — спробуйте «🖨 Друк» і збережіть як PDF');
 
-    // Walk through whitespace runs; mid-run Y positions are safe break points
-    const safeBreaks = [];
-    const minGap = Math.max(6, Math.round(canvas.width * 0.005)); // ≈8px @ 1520 wide
-    let runStart = -1;
-    for (let y = 0; y < H; y++) {
-      if (isWhite[y]) {
-        if (runStart < 0) runStart = y;
-      } else {
-        if (runStart >= 0 && (y - runStart) >= minGap) {
-          safeBreaks.push(Math.floor((runStart + y) / 2));
-        }
-        runStart = -1;
-      }
-    }
-    // Trailing whitespace -> not a split candidate
+    // Build a single-page PDF whose page dimensions equal the rendered KP —
+    // looks identical to the on-screen modal, no A4 splits, no quality loss.
+    const PX_TO_MM   = 25.4 / 96;            // CSS px → mm at 96 dpi
+    const pageW_mm   = width  * PX_TO_MM;
+    const pageH_mm   = height * PX_TO_MM;
 
-    // Assemble multi-page A4 PDF; each page ends at the latest safe break
-    // (whitespace gap in the canvas) ≤ A4 fit.
-    const pdf = new jsPDFCtor({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
-    const pageW = 210, pageH = 297, margin = 10;
-    const usableW = pageW - margin * 2;
-    const usableH = pageH - margin * 2;
-    const fullImgHmm  = canvas.height * usableW / canvas.width;
-    // Page height in canvas pixels = (usableH mm) * (canvas.width px / usableW mm)
-    const pageHcanvas = usableH * canvas.width / usableW;
-    const imgData     = canvas.toDataURL('image/jpeg', 0.95);
-
-    const pages = [];
-    let pageStart = 0, safety = 0;
-    while (pageStart < canvas.height && safety++ < 200) {
-      const ideal = pageStart + pageHcanvas;
-      let chosen;
-      if (ideal >= canvas.height) {
-        chosen = canvas.height;
-      } else {
-        let best = -1;
-        for (const bY of safeBreaks) {
-          if (bY > pageStart + 50 && bY <= ideal && bY > best) best = bY;
-        }
-        chosen = best > 0 ? best : ideal;
-      }
-      pages.push({ start: pageStart, end: chosen });
-      pageStart = chosen;
-    }
-
-    pages.forEach((pg, idx) => {
-      if (idx > 0) pdf.addPage();
-      const startMm = pg.start / canvas.width * usableW;
-      const sliceMm = (pg.end - pg.start) / canvas.width * usableW;
-      pdf.addImage(imgData, 'JPEG', margin, margin - startMm, usableW, fullImgHmm);
-      pdf.setFillColor(255, 255, 255);
-      pdf.rect(0, 0, pageW, margin, 'F');
-      pdf.rect(0, margin + sliceMm, pageW, pageH - margin - sliceMm, 'F');
-      pdf.rect(0, 0, margin, pageH, 'F');
-      pdf.rect(pageW - margin, 0, margin, pageH, 'F');
+    const pdf = new jsPDFCtor({
+      unit:        'mm',
+      format:      [pageW_mm, pageH_mm],
+      orientation: pageW_mm > pageH_mm ? 'landscape' : 'portrait',
+      compress:    true
     });
+    // Lossless PNG keeps text crisp; the canvas is the same image displayed
+    // in the modal, just at 3× resolution.
+    const imgData = canvas.toDataURL('image/png');
+    pdf.addImage(imgData, 'PNG', 0, 0, pageW_mm, pageH_mm, undefined, 'FAST');
 
     pdf.save(num + '.pdf');
   } catch (err) {
