@@ -386,6 +386,34 @@
     transition: all 0.15s;
   }
   .equipment:hover { border-color: var(--eco-blue); box-shadow: var(--shadow); }
+  .equipment.selectable { cursor: pointer; }
+  .equipment.selected {
+    border-color: var(--eco-blue);
+    background: var(--eco-blue-tint);
+    box-shadow: 0 0 0 1px var(--eco-blue) inset;
+  }
+  .equipment-check {
+    position: absolute; top: 10px; right: 10px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--surface); border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    color: white; flex-shrink: 0; transition: all .15s;
+  }
+  .equipment.selected .equipment-check { background: var(--eco-blue); border-color: var(--eco-blue); }
+  .equipment { position: relative; }
+
+  .step-header {
+    display: flex; align-items: center; gap: 10px;
+    margin: 24px 0 10px;
+  }
+  .step-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--eco-blue); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px;
+  }
+  .step-title { font-weight: 700; color: var(--ink); }
+  .step-sub { color: var(--text-muted); font-size: 13px; margin-left: auto; }
 
   .equipment-img {
     width: 56px; height: 56px;
@@ -1315,16 +1343,6 @@
               </select>
             </div>
             <div>
-              <div class="field-label">Бюджет</div>
-              <select id="budget">
-                <option value="economy">Економ (до 30 000 ₴)</option>
-                <option value="standard" selected>Стандарт (30-80 000 ₴)</option>
-                <option value="premium">Преміум (80 000+ ₴)</option>
-              </select>
-            </div>
-          </div>
-          <div class="client-row">
-            <div>
               <div class="field-label">Тип корпусу фільтрів</div>
               <select id="filterType">
                 <option value="auto">Автоматично (за розміром)</option>
@@ -2033,18 +2051,20 @@ function selectEquipment() {
 }
 
 // ============== RENDER RESULTS ==============
+let _variantsCache = [];        // last selectEquipment().items
+let _selectedKeys  = new Set();  // keys selected for KP
+
 function calculate() {
   const { items, issues } = selectEquipment();
-  _kpItems = items; _kpSubtotal = 0; _kpDiscount = 0; _kpTotal = 0;
+  _variantsCache = items;
+  _selectedKeys  = new Set(); // reset selection on each new pick
+  _kpItems = null;
 
   const hasIssues = issues.length > 0;
   const issueText = issues.map(i => ISSUE_LABELS[i] || i).join(', ');
 
-  // Group variants by category
-  const groups = {};
-  items.forEach(i => { (groups[i.category] = groups[i.category] || []).push(i); });
-  const categoryOrder = ['combo', 'cabinet', 'softener', 'carbon', 'h2s', 'mech', 'ro', 'service'];
-  const sortedCats = Object.keys(groups).sort((a, b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b));
+  const wholeHouse = items.filter(i => i.category !== 'ro');
+  const roItems    = items.filter(i => i.category === 'ro');
 
   document.getElementById('resultSub').textContent = `${items.length} ${items.length === 1 ? 'варіант' : (items.length < 5 ? 'варіанти' : 'варіантів')} · ${new Date().toLocaleTimeString('uk-UA', {hour:'2-digit', minute:'2-digit'})}`;
 
@@ -2057,8 +2077,8 @@ function calculate() {
       </div>
       <div class="summary-text">
         ${hasIssues
-          ? `Виявлено перевищення: <span class="summary-strong">${escapeHtml(issueText)}</span>. Нижче — варіанти обладнання, що підходять під ваш аналіз.`
-          : `Всі показники в нормі. Нижче — варіанти питної води та додаткового очищення.`}
+          ? `Виявлено перевищення: <span class="summary-strong">${escapeHtml(issueText)}</span>. Натисніть на потрібне обладнання, щоб додати в КП.`
+          : `Всі показники в нормі. Виберіть обладнання для КП.`}
       </div>
     </div>
 
@@ -2067,37 +2087,99 @@ function calculate() {
         <div class="empty-state-title">Не знайдено варіантів</div>
         <div>Каталог не містить обладнання, що вирішує виявлені проблеми. Додайте товари у вкладці «Обладнання».</div>
       </div>
-    ` : sortedCats.map(cat => `
-      <div class="catalog-section-title">${escapeHtml(CATEGORY_NAMES[cat] || cat)} · ${groups[cat].length}</div>
-      <div class="equipment-list">
-        ${groups[cat].map(i => `
-          <div class="equipment">
-            <div class="equipment-img">${getCategoryIcon(i.category)}</div>
-            <div>
-              <div class="equipment-head">
-                <span class="equipment-name">${escapeHtml(i.name)}</span>
-                ${i.sku ? `<span class="equipment-sku">${escapeHtml(i.sku)}</span>` : ''}
-              </div>
-              <div class="equipment-reason">${escapeHtml(i.reason || '')}</div>
-              ${i.spec ? `<div class="equipment-specs">${escapeHtml(i.spec)}</div>` : ''}
-              ${i.solvesForUser && i.solvesForUser.length ? `
-                <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
-                  ${i.solvesForUser.map(s => `<span class="equip-pill" style="background:var(--eco-blue-soft);color:var(--eco-blue-dark);border-color:transparent">${escapeHtml(ISSUE_LABELS[s] || s)}</span>`).join('')}
-                </div>` : ''}
-            </div>
-            <div class="equipment-price">
-              ${i.price ? formatPrice(i.price) : '<span style="color:var(--text-dim);font-size:12px">ціна не вказана</span>'}
-            </div>
-          </div>
-        `).join('')}
+    ` : ''}
+
+    ${wholeHouse.length ? `
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <div class="step-title">Обладнання для всього будинку</div>
+        <div class="step-sub">${wholeHouse.length} ${wholeHouse.length === 1 ? 'варіант' : (wholeHouse.length < 5 ? 'варіанти' : 'варіантів')}</div>
       </div>
-    `).join('')}
+      <div class="equipment-list" id="variants-wholehouse">
+        ${wholeHouse.map(i => renderVariantCard(i)).join('')}
+      </div>` : ''}
+
+    ${roItems.length ? `
+      <div class="step-header">
+        <div class="step-num">${wholeHouse.length ? 2 : 1}</div>
+        <div class="step-title">Зворотний осмос (питна вода)</div>
+        <div class="step-sub">${roItems.length} ${roItems.length === 1 ? 'варіант' : (roItems.length < 5 ? 'варіанти' : 'варіантів')}</div>
+      </div>
+      <div class="equipment-list" id="variants-ro">
+        ${roItems.map(i => renderVariantCard(i)).join('')}
+      </div>` : ''}
 
     ${items.length > 0 ? `
-    <div class="actions-row" style="margin-top:16px">
-      <button class="btn btn-primary" onclick="generateLastKP()">📄 Згенерувати КП з усіх варіантів</button>
+    <div class="actions-row" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" id="kpFullBtn" onclick="generateSelectedKP(false)" disabled>📄 Згенерувати повне КП</button>
+      <button class="btn" id="kpROBtn" onclick="generateSelectedKP(true)" disabled>💧 Лише осмос</button>
+      <span id="kpSelInfo" style="color:var(--text-muted);font-size:13px;align-self:center;margin-left:auto">Не вибрано жодної позиції</span>
     </div>` : ''}
   `;
+
+  updateKPButtonsState();
+}
+
+function renderVariantCard(i) {
+  const selected = _selectedKeys.has(i.key);
+  return `
+    <div class="equipment selectable ${selected ? 'selected' : ''}" data-key="${escapeHtml(i.key)}" onclick="toggleVariantSelection('${escapeHtml(i.key)}')">
+      <div class="equipment-img">${getCategoryIcon(i.category)}</div>
+      <div>
+        <div class="equipment-head">
+          <span class="equipment-name">${escapeHtml(i.name)}</span>
+          ${i.sku ? `<span class="equipment-sku">${escapeHtml(i.sku)}</span>` : ''}
+        </div>
+        <div class="equipment-reason">${escapeHtml(i.reason || '')}</div>
+        ${i.spec ? `<div class="equipment-specs">${escapeHtml(i.spec)}</div>` : ''}
+        ${i.solvesForUser && i.solvesForUser.length ? `
+          <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
+            ${i.solvesForUser.map(s => `<span class="equip-pill" style="background:var(--eco-blue-soft);color:var(--eco-blue-dark);border-color:transparent">${escapeHtml(ISSUE_LABELS[s] || s)}</span>`).join('')}
+          </div>` : ''}
+      </div>
+      <div class="equipment-price">
+        ${i.price ? formatPrice(i.price) : '<span style="color:var(--text-dim);font-size:12px">ціна не вказана</span>'}
+      </div>
+      <div class="equipment-check">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+      </div>
+    </div>`;
+}
+
+function toggleVariantSelection(key) {
+  if (_selectedKeys.has(key)) _selectedKeys.delete(key);
+  else _selectedKeys.add(key);
+  const card = document.querySelector(`.equipment[data-key="${CSS.escape(key)}"]`);
+  if (card) card.classList.toggle('selected', _selectedKeys.has(key));
+  updateKPButtonsState();
+}
+
+function updateKPButtonsState() {
+  const selected = _variantsCache.filter(i => _selectedKeys.has(i.key));
+  const anyRO    = selected.some(i => i.category === 'ro');
+  const fullBtn  = document.getElementById('kpFullBtn');
+  const roBtn    = document.getElementById('kpROBtn');
+  const info     = document.getElementById('kpSelInfo');
+  if (!fullBtn) return;
+  fullBtn.disabled = selected.length === 0;
+  roBtn.disabled   = !anyRO;
+  if (info) {
+    info.textContent = selected.length
+      ? `Обрано ${selected.length} ${selected.length === 1 ? 'позицію' : (selected.length < 5 ? 'позиції' : 'позицій')}`
+      : 'Не вибрано жодної позиції';
+  }
+}
+
+function generateSelectedKP(roOnly) {
+  let picks = _variantsCache.filter(i => _selectedKeys.has(i.key));
+  if (roOnly) picks = picks.filter(i => i.category === 'ro');
+  if (!picks.length) return;
+  const items    = picks.map(i => ({ ...i, qty: 1 }));
+  const subtotal = items.reduce((s, i) => s + (i.price || 0) * i.qty, 0);
+  const discount = subtotal > 50000 ? Math.round(subtotal * 0.05) : 0;
+  const total    = subtotal - discount;
+  _kpItems = items; _kpSubtotal = subtotal; _kpDiscount = discount; _kpTotal = total;
+  generateKP(items, subtotal, discount, total);
 }
 
 function getCategoryIcon(cat) {
