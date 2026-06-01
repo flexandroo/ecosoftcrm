@@ -1562,7 +1562,7 @@ const PARAMS = [
 ];
 
 // ============== ECOSOFT CATALOG (dynamic, edited via "Обладнання" tab) ==============
-const CATALOG_LS_KEY = 'aquacrm_catalog_v2';
+const CATALOG_LS_KEY = 'aquacrm_catalog_v3';
 
 function saveCatalog() {
   localStorage.setItem(CATALOG_LS_KEY, JSON.stringify(CATALOG));
@@ -1713,16 +1713,16 @@ function loadCatalog() {
       reason: 'Свердловина/водопровід: жорсткість, залізо, манган.',
       category: 'combo'
     },
-    combo_FK1054CE: {
-      sku: 'FK1054CE',
-      name: "Фільтр знезалізнення та пом'якшення води Ecosoft FK1054CE",
+    combo_FK1054CEMIXA: {
+      sku: 'FK1054CEMIXA',
+      name: "Фільтр знезалізнення та пом'якшення води Ecosoft FK1054CEMIXA",
       price: 0, capacity: 0, spec: '',
       reason: 'Свердловина/водопровід: жорсткість, залізо, манган.',
       category: 'combo'
     },
-    combo_FK1252CE: {
-      sku: 'FK1252CE',
-      name: 'Фільтр комплексного очищення води Ecosoft FK1252CE',
+    combo_FK1252CEMIXA: {
+      sku: 'FK1252CEMIXA',
+      name: 'Фільтр комплексного очищення води Ecosoft FK1252CEMIXA',
       price: 0, capacity: 0, spec: '',
       reason: 'Свердловина/водопровід: жорсткість, залізо, манган, амоній, органіка, кольоровість.',
       category: 'combo'
@@ -1741,9 +1741,9 @@ function loadCatalog() {
       reason: 'Свердловина/водопровід: жорсткість, залізо, манган.',
       category: 'combo'
     },
-    combo_FK1354CE: {
-      sku: 'FK1354CE',
-      name: 'Фільтр комплексного очищення води Ecosoft FK1354CE',
+    combo_FK1354CEMIXA: {
+      sku: 'FK1354CEMIXA',
+      name: 'Фільтр комплексного очищення води Ecosoft FK1354CEMIXA',
       price: 0, capacity: 0, spec: '',
       reason: 'Свердловина/водопровід: жорсткість, залізо, манган, амоній, органіка, кольоровість.',
       category: 'combo'
@@ -1755,16 +1755,16 @@ function loadCatalog() {
       reason: 'Свердловина/водопровід: жорсткість, залізо, манган.',
       category: 'combo'
     },
-    combo_FK1465CE: {
-      sku: 'FK1465CE',
-      name: 'Фільтр комплексного очищення води Ecosoft FK1465CE',
+    combo_FK1465CEMIXA: {
+      sku: 'FK1465CEMIXA',
+      name: 'Фільтр комплексного очищення води Ecosoft FK1465CEMIXA',
       price: 0, capacity: 0, spec: '',
       reason: 'Свердловина/водопровід: жорсткість, залізо, манган, амоній, органіка, кольоровість.',
       category: 'combo'
     },
-    combo_FK1665CE: {
-      sku: 'FK1665CE',
-      name: 'Фільтр комплексного очищення води Ecosoft FK1665CE',
+    combo_FK1665CEMIXA: {
+      sku: 'FK1665CEMIXA',
+      name: 'Фільтр комплексного очищення води Ecosoft FK1665CEMIXA',
       price: 0, capacity: 0, spec: '',
       reason: 'Свердловина/водопровід: жорсткість, залізо, манган, амоній, органіка, кольоровість.',
       category: 'combo'
@@ -1855,26 +1855,26 @@ const ITEM_SOLVES = {
 
   // FK 1054 (basic — hardness/iron/manganese)
   combo_FK1054CIMIXA: { solves: _COMBO_BASIC, ...SIZE_1054 },
-  combo_FK1054CE:     { solves: _COMBO_BASIC, ...SIZE_1054 },
+  combo_FK1054CEMIXA:     { solves: _COMBO_BASIC, ...SIZE_1054 },
   combo_FK1054CEMIXC: { solves: _COMBO_BASIC, ...SIZE_1054 },
 
   // FK 1252
   combo_FK1252CIMIXA: { solves: _COMBO_BASIC, ...SIZE_1252 },
-  combo_FK1252CE:     { solves: _COMBO_FULL,  ...SIZE_1252 },
+  combo_FK1252CEMIXA:     { solves: _COMBO_FULL,  ...SIZE_1252 },
   combo_FK1252CEMIXC: { solves: _COMBO_FULL,  ...SIZE_1252 },
 
   // FK 1354
   combo_FK1354CIMIXA: { solves: _COMBO_BASIC, ...SIZE_1354 },
-  combo_FK1354CE:     { solves: _COMBO_FULL,  ...SIZE_1354 },
+  combo_FK1354CEMIXA:     { solves: _COMBO_FULL,  ...SIZE_1354 },
   combo_FK1354CEMIXC: { solves: _COMBO_FULL,  ...SIZE_1354 },
 
   // FK 1465
   combo_FK1465CIMIXA: { solves: _COMBO_BASIC, ...SIZE_1465 },
-  combo_FK1465CE:     { solves: _COMBO_FULL,  ...SIZE_1465 },
+  combo_FK1465CEMIXA:     { solves: _COMBO_FULL,  ...SIZE_1465 },
   combo_FK1465CEMIXC: { solves: _COMBO_FULL,  ...SIZE_1465 },
 
   // FK 1665 (large)
-  combo_FK1665CE:     { solves: _COMBO_FULL, ...SIZE_1665 },
+  combo_FK1665CEMIXA:     { solves: _COMBO_FULL, ...SIZE_1665 },
   combo_FK1665CEMIXC: { solves: _COMBO_FULL, ...SIZE_1665 }
 };
 
