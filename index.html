@@ -1438,7 +1438,6 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             <input id="catalogSearch" type="text" placeholder="Пошук за назвою або артикулом…" oninput="renderCatalog()">
           </div>
-          <button class="btn" onclick="resetCatalogToDefaults()" title="Скинути каталог до фабричних значень">↻ Скинути</button>
           <button class="btn btn-primary" onclick="openEquipmentForm()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
             Додати обладнання
@@ -1562,367 +1561,254 @@ const PARAMS = [
   { id: 'oxidiz',   name: 'Окислюваність',  unit: 'мгО₂/л',   norm: 5,    default: 3.5, warn: 4,    icon: '🧪' }
 ];
 
-// ============== ECOSOFT CATALOG (реальні ціни з ecosoft.ua / дилери, 2025) ==============
-// CATALOG_DEFAULTS — seed-дані; CATALOG зберігається в localStorage і редагується через вкладку «Обладнання»
-const CATALOG_DEFAULTS = {
-
-  // ===== МЕХАНІЧНІ ФІЛЬТРИ =====
-  mech_FPV: {
-    sku: 'FPV12ECO',
-    name: 'Магістральний фільтр Ecosoft 1/2"',
-    price: 665,
-    spec: '5-100 мкм · PP картридж · різьблення 1/2"',
-    capacity: 2.0,
-    reason: 'Перша ступінь захисту від механічних домішок (пісок, іржа, завись). Обовʼязкова перед будь-яким обладнанням.',
-    category: 'mech'
-  },
-  mech_34: {
-    sku: 'FPV34ECO',
-    name: 'Магістральний фільтр Ecosoft 3/4"',
-    price: 709,
-    spec: '5-100 мкм · PP картридж · різьблення 3/4"',
-    capacity: 3.0,
-    reason: 'Механічний захист для систем з більшим витратою — підходить для 3/4" трубопроводу.',
-    category: 'mech'
-  },
-  mech_brass: {
-    sku: 'FPV4520ECOGR',
-    name: 'Промивний фільтр Ecosoft BB20 1"',
-    price: 2437,
-    spec: '50 мкм · нерж. сітка · ручна промивка · різьба 1"',
-    capacity: 3.5,
-    reason: 'Надійний захист від крупних механічних домішок свердловини/колодязя з промивкою без заміни картриджа.',
-    category: 'mech'
-  },
-
-  // ===== ПОМʼЯКШУВАЧІ (колонні, FU series) =====
-  softener_FU1054: {
-    sku: 'FU1054CE',
-    name: "Помʼякшувач Ecosoft FU 1054 CE",
-    price: 37422,
-    spec: '0.8 м³/год · смола Dowex™ · клапан Clack · 1 санвузол',
-    capacity: 0.8,
-    reason: 'Іонообмінне помʼякшення — видалення Ca²⁺/Mg²⁺. Для 1-2 санвузлів, 2-4 особи.',
-    category: 'softener'
-  },
-  softener_FU1252: {
-    sku: 'FU1252CE',
-    name: "Помʼякшувач Ecosoft FU 1252 CE",
-    price: 48934,
-    spec: '1.2 м³/год · смола Dowex™ · клапан Clack · 3 санвузли',
-    capacity: 1.2,
-    reason: 'Іонообмінне помʼякшення для будинку з 3 санвузлами. Сімʼя 4-5 осіб.',
-    category: 'softener'
-  },
-  softener_FU1465: {
-    sku: 'FU1465CE',
-    name: "Помʼякшувач Ecosoft FU 1465 CE",
-    price: 66994,
-    spec: '2.0 м³/год · клапан Clack · 4-5 санвузлів · 6-8 осіб',
-    capacity: 2.0,
-    reason: 'Помʼякшення для великого котеджу або комерційного обʼєкту. 6-8 осіб, 4-5 санвузлів.',
-    category: 'softener'
-  },
-  softener_FU1665: {
-    sku: 'FU1665CE',
-    name: "Помʼякшувач Ecosoft FU 1665 CE",
-    price: 89500,
-    spec: '3.0 м³/год · клапан Clack · 6+ санвузлів · 10+ осіб',
-    capacity: 3.0,
-    reason: 'Продуктивне помʼякшення для великих будинків або мінігелю.',
-    category: 'softener'
-  },
-
-  // ===== КАБІНЕТНІ КОМПАКТНІ СИСТЕМИ =====
-  // Тільки помʼякшення (без заліза)
-  cabinet_azure_370: {
-    sku: 'FU1235CABGDV',
-    name: 'Ecosoft Anthracite Azure 370',
-    price: 37800,
-    spec: 'кабінет · 2.9 м³/год · смола · тільки помʼякшення',
-    capacity: 2.9,
-    reason: 'Компактний кабінетний помʼякшувач — ідеально для квартири/будинку де є лише жорсткість без заліза.',
-    category: 'softener'
-  },
-  // Залізо + помʼякшення (Ecomix-A)
-  cabinet_anthracite_250: {
-    sku: 'FK1035CABGDVMIXA',
-    name: 'Ecosoft Anthracite Gold 250',
-    price: 33600,
-    spec: 'кабінет · 1.0 м³/год · Ecomix-A · 25 л · 2 санвузли',
-    capacity: 1.0,
-    reason: 'Компактне «5 в 1» (Ecomix-A) — залізо, марганець, жорсткість, органіка. До 3 осіб.',
-    category: 'cabinet'
-  },
-  cabinet_anthracite_370: {
-    sku: 'FK1235CABGDVMIXA',
-    name: 'Ecosoft Anthracite Gold 370',
-    price: 41160,
-    spec: 'кабінет · 1.4 м³/год · Ecomix-A · 37 л · 3 санвузли',
-    capacity: 1.4,
-    reason: 'Компактне «5 в 1» (Ecomix-A) — залізо, марганець, жорсткість, органіка. До 5 осіб.',
-    category: 'cabinet'
-  },
-  // Залізо + помʼякшення + амоній (Ecomix-C — преміум)
-  titanium_250: {
-    sku: 'FK1035CABCEMIXCOR',
-    name: 'Ecosoft Titanium Gold 250',
-    price: 55484,
-    spec: 'кабінет · 1.2 м³/год · Ecomix-C · 25 л · 2 санвузли',
-    capacity: 1.2,
-    reason: 'Преміум «5 в 1» (Ecomix-C) — залізо, марганець, жорсткість, органіка, амоній. До 4 осіб.',
-    category: 'cabinet'
-  },
-  titanium_370: {
-    sku: 'FK1235CABCEMIXCOR',
-    name: 'Ecosoft Titanium Gold 370',
-    price: 65100,
-    spec: 'кабінет · 1.4 м³/год · Ecomix-C · 37 л · 3 санвузли',
-    capacity: 1.4,
-    reason: 'Преміум «5 в 1» (Ecomix-C) — повне очищення свердловини. До 5-8 осіб.',
-    category: 'cabinet'
-  },
-
-  // ===== КОЛОННЕ ЗНЕЗАЛІЗНЕНня + ПОМʼЯКШЕНня (FK series, Ecomix) =====
-  iron_FK1054: {
-    sku: 'FK1054CEMIXA',
-    name: 'Фільтр комплексного очищення Ecosoft FK 1054 CE',
-    price: 49140,
-    spec: '0.8 м³/год · Ecomix-A · 5в1 · 1-2 санвузли',
-    capacity: 0.8,
-    reason: 'Комплексне очищення Ecomix: залізо + марганець + жорсткість + органіка + амоній. 1-2 санвузли.',
-    category: 'combo'
-  },
-  iron_FK1252: {
-    sku: 'FK1252CEMIXA',
-    name: 'Фільтр комплексного очищення Ecosoft FK 1252 CE',
-    price: 55440,
-    spec: '1.2 м³/год · Ecomix-A · 5в1 · 3 санвузли',
-    capacity: 1.2,
-    reason: 'Комплексне очищення для будинку з 3 санвузлами — 5 типів забруднень в одній колоні.',
-    category: 'combo'
-  },
-  iron_FK1252CE: {
-    sku: 'FK1354CEMIXA',
-    name: 'Фільтр комплексного очищення Ecosoft FK 1354 CE',
-    price: 65000,
-    spec: '1.5 м³/год · Ecomix-A · 5в1 · 4 санвузли',
-    capacity: 1.5,
-    reason: 'Комплексне очищення підвищеної продуктивності — для великих будинків 4 санвузли.',
-    category: 'combo'
-  },
-  iron_FK1465: {
-    sku: 'FK1465CEMIXA',
-    name: 'Фільтр комплексного очищення Ecosoft FK 1465 CE',
-    price: 75250,
-    spec: '2.0 м³/год · Ecomix-A · 5в1 · 5-6 санвузлів',
-    capacity: 2.0,
-    reason: 'Комплексне очищення для великого котеджу — до 8-10 осіб, 5-6 санвузлів.',
-    category: 'combo'
-  },
-
-  // ===== ВУГІЛЬНІ ФІЛЬТРИ (FPA series, Filtrasorb300 USA) =====
-  carbon_FPB1054: {
-    sku: 'FPA1054CT',
-    name: 'Вугільний фільтр Ecosoft FPA 1054 CT',
-    price: 26460,
-    spec: '0.6 м³/год · Filtrasorb300 (США) · хлор/органіка/запах',
-    capacity: 0.6,
-    reason: 'Видалення хлору, хлорорганіки та органічних домішок. Обовʼязково для міського водопроводу.',
-    category: 'carbon'
-  },
-  carbon_FPA1252: {
-    sku: 'FPA1252CT',
-    name: 'Вугільний фільтр Ecosoft FPA 1252 CT',
-    price: 30652,
-    spec: '0.9 м³/год · Filtrasorb300 (США) · 2-3 санвузли',
-    capacity: 0.9,
-    reason: 'Видалення хлору та органіки для будинків з 2-3 санвузлами та міського водопроводу.',
-    category: 'carbon'
-  },
-  carbon_FPA1354: {
-    sku: 'FPA1354CT',
-    name: 'Вугільний фільтр Ecosoft FPA 1354 CT',
-    price: 42256,
-    spec: '1.03 м³/год · Filtrasorb300 (США) · 4 санвузли',
-    capacity: 1.03,
-    reason: 'Видалення хлору для великого будинку з міським водопроводом — 4+ санвузли.',
-    category: 'carbon'
-  },
-
-  // ===== ФІЛЬТРИ ВІД СІРКОВОДНЮ (FPC series, Centaur каталітичне вугілля) =====
-  h2s_FPC1054: {
-    sku: 'FPC1054CT',
-    name: 'Фільтр від H₂S Ecosoft FPC 1054',
-    price: 26900,
-    spec: '1.0 м³/год · Centaur каталітичне вугілля · 1-2 санвузли',
-    capacity: 1.0,
-    reason: 'Окислення H₂S на каталітичному вугіллі Centaur — усуває запах "тухлих яєць" без хімії.',
-    category: 'h2s'
-  },
-  h2s_FPC1252: {
-    sku: 'FPC1252CT',
-    name: 'Фільтр від H₂S Ecosoft FPC 1252',
-    price: 32500,
-    spec: '1.8 м³/год · Centaur каталітичне вугілля · 3+ санвузли',
-    capacity: 1.8,
-    reason: 'Знезараження від сірководню для будинку з вираженим запахом свердловинної води.',
-    category: 'h2s'
-  },
-
-  // ===== ЗВОРОТНИЙ ОСМОС (реальні ціни з ecosoft.ua, 2025) =====
-  ro_standard: {
-    sku: 'MO550MECOSTD',
-    name: 'Ecosoft Standard PRO з мінералізацією',
-    price: 6335,
-    spec: '6 ступенів · мінералізатор · 8 л/год · бак 7 л · для норм. тиску',
-    capacity: 0.012,
-    reason: 'Базова система зворотного осмосу з мінералізацією — питна вода 99.8% очистки для сімʼї.',
-    category: 'ro'
-  },
-  ro_standard_min: {
-    sku: 'MO650MECOSTD',
-    name: 'Ecosoft Standard з мінералізатором',
-    price: 6822,
-    spec: '6 ступенів · мінералізатор · 8 л/год · бак 7 л',
-    capacity: 0.012,
-    reason: 'Осмос з мінералізацією — відновлення природного мінерального складу після очищення.',
-    category: 'ro'
-  },
-  ro_standard_pump: {
-    sku: 'MO550MPECOSTD',
-    name: 'Ecosoft Standard PRO з мінерал. та помпою',
-    price: 10233,
-    spec: '6 ступенів · помпа · мінералізатор · бак 7 л · для низького тиску',
-    capacity: 0.012,
-    reason: 'Осмос з помпою — стабільна робота при низькому тиску (свердловина, верхні поверхи).',
-    category: 'ro'
-  },
-  ro_absolute: {
-    sku: 'MO675MECO',
-    name: 'Ecosoft Absolute з мінералізатором',
-    price: 9979,
-    spec: '6 ступенів · Смарт-індикація · мінерал. Ca · компактний',
-    capacity: 0.012,
-    reason: 'Компактний осмос нового покоління зі смарт-індикацією заміни картриджів.',
-    category: 'ro'
-  },
-  ro_pure: {
-    sku: 'MO675PUREMACECO',
-    name: "Ecosoft PURE AQUACALCIUM Mint",
-    price: 16834,
-    spec: '6 ступенів · Ca/Mg мінералізація · для низького тиску · WQA',
-    capacity: 0.012,
-    reason: 'Преміум осмос з кальцієво-магнієвою мінералізацією — смачна здорова вода. Сертифікат WQA (США).',
-    category: 'ro'
-  },
-  ro_pure_balance: {
-    sku: 'MO675MPUREBALECO',
-    name: 'Ecosoft PURE BALANCE',
-    price: 25694,
-    spec: '6 ступенів · бак 7 л · збагачення Ca · сервіс 2р/рік',
-    capacity: 0.012,
-    reason: 'Преміум осмос з балансуванням мінералів — оптимальний склад питної води.',
-    category: 'ro'
-  },
-  ro_pure_balance_pump: {
-    sku: 'MO675MBALPSECO',
-    name: 'Ecosoft PURE BALANCE з помпою',
-    price: 30567,
-    spec: '6 ступенів · помпа · збагачення мінералами · для низького тиску',
-    capacity: 0.012,
-    reason: 'Преміум осмос з помпою та мінеральним балансом — для будь-якого тиску в мережі.',
-    category: 'ro'
-  },
-  ro_absolute_pump: {
-    sku: 'MO675MPSECO',
-    name: 'Ecosoft Absolute з помпою та мінерал.',
-    price: 13368,
-    spec: '6 ступенів · помпа · збагачення Ca · для низького тиску',
-    capacity: 0.012,
-    reason: 'Absolute з помпою для низького тиску — стабільна робота + мінералізація.',
-    category: 'ro'
-  },
-  ro_pure_aquacalcium_pump: {
-    sku: 'MO675PSMACECO',
-    name: 'Ecosoft PURE AquaCalcium Mint з помпою',
-    price: 22593,
-    spec: '6 ступенів · помпа · Ca/Mg мінерал. · Смарт-індикація',
-    capacity: 0.012,
-    reason: 'PURE AquaCalcium з помпою — кальцієво-магнієва мінералізація при будь-якому тиску.',
-    category: 'ro'
-  },
-  ro_cross_solo: {
-    sku: 'MO1500PECO',
-    name: 'CROSS Solo (компактний смарт)',
-    price: 14575,
-    spec: 'Смарт-індикація · 120 Вт · компактний · без бака',
-    capacity: 0.012,
-    reason: 'Ультракомпактний розумний осмос нового покоління — смарт-моніторинг якості води.',
-    category: 'ro'
-  },
-  ro_cross60: {
-    sku: 'MO3400PECO',
-    name: 'CROSS60 (компактний смарт)',
-    price: 22150,
-    spec: 'Смарт-індикація · бак 7 л · 120 Вт · компактний',
-    capacity: 0.012,
-    reason: 'Компактний смарт-осмос з баком — зручний моніторинг через додаток.',
-    category: 'ro'
-  },
-  ro_cross90: {
-    sku: 'MO3600PECO',
-    name: 'CROSS90 (смарт + Ca/Mg)',
-    price: 30789,
-    spec: 'Смарт · збагачення Ca/Mg · сервіс 2р/рік · гарантія',
-    capacity: 0.012,
-    reason: 'Флагманський смарт-осмос з повною мінералізацією Ca та Mg + сервісне обслуговування.',
-    category: 'ro'
-  },
-  ro_cross90_balance: {
-    sku: 'MO3600MPECO',
-    name: 'CROSS90 Balance (смарт + помпа)',
-    price: 32738,
-    spec: 'Смарт · помпа 30 Вт · бак 7 л · для низького тиску',
-    capacity: 0.012,
-    reason: 'Флагманський смарт-осмос з вбудованою помпою — для будь-яких умов тиску.',
-    category: 'ro'
-  },
-
-  // ===== ПОСЛУГИ =====
-  install_basic: {
-    sku: 'INST-STD',
-    name: 'Монтаж + пуско-наладка',
-    price: 7500,
-    spec: 'виїзд + 4-6 годин · сертифіковані спеціалісти',
-    capacity: 0,
-    reason: 'Стандартна установка системи з налаштуванням автоматики',
-    category: 'service'
-  },
-  install_complex: {
-    sku: 'INST-COMPLEX',
-    name: 'Монтаж комплексної системи',
-    price: 12500,
-    spec: 'обвʼязка колон · послідовність фільтрів · 1 день',
-    capacity: 0,
-    reason: 'Монтаж багатоступеневої системи водопідготовки',
-    category: 'service'
-  }
-};
-
-// Dynamic catalog: loads from localStorage; seeds with defaults on first run.
+// ============== ECOSOFT CATALOG (dynamic, edited via "Обладнання" tab) ==============
 const CATALOG_LS_KEY = 'aquacrm_catalog_v1';
+
+function saveCatalog() {
+  localStorage.setItem(CATALOG_LS_KEY, JSON.stringify(CATALOG));
+}
+
 function loadCatalog() {
   try {
     const raw = localStorage.getItem(CATALOG_LS_KEY);
     if (raw) return JSON.parse(raw);
   } catch {}
-  localStorage.setItem(CATALOG_LS_KEY, JSON.stringify(CATALOG_DEFAULTS));
-  return JSON.parse(JSON.stringify(CATALOG_DEFAULTS));
+  const seed = {
+    // ===== ЗВОРОТНИЙ ОСМОС =====
+    ro_pure_balance: {
+      sku: 'MO675MPUREBALECO',
+      name: 'Фільтр зворотного осмосу Ecosoft PURE BALANCE',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Зворотний осмос з мінеральним балансом — повне очищення питної води.',
+      category: 'ro',
+      photo: 'https://ecosoft.ua/upload/iblock/e00/ru_chyoekhu_sbuakhrsgs_sfpsfa_ecosoft_pure_balance_mo675mpurebaleco_ua_chkoekhu_ivsuskhrsgs_sfpsfts_.png'
+    },
+    ro_pure_aquacalcium: {
+      sku: 'MO675PUREMACECO',
+      name: 'Фільтр зворотного осмосу Ecosoft PURE AQUACALCIUM Mint',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Зворотний осмос з мінералізацією Ca/Mg — здорова смачна питна вода.',
+      category: 'ro'
+    },
+    ro_absolute: {
+      sku: 'MO675MECO',
+      name: 'Фільтр зворотного осмосу Ecosoft Absolute з мінералізатором',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Зворотний осмос Absolute з мінералізатором — повне очищення питної води.',
+      category: 'ro'
+    },
+    ro_absolute_pump: {
+      sku: 'MO675MPECO',
+      name: 'Фільтр зворотного осмосу Ecosoft Absolute з мінералізатором та помпою',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Absolute з помпою — для низького тиску води. Повне очищення + мінералізація.',
+      category: 'ro'
+    },
+    ro_standard_min: {
+      sku: 'MO650MECOSTD',
+      name: 'Фільтр зворотного осмосу Ecosoft Standard з мінералізатором',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Базовий осмос Standard з мінералізатором — питна вода для родини.',
+      category: 'ro'
+    },
+    ro_standard_pro: {
+      sku: 'MO550MECOSTD',
+      name: 'Фільтр зворотного осмосу Ecosoft Standard PRO',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Standard PRO — покращена базова система очищення для родини.',
+      category: 'ro'
+    },
+    ro_standard_pro_pump: {
+      sku: 'MO550MPECOSTD',
+      name: 'Фільтр зворотного осмосу Ecosoft Standard PRO з помпою',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Standard PRO з помпою — стабільна робота при низькому тиску.',
+      category: 'ro'
+    },
+    ro_pure_balance_pump: {
+      sku: 'MO675MBALPSECO',
+      name: 'Фільтр зворотного осмосу Ecosoft PURE BALANCE з помпою на металевій станині',
+      price: 0, capacity: 0, spec: '',
+      reason: 'PURE BALANCE з помпою — преміум система з мінеральним балансом для низького тиску.',
+      category: 'ro'
+    },
+    ro_pure_aquacalcium_pump: {
+      sku: 'MO675PSMACECO',
+      name: 'Фільтр зворотного осмосу Ecosoft PURE AQUACALCIUM Mint з помпою на металевій станині',
+      price: 0, capacity: 0, spec: '',
+      reason: 'AQUACALCIUM з помпою — преміум мінералізація Ca/Mg при будь-якому тиску.',
+      category: 'ro'
+    },
+    ro_cross_solo: {
+      sku: '',
+      name: 'Компактний smart-фільтр зворотного осмосу Ecosoft CROSS Solo',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Компактний smart-осмос без бака — мінімум місця.',
+      category: 'ro'
+    },
+    ro_cross90: {
+      sku: '',
+      name: 'Компактний smart-фільтр зворотного осмосу Ecosoft CROSS90',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Smart-осмос CROSS90 — повна мінералізація + смарт-моніторинг через додаток.',
+      category: 'ro'
+    },
+    ro_cross60: {
+      sku: '',
+      name: 'Компактний smart-фільтр зворотного осмосу Ecosoft CROSS60',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Smart-осмос CROSS60 — компактний з баком 7 л, смарт-індикація.',
+      category: 'ro'
+    },
+    ro_cross90_balance: {
+      sku: '',
+      name: 'Компактний smart-фільтр зворотного осмосу Ecosoft CROSS90 Balance',
+      price: 0, capacity: 0, spec: '',
+      reason: 'CROSS90 Balance з помпою — smart-осмос для будь-якого тиску.',
+      category: 'ro'
+    },
+    ro_cross_max: {
+      sku: '',
+      name: 'Компактний smart-фільтр зворотного осмосу Ecosoft CROSS Max',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Топовий smart-осмос — максимальна продуктивність та функціонал.',
+      category: 'ro'
+    },
+
+    // ===== КАБІНЕТНІ КОМПАКТНІ СИСТЕМИ =====
+    cabinet_titanium_250: {
+      sku: '',
+      name: 'Компактний фільтр комплексного очищення води Ecosoft Titanium Gold 250',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган, амоній, органіка, кольоровість.',
+      category: 'cabinet'
+    },
+    cabinet_titanium_370: {
+      sku: '',
+      name: 'Компактний фільтр комплексного очищення води Ecosoft Titanium Gold 370',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган, амоній, органіка, кольоровість.',
+      category: 'cabinet'
+    },
+    cabinet_anthracite_250CI: {
+      sku: '',
+      name: 'Компактний фільтр Ecosoft Anthracite Gold 250 CI',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Вода з хлором, неприємним запахом, присмаком, кольоровістю та органічними домішками.',
+      category: 'cabinet'
+    },
+    cabinet_anthracite_370CI: {
+      sku: '',
+      name: 'Компактний фільтр Ecosoft Anthracite Gold 370 CI',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Вода з хлором, неприємним запахом, присмаком, кольоровістю та органічними домішками.',
+      category: 'cabinet'
+    },
+
+    // ===== КОЛОННЕ ЗНЕЗАЛІЗНЕНня + ПОМʼЯКШЕНня (FK series) =====
+    combo_FK1252CIMIXA: {
+      sku: 'FK1252CIMIXA',
+      name: "Фільтр знезалізнення та пом'якшення води Ecosoft FK1252CIMIXA",
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган.',
+      category: 'combo'
+    },
+    combo_FK1054CE: {
+      sku: 'FK1054CE',
+      name: "Фільтр знезалізнення та пом'якшення води Ecosoft FK1054CE",
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган.',
+      category: 'combo'
+    },
+    combo_FK1252CE: {
+      sku: 'FK1252CE',
+      name: 'Фільтр комплексного очищення води Ecosoft FK1252CE',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган, амоній, органіка, кольоровість.',
+      category: 'combo'
+    },
+    combo_FK1054CIMIXA: {
+      sku: 'FK1054CIMIXA',
+      name: "Фільтр знезалізнення та пом'якшення води Ecosoft FK1054CIMIXA",
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган.',
+      category: 'combo'
+    },
+    combo_FK1354CIMIXA: {
+      sku: 'FK1354CIMIXA',
+      name: "Фільтр знезалізнення та пом'якшення води Ecosoft FK1354CIMIXA",
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган.',
+      category: 'combo'
+    },
+    combo_FK1354CE: {
+      sku: 'FK1354CE',
+      name: 'Фільтр комплексного очищення води Ecosoft FK1354CE',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган, амоній, органіка, кольоровість.',
+      category: 'combo'
+    },
+    combo_FK1465CIMIXA: {
+      sku: 'FK1465CIMIXA',
+      name: "Фільтр знезалізнення та пом'якшення води Ecosoft FK1465CIMIXA",
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган.',
+      category: 'combo'
+    },
+    combo_FK1465CE: {
+      sku: 'FK1465CE',
+      name: 'Фільтр комплексного очищення води Ecosoft FK1465CE',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган, амоній, органіка, кольоровість.',
+      category: 'combo'
+    },
+    combo_FK1665CE: {
+      sku: 'FK1665CE',
+      name: 'Фільтр комплексного очищення води Ecosoft FK1665CE',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган, амоній, органіка, кольоровість.',
+      category: 'combo'
+    },
+    combo_FK1465CEMIXC: {
+      sku: 'FK1465CEMIXC',
+      name: 'Фільтр комплексного очищення води Ecosoft FK1465CEMIXC',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган, амоній, органіка, кольоровість.',
+      category: 'combo'
+    },
+    combo_FK1054CEMIXC: {
+      sku: 'FK1054CEMIXC',
+      name: "Фільтр знезалізнення та пом'якшення води Ecosoft FK1054CEMIXC",
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган.',
+      category: 'combo'
+    },
+    combo_FK1665CEMIXC: {
+      sku: 'FK1665CEMIXC',
+      name: 'Фільтр комплексного очищення води Ecosoft FK1665CEMIXC',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган, амоній, органіка, кольоровість.',
+      category: 'combo'
+    },
+    combo_FK1354CEMIXC: {
+      sku: 'FK1354CEMIXC',
+      name: 'Фільтр комплексного очищення води Ecosoft FK1354CEMIXC',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган, амоній, органіка, кольоровість.',
+      category: 'combo'
+    },
+    combo_FK1252CEMIXC: {
+      sku: 'FK1252CEMIXC',
+      name: 'Фільтр комплексного очищення води Ecosoft FK1252CEMIXC',
+      price: 0, capacity: 0, spec: '',
+      reason: 'Свердловина/водопровід: жорсткість, залізо, манган, амоній, органіка, кольоровість.',
+      category: 'combo'
+    }
+  };
+  localStorage.setItem(CATALOG_LS_KEY, JSON.stringify(seed));
+  return seed;
 }
-function saveCatalog() {
-  localStorage.setItem(CATALOG_LS_KEY, JSON.stringify(CATALOG));
-}
+
 let CATALOG = loadCatalog();
 
 // ============== UI: render parameters ==============
@@ -3515,13 +3401,6 @@ function deleteCurrentEquipment() {
   delete CATALOG[currentEquipmentKey];
   saveCatalog();
   closeEquipmentForm();
-  renderCatalog();
-}
-
-function resetCatalogToDefaults() {
-  if (!confirm('Скинути каталог до фабричних значень? Усі ваші зміни буде втрачено.')) return;
-  CATALOG = JSON.parse(JSON.stringify(CATALOG_DEFAULTS));
-  saveCatalog();
   renderCatalog();
 }
 
