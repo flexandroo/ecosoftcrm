@@ -1360,6 +1360,9 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
           Підібрати обладнання Ecosoft
         </button>
+        <button class="btn" style="width:100%;margin-top:8px;justify-content:center" onclick="showROOnly()">
+          💧 Підібрати лише осмос (без аналізу води)
+        </button>
       </section>
 
       <!-- RIGHT: Results -->
@@ -1869,7 +1872,6 @@ let CATALOG = loadCatalog();
 // ============== EQUIPMENT METADATA (used by auto-selection) ==============
 // Maps catalog item keys to "what they solve" tags + (for RO) input water limits.
 // Stored separately from CATALOG so user edits in localStorage don't lose this info.
-const RO_INPUT_LIMITS = { ph_min: 6.5, ph_max: 8.5, hardness: 10, chlorine: 0.5, iron: 0.3, manganese: 0.1, oxidiz: 5 };
 const RO_SOLVES = ['drinking-water'];
 const _COMBO_FULL = ['hardness', 'iron', 'manganese', 'ammonium', 'organics', 'color'];
 const _COMBO_BASIC = ['hardness', 'iron', 'manganese'];
@@ -1884,7 +1886,7 @@ const _CARBON_CI = ['chlorine', 'smell', 'color', 'organics'];
 //   Column 1465 → 5-8 people, 2-3 bathrooms
 //   Column 1665 → 7-10 people, 3+ bathrooms
 // RO is under-sink drinking — household size NOT a constraint.
-const ROMETA = { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: null, bathrooms: null };
+const ROMETA = { solves: RO_SOLVES, people: null, bathrooms: null };
 const SIZE_250  = { people: {min:1, max:2}, bathrooms: {min:1, max:1} };
 const SIZE_370  = { people: {min:2, max:4}, bathrooms: {min:1, max:2} };
 const SIZE_1054 = { people: {min:2, max:4}, bathrooms: {min:1, max:1} };
@@ -1953,17 +1955,6 @@ function getWaterIssues(v, source) {
   if (v.ph < 6.5 || v.ph > 8.5) issues.push('ph');
   if (source === 'city') issues.push('chlorine');
   return issues;
-}
-
-function withinInputLimits(limits, v) {
-  if (!limits) return true;
-  if (limits.hardness != null && v.hardness > limits.hardness) return false;
-  if (limits.iron != null && v.iron > limits.iron) return false;
-  if (limits.manganese != null && v.manganese > limits.manganese) return false;
-  if (limits.oxidiz != null && v.oxidiz > limits.oxidiz) return false;
-  if (limits.ph_min != null && v.ph < limits.ph_min) return false;
-  if (limits.ph_max != null && v.ph > limits.ph_max) return false;
-  return true;
 }
 
 // Returns true if item fits given people / bathrooms count (within model's recommended range).
@@ -2071,11 +2062,9 @@ function selectEquipment() {
     })
     .filter(({ matchedIssues, meta }) =>
       matchedIssues.length > 0 && fitsHousehold(meta, people, bathrooms))
-    .map(({ key, item, matchedIssues, meta }) => ({
+    .map(({ key, item, matchedIssues }) => ({
       key, ...item,
       solvesForUser: matchedIssues,
-      // Soft-flag for RO: input water exceeds limits → needs pre-treatment first
-      needsPretreatment: meta.inputLimits ? !withinInputLimits(meta.inputLimits, v) : false,
       qty: 1
     }))
     .sort((a, b) => {
@@ -2157,6 +2146,58 @@ function calculate() {
   updateKPButtonsState();
 }
 
+// Skip water analysis — show only RO catalog for quick under-sink KP
+function showROOnly() {
+  const roItems = Object.entries(CATALOG)
+    .filter(([k, it]) => it.category === 'ro')
+    .map(([key, item]) => ({ key, ...item, solvesForUser: [], qty: 1 }))
+    .sort((a, b) => (a.price || 0) - (b.price || 0));
+
+  _variantsCache = roItems;
+  _selectedKeys  = new Set();
+  _kpItems = null;
+
+  document.getElementById('resultSub').textContent = `${roItems.length} ${roItems.length === 1 ? 'модель' : (roItems.length < 5 ? 'моделі' : 'моделей')} осмосу · ${new Date().toLocaleTimeString('uk-UA', {hour:'2-digit', minute:'2-digit'})}`;
+
+  document.getElementById('results').innerHTML = `
+    <div class="summary-banner">
+      <div class="summary-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="summary-text">
+        Швидке КП на зворотний осмос — оберіть модель для пропозиції клієнту.
+      </div>
+    </div>
+
+    ${roItems.length === 0 ? `
+      <div class="empty-state" style="margin-top:16px">
+        <div class="empty-state-title">У каталозі немає осмосу</div>
+        <div>Додайте моделі у вкладці «Обладнання» (категорія «Зворотний осмос»).</div>
+      </div>
+    ` : `
+      <div class="step-header">
+        <div class="step-num">💧</div>
+        <div class="step-title">Зворотний осмос (питна вода)</div>
+        <div class="step-sub">${roItems.length} ${roItems.length === 1 ? 'модель' : (roItems.length < 5 ? 'моделі' : 'моделей')}</div>
+      </div>
+      <div class="equipment-list" id="variants-ro">
+        ${roItems.map(i => renderVariantCard(i)).join('')}
+      </div>
+
+      <div class="actions-row" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="kpFullBtn" onclick="openKpEdit(false)" disabled>📄 Згенерувати КП на осмос</button>
+        <span id="kpSelInfo" style="color:var(--text-muted);font-size:13px;align-self:center;margin-left:auto">Не вибрано жодної моделі</span>
+      </div>
+    `}
+  `;
+
+  // hide RO-only button (only relevant when both whole-house and RO are present)
+  const roBtn = document.getElementById('kpROBtn');
+  if (roBtn) roBtn.style.display = 'none';
+
+  updateKPButtonsState();
+}
+
 function renderVariantCard(i) {
   const selected = _selectedKeys.has(i.key);
   return `
@@ -2172,11 +2213,6 @@ function renderVariantCard(i) {
         ${i.solvesForUser && i.solvesForUser.length ? `
           <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
             ${i.solvesForUser.map(s => `<span class="equip-pill" style="background:var(--eco-blue-soft);color:var(--eco-blue-dark);border-color:transparent">${escapeHtml(ISSUE_LABELS[s] || s)}</span>`).join('')}
-          </div>` : ''}
-        ${i.needsPretreatment ? `
-          <div style="margin-top:6px;font-size:11px;color:var(--warn);display:flex;align-items:center;gap:4px">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0l-7.1 12.25A2 2 0 005 19z"/></svg>
-            Потребує попереднього очищення (вибраного на кроці 1)
           </div>` : ''}
       </div>
       <div class="equipment-price">
@@ -2202,9 +2238,8 @@ function updateKPButtonsState() {
   const fullBtn  = document.getElementById('kpFullBtn');
   const roBtn    = document.getElementById('kpROBtn');
   const info     = document.getElementById('kpSelInfo');
-  if (!fullBtn) return;
-  fullBtn.disabled = selected.length === 0;
-  roBtn.disabled   = !anyRO;
+  if (fullBtn) fullBtn.disabled = selected.length === 0;
+  if (roBtn)   roBtn.disabled   = !anyRO;
   if (info) {
     info.textContent = selected.length
       ? `Обрано ${selected.length} ${selected.length === 1 ? 'позицію' : (selected.length < 5 ? 'позиції' : 'позицій')}`
