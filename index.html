@@ -1521,6 +1521,43 @@
 </div>
 
 <!-- ===== EQUIPMENT FORM MODAL ===== -->
+<!-- ===== KP EDIT MODAL (price + discount before generating) ===== -->
+<div class="modal-bg" id="kpEditModalBg" onclick="if(event.target===this)closeKpEdit()">
+  <div class="modal-form" style="max-width:760px">
+    <div class="modal-form-head">
+      <div class="modal-form-title" id="kpEditTitle">Перед генерацією КП</div>
+      <button class="modal-close" onclick="closeKpEdit()" title="Закрити">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-form-body">
+      <div id="kpEditList"></div>
+      <div class="client-card" style="margin-top:14px">
+        <div class="client-row">
+          <div>
+            <div class="field-label">Знижка</div>
+            <input type="number" id="kpDiscountValue" value="0" min="0" step="1" oninput="updateKpEditTotal()">
+          </div>
+          <div>
+            <div class="field-label">Тип знижки</div>
+            <select id="kpDiscountMode" onchange="updateKpEditTotal()">
+              <option value="percent">% від суми</option>
+              <option value="amount">₴ (фіксована)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="kpEditTotal" style="margin-top:14px"></div>
+    </div>
+    <div class="modal-form-foot">
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn" onclick="closeKpEdit()">Скасувати</button>
+        <button class="btn btn-primary" onclick="confirmKpGeneration()">📄 Згенерувати КП</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="equipmentModalBg" onclick="if(event.target===this)closeEquipmentForm()">
   <div class="modal-form">
     <div class="modal-form-head">
@@ -2111,8 +2148,8 @@ function calculate() {
 
     ${items.length > 0 ? `
     <div class="actions-row" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-primary" id="kpFullBtn" onclick="generateSelectedKP(false)" disabled>📄 Згенерувати повне КП</button>
-      <button class="btn" id="kpROBtn" onclick="generateSelectedKP(true)" disabled>💧 Лише осмос</button>
+      <button class="btn btn-primary" id="kpFullBtn" onclick="openKpEdit(false)" disabled>📄 Згенерувати повне КП</button>
+      <button class="btn" id="kpROBtn" onclick="openKpEdit(true)" disabled>💧 Лише осмос</button>
       <span id="kpSelInfo" style="color:var(--text-muted);font-size:13px;align-self:center;margin-left:auto">Не вибрано жодної позиції</span>
     </div>` : ''}
   `;
@@ -2170,15 +2207,102 @@ function updateKPButtonsState() {
   }
 }
 
-function generateSelectedKP(roOnly) {
+// ============== KP EDIT (price + discount) ==============
+let _kpEditPicks  = [];
+let _kpEditROOnly = false;
+
+function openKpEdit(roOnly) {
   let picks = _variantsCache.filter(i => _selectedKeys.has(i.key));
   if (roOnly) picks = picks.filter(i => i.category === 'ro');
   if (!picks.length) return;
-  const items    = picks.map(i => ({ ...i, qty: 1 }));
-  const subtotal = items.reduce((s, i) => s + (i.price || 0) * i.qty, 0);
-  const discount = subtotal > 50000 ? Math.round(subtotal * 0.05) : 0;
-  const total    = subtotal - discount;
+  _kpEditROOnly = roOnly;
+  _kpEditPicks = picks.map(i => ({ ...i, qty: 1, editPrice: i.price || 0 }));
+  document.getElementById('kpEditTitle').textContent = roOnly
+    ? 'КП тільки на осмос — перевірте ціни'
+    : 'Перед генерацією КП — перевірте ціни';
+  document.getElementById('kpDiscountValue').value = 0;
+  document.getElementById('kpDiscountMode').value = 'percent';
+  renderKpEdit();
+  document.getElementById('kpEditModalBg').classList.add('show');
+}
+
+function closeKpEdit() {
+  document.getElementById('kpEditModalBg').classList.remove('show');
+  _kpEditPicks = [];
+}
+
+function renderKpEdit() {
+  document.getElementById('kpEditList').innerHTML = _kpEditPicks.map((i, idx) => `
+    <div class="equipment" style="grid-template-columns: 48px 1fr 80px 140px; cursor:default">
+      <div class="equipment-img">${getCategoryIcon(i.category)}</div>
+      <div>
+        <div class="equipment-head">
+          <span class="equipment-name">${escapeHtml(i.name)}</span>
+          ${i.sku ? `<span class="equipment-sku">${escapeHtml(i.sku)}</span>` : ''}
+        </div>
+        ${i.spec ? `<div class="equipment-specs">${escapeHtml(i.spec)}</div>` : ''}
+      </div>
+      <div>
+        <div class="field-label" style="font-size:10px">К-сть</div>
+        <input type="number" min="1" step="1" value="${i.qty}" oninput="updateKpEditField(${idx}, 'qty', this.value)" style="width:64px">
+      </div>
+      <div>
+        <div class="field-label" style="font-size:10px">Ціна, ₴</div>
+        <input type="number" min="0" step="1" value="${i.editPrice}" oninput="updateKpEditField(${idx}, 'editPrice', this.value)" style="width:120px">
+      </div>
+    </div>
+  `).join('');
+  updateKpEditTotal();
+}
+
+function updateKpEditField(idx, field, val) {
+  const num = parseFloat(val) || 0;
+  if (field === 'qty') _kpEditPicks[idx].qty = Math.max(1, Math.floor(num));
+  else _kpEditPicks[idx].editPrice = Math.max(0, num);
+  updateKpEditTotal();
+}
+
+function calcKpEditTotals() {
+  const subtotal = _kpEditPicks.reduce((s, i) => s + i.editPrice * i.qty, 0);
+  const mode = document.getElementById('kpDiscountMode').value;
+  const dv = parseFloat(document.getElementById('kpDiscountValue').value) || 0;
+  let discount = mode === 'percent' ? Math.round(subtotal * dv / 100) : Math.min(dv, subtotal);
+  if (discount < 0) discount = 0;
+  return { subtotal, discount, total: subtotal - discount };
+}
+
+function updateKpEditTotal() {
+  const { subtotal, discount, total } = calcKpEditTotals();
+  document.getElementById('kpEditTotal').innerHTML = `
+    <div class="total">
+      <div class="total-row">
+        <span class="total-label">Сума обладнання</span>
+        <span class="total-value">${formatPrice(subtotal)}</span>
+      </div>
+      ${discount > 0 ? `
+      <div class="total-row">
+        <span class="total-label">Знижка</span>
+        <span class="total-value" style="color:var(--success)">−${formatPrice(discount)}</span>
+      </div>` : ''}
+      <div class="total-row divider total-final">
+        <span class="total-label">До сплати</span>
+        <span class="total-value">${formatPrice(total)}</span>
+      </div>
+    </div>`;
+}
+
+function confirmKpGeneration() {
+  const { subtotal, discount, total } = calcKpEditTotals();
+  // Persist edited prices back to CATALOG so future picks default to these prices
+  _kpEditPicks.forEach(i => {
+    if (i.key && CATALOG[i.key] && i.editPrice !== CATALOG[i.key].price) {
+      CATALOG[i.key].price = i.editPrice;
+    }
+  });
+  saveCatalog();
+  const items = _kpEditPicks.map(i => ({ ...i, price: i.editPrice }));
   _kpItems = items; _kpSubtotal = subtotal; _kpDiscount = discount; _kpTotal = total;
+  closeKpEdit();
   generateKP(items, subtotal, discount, total);
 }
 
