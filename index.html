@@ -2912,29 +2912,19 @@ async function downloadKPPdf() {
       throw new Error('Render порожній — спробуйте натиснути «🖨 Друк» і зберегти PDF звідти');
     }
 
-    // Collect "safe" break points: bottoms of atomic blocks in CSS px,
-    // measured relative to the .kp element. We can end a page at any of
-    // these without splitting content in the middle of a block.
+    // Universal break-point collection: bottom of every descendant element
+    // that has actual layout. The pagination picker then chooses the latest
+    // one that fits a page — naturally handling tables (each <tr>), lists,
+    // deeply nested cards, etc., without us hard-coding container classes.
     const kpRect = el.getBoundingClientRect();
-    const atomicBottoms = [];
-    function walk(node) {
-      for (const child of node.children) {
-        const cls = child.classList || { contains: () => false };
-        const isContainer =
-          cls.contains('kp-equipment-details') ||
-          cls.contains('kp-damage-notes')      ||
-          cls.contains('kp-savings')           ||
-          child.tagName === 'UL' || child.tagName === 'OL';
-        if (isContainer) {
-          walk(child);
-        } else {
-          const r = child.getBoundingClientRect();
-          atomicBottoms.push(r.bottom - kpRect.top);
-        }
-      }
-    }
-    walk(el);
-    atomicBottoms.sort((a, b) => a - b);
+    const seen = new Set();
+    el.querySelectorAll('*').forEach(e => {
+      const r = e.getBoundingClientRect();
+      if (r.height < 1) return;                 // hidden / collapsed
+      const bottom = Math.round(r.bottom - kpRect.top);
+      if (bottom > 0) seen.add(bottom);
+    });
+    const atomicBottoms = [...seen].sort((a, b) => a - b);
 
     // Assemble multipage A4 PDF with smart page splits
     const pdf = new jsPDFCtor({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
