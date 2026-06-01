@@ -1815,33 +1815,52 @@ let CATALOG = loadCatalog();
 // Maps catalog item keys to "what they solve" tags + (for RO) input water limits.
 // Stored separately from CATALOG so user edits in localStorage don't lose this info.
 const RO_INPUT_LIMITS = { ph_min: 6.5, ph_max: 8.5, hardness: 10, chlorine: 0.5, iron: 0.3, manganese: 0.1, oxidiz: 5 };
-const _ROmeta = { solves: ['drinking-water'], inputLimits: RO_INPUT_LIMITS };
-const _COMBO_FULL = { solves: ['hardness', 'iron', 'manganese', 'ammonium', 'organics', 'color'] };
-const _COMBO_BASIC = { solves: ['hardness', 'iron', 'manganese'] };
+const RO_SOLVES = ['drinking-water'];
+const _COMBO_FULL = ['hardness', 'iron', 'manganese', 'ammonium', 'organics', 'color'];
+const _COMBO_BASIC = ['hardness', 'iron', 'manganese'];
+const _CARBON_CI = ['chlorine', 'smell', 'color', 'organics'];
 
+// For each item: solves[] (issue tags), people range, bathrooms range (null = N/A for under-sink RO)
 const ITEM_SOLVES = {
-  // RO — all 14 models
-  ro_pure_balance: _ROmeta, ro_pure_aquacalcium: _ROmeta,
-  ro_absolute: _ROmeta, ro_absolute_pump: _ROmeta,
-  ro_standard_min: _ROmeta, ro_standard_pro: _ROmeta, ro_standard_pro_pump: _ROmeta,
-  ro_pure_balance_pump: _ROmeta, ro_pure_aquacalcium_pump: _ROmeta,
-  ro_cross_solo: _ROmeta, ro_cross90: _ROmeta, ro_cross60: _ROmeta,
-  ro_cross90_balance: _ROmeta, ro_cross_max: _ROmeta,
+  // RO (питна система під мийку — bathrooms N/A)
+  ro_pure_balance:           { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
+  ro_pure_aquacalcium:       { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
+  ro_absolute:               { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
+  ro_absolute_pump:          { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
+  ro_standard_min:           { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
+  ro_standard_pro:           { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:5}, bathrooms: null },
+  ro_standard_pro_pump:      { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:5}, bathrooms: null },
+  ro_pure_balance_pump:      { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
+  ro_pure_aquacalcium_pump:  { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
+  ro_cross_solo:             { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:3}, bathrooms: null },
+  ro_cross90:                { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:5}, bathrooms: null },
+  ro_cross60:                { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:4}, bathrooms: null },
+  ro_cross90_balance:        { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:5}, bathrooms: null },
+  ro_cross_max:              { solves: RO_SOLVES, inputLimits: RO_INPUT_LIMITS, people: {min:1, max:6}, bathrooms: null },
 
   // Cabinet (compact)
-  cabinet_titanium_250:     _COMBO_FULL,
-  cabinet_titanium_370:     _COMBO_FULL,
-  cabinet_anthracite_250CI: { solves: ['chlorine', 'smell', 'color', 'organics'] },
-  cabinet_anthracite_370CI: { solves: ['chlorine', 'smell', 'color', 'organics'] },
+  cabinet_titanium_250:      { solves: _COMBO_FULL, people: {min:1, max:3}, bathrooms: {min:1, max:1} },
+  cabinet_titanium_370:      { solves: _COMBO_FULL, people: {min:3, max:5}, bathrooms: {min:1, max:2} },
+  cabinet_anthracite_250CI:  { solves: _CARBON_CI, people: {min:1, max:3}, bathrooms: {min:1, max:1} },
+  cabinet_anthracite_370CI:  { solves: _CARBON_CI, people: {min:3, max:5}, bathrooms: {min:1, max:2} },
 
-  // FK column series
-  combo_FK1252CIMIXA: _COMBO_BASIC, combo_FK1054CIMIXA: _COMBO_BASIC,
-  combo_FK1354CIMIXA: _COMBO_BASIC, combo_FK1465CIMIXA: _COMBO_BASIC,
-  combo_FK1054CE: _COMBO_BASIC, combo_FK1054CEMIXC: _COMBO_BASIC,
-  combo_FK1252CE: _COMBO_FULL, combo_FK1354CE: _COMBO_FULL,
-  combo_FK1465CE: _COMBO_FULL, combo_FK1665CE: _COMBO_FULL,
-  combo_FK1465CEMIXC: _COMBO_FULL, combo_FK1665CEMIXC: _COMBO_FULL,
-  combo_FK1354CEMIXC: _COMBO_FULL, combo_FK1252CEMIXC: _COMBO_FULL
+  // FK column series (CIMIXA / basic CE — only hardness+iron+manganese)
+  combo_FK1054CIMIXA:  { solves: _COMBO_BASIC, people: {min:1, max:3}, bathrooms: {min:1, max:1} },
+  combo_FK1054CE:      { solves: _COMBO_BASIC, people: {min:1, max:3}, bathrooms: {min:1, max:1} },
+  combo_FK1054CEMIXC:  { solves: _COMBO_BASIC, people: {min:1, max:3}, bathrooms: {min:1, max:1} },
+  combo_FK1252CIMIXA:  { solves: _COMBO_BASIC, people: {min:3, max:4}, bathrooms: {min:1, max:2} },
+  combo_FK1354CIMIXA:  { solves: _COMBO_BASIC, people: {min:4, max:5}, bathrooms: {min:2, max:3} },
+  combo_FK1465CIMIXA:  { solves: _COMBO_BASIC, people: {min:5, max:6}, bathrooms: {min:3, max:4} },
+
+  // FK комплексного очищення (CE / CEMIXC — full spectrum)
+  combo_FK1252CE:      { solves: _COMBO_FULL, people: {min:3, max:4}, bathrooms: {min:1, max:2} },
+  combo_FK1252CEMIXC:  { solves: _COMBO_FULL, people: {min:3, max:4}, bathrooms: {min:1, max:2} },
+  combo_FK1354CE:      { solves: _COMBO_FULL, people: {min:4, max:5}, bathrooms: {min:2, max:3} },
+  combo_FK1354CEMIXC:  { solves: _COMBO_FULL, people: {min:4, max:5}, bathrooms: {min:2, max:3} },
+  combo_FK1465CE:      { solves: _COMBO_FULL, people: {min:5, max:6}, bathrooms: {min:3, max:4} },
+  combo_FK1465CEMIXC:  { solves: _COMBO_FULL, people: {min:5, max:6}, bathrooms: {min:3, max:4} },
+  combo_FK1665CE:      { solves: _COMBO_FULL, people: {min:6, max:8}, bathrooms: {min:4, max:5} },
+  combo_FK1665CEMIXC:  { solves: _COMBO_FULL, people: {min:6, max:8}, bathrooms: {min:4, max:5} }
 };
 
 const ISSUE_LABELS = {
@@ -1874,6 +1893,15 @@ function withinInputLimits(limits, v) {
   if (limits.oxidiz != null && v.oxidiz > limits.oxidiz) return false;
   if (limits.ph_min != null && v.ph < limits.ph_min) return false;
   if (limits.ph_max != null && v.ph > limits.ph_max) return false;
+  return true;
+}
+
+// Returns true if item fits given people / bathrooms count (within model's recommended range).
+// If meta has no range (e.g. user-added item), treat as no constraint and pass.
+function fitsHousehold(meta, people, bathrooms) {
+  if (!meta) return true;
+  if (meta.people && (people < meta.people.min || people > meta.people.max)) return false;
+  if (meta.bathrooms && (bathrooms < meta.bathrooms.min || bathrooms > meta.bathrooms.max)) return false;
   return true;
 }
 
@@ -1969,10 +1997,12 @@ function selectEquipment() {
       const meta = ITEM_SOLVES[key] || {};
       const solves = meta.solves || [];
       const matchedIssues = solves.filter(s => lookFor.includes(s));
-      return { key, item, solves, matchedIssues, inputLimits: meta.inputLimits };
+      return { key, item, solves, matchedIssues, meta };
     })
-    .filter(({ matchedIssues, inputLimits }) =>
-      matchedIssues.length > 0 && withinInputLimits(inputLimits, v))
+    .filter(({ matchedIssues, meta }) =>
+      matchedIssues.length > 0 &&
+      withinInputLimits(meta.inputLimits, v) &&
+      fitsHousehold(meta, people, bathrooms))
     .map(({ key, item, matchedIssues }) => ({
       key, ...item,
       solvesForUser: matchedIssues,
