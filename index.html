@@ -2070,12 +2070,12 @@ function selectEquipment() {
       return { key, item, solves, matchedIssues, meta };
     })
     .filter(({ matchedIssues, meta }) =>
-      matchedIssues.length > 0 &&
-      withinInputLimits(meta.inputLimits, v) &&
-      fitsHousehold(meta, people, bathrooms))
-    .map(({ key, item, matchedIssues }) => ({
+      matchedIssues.length > 0 && fitsHousehold(meta, people, bathrooms))
+    .map(({ key, item, matchedIssues, meta }) => ({
       key, ...item,
       solvesForUser: matchedIssues,
+      // Soft-flag for RO: input water exceeds limits → needs pre-treatment first
+      needsPretreatment: meta.inputLimits ? !withinInputLimits(meta.inputLimits, v) : false,
       qty: 1
     }))
     .sort((a, b) => {
@@ -2172,6 +2172,11 @@ function renderVariantCard(i) {
         ${i.solvesForUser && i.solvesForUser.length ? `
           <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
             ${i.solvesForUser.map(s => `<span class="equip-pill" style="background:var(--eco-blue-soft);color:var(--eco-blue-dark);border-color:transparent">${escapeHtml(ISSUE_LABELS[s] || s)}</span>`).join('')}
+          </div>` : ''}
+        ${i.needsPretreatment ? `
+          <div style="margin-top:6px;font-size:11px;color:var(--warn);display:flex;align-items:center;gap:4px">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0l-7.1 12.25A2 2 0 005 19z"/></svg>
+            Потребує попереднього очищення (вибраного на кроці 1)
           </div>` : ''}
       </div>
       <div class="equipment-price">
