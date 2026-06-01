@@ -1593,6 +1593,7 @@
     <div class="modal-form-foot">
       <button class="btn btn-danger" id="clientDeleteBtn" onclick="deleteCurrentClient()" style="display:none;">🗑 Видалити</button>
       <div style="margin-left: auto; display: flex; gap: 8px;">
+        <button class="btn" id="clientReKPBtn" onclick="regenerateKPFromClient(currentClientId)" style="display:none;">📄 Завантажити КП</button>
         <button class="btn" onclick="closeClientForm()">Скасувати</button>
         <button class="btn btn-primary" onclick="saveClient()">💾 Зберегти</button>
       </div>
@@ -2343,8 +2344,8 @@ function confirmKpGeneration() {
   const items = _kpEditPicks.map(i => ({ ...i, price: i.editPrice }));
   _kpItems = items; _kpSubtotal = subtotal; _kpDiscount = discount; _kpTotal = total;
 
-  // Auto-save / update client record from calculator form
-  const saveResult = upsertClientFromCalculator(items);
+  // Auto-save / update client record from calculator form (also stores KP snapshot)
+  const saveResult = upsertClientFromCalculator(items, { subtotal, discount, total });
 
   closeKpEdit();
   generateKP(items, subtotal, discount, total);
@@ -2355,7 +2356,7 @@ function confirmKpGeneration() {
 }
 
 // Create or update a client record from calculator form fields when КП is generated.
-function upsertClientFromCalculator(items) {
+function upsertClientFromCalculator(items, totals) {
   const name  = (document.getElementById('clientName')?.value || '').trim();
   const phone = (document.getElementById('clientPhone')?.value || '').trim();
   const email = (document.getElementById('clientEmail')?.value || '').trim();
@@ -2373,6 +2374,17 @@ function upsertClientFromCalculator(items) {
 
   const equipKeys = (items || []).map(i => i.key).filter(Boolean);
   const now = new Date().toISOString();
+  // KP snapshot — enough to regenerate the proposal verbatim later
+  const lastKP = {
+    items: (items || []).map(i => ({
+      key: i.key, sku: i.sku, name: i.name, spec: i.spec,
+      reason: i.reason, category: i.category, qty: i.qty || 1, price: i.price || 0
+    })),
+    subtotal: totals?.subtotal || 0,
+    discount: totals?.discount || 0,
+    total:    totals?.total    || 0,
+    date:     now
+  };
 
   if (existing) {
     existing.name     = name;
@@ -2380,6 +2392,7 @@ function upsertClientFromCalculator(items) {
     existing.email    = email     || existing.email;
     existing.city     = addr      || existing.city;
     existing.equipment = equipKeys.length ? equipKeys : existing.equipment;
+    existing.lastKP    = lastKP;
     existing.updatedAt = now;
     saveClientsList(list);
     return { name, created: false };
@@ -2393,10 +2406,29 @@ function upsertClientFromCalculator(items) {
     status: 'work',
     comment: 'Додано автоматично після генерації КП',
     pdfKey: null, pdfName: null,
+    lastKP,
     createdAt: now, updatedAt: now
   });
   saveClientsList(list);
   return { name, created: true };
+}
+
+// Re-open KP modal with the saved snapshot from a client record
+function regenerateKPFromClient(clientId) {
+  const c = loadClients().find(x => x.id === clientId);
+  if (!c || !c.lastKP) {
+    alert('Для цього клієнта ще не згенеровано КП.');
+    return;
+  }
+  // Pre-fill calculator form so generateKP uses correct contacts
+  if (document.getElementById('clientName'))  document.getElementById('clientName').value  = c.name || '';
+  if (document.getElementById('clientPhone')) document.getElementById('clientPhone').value = c.phone || '';
+  if (document.getElementById('clientEmail')) document.getElementById('clientEmail').value = c.email || '';
+  if (document.getElementById('clientAddr'))  document.getElementById('clientAddr').value  = c.city || '';
+  closeClientForm();
+  const { items, subtotal, discount, total } = c.lastKP;
+  _kpItems = items; _kpSubtotal = subtotal; _kpDiscount = discount; _kpTotal = total;
+  generateKP(items, subtotal, discount, total);
 }
 
 // Simple toast notification
@@ -3021,6 +3053,16 @@ function openClientForm(id) {
 
   document.getElementById('clientModalTitle').textContent = id ? 'Картка клієнта' : 'Новий клієнт';
   document.getElementById('clientDeleteBtn').style.display = id ? '' : 'none';
+  const reKPBtn = document.getElementById('clientReKPBtn');
+  if (reKPBtn) {
+    if (id && client.lastKP) {
+      reKPBtn.style.display = '';
+      const d = new Date(client.lastKP.date);
+      reKPBtn.title = 'Згенеровано ' + d.toLocaleDateString('uk-UA') + ' · ' + (client.lastKP.total || 0).toLocaleString('uk-UA') + ' ₴';
+    } else {
+      reKPBtn.style.display = 'none';
+    }
+  }
   document.getElementById('clientModalBody').innerHTML = renderClientForm(client);
   document.getElementById('clientModalBg').classList.add('show');
   initFormHandlers();
