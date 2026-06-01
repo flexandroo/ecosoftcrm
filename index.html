@@ -2513,20 +2513,42 @@ async function importAnalysisPDF(file) {
     const buf = await file.arrayBuffer();
     const pdf = await lib.getDocument({ data: buf }).promise;
 
-    // Build rows by y-coordinate (cluster within ±3px)
+    // Build rows by y-coordinate (cluster within ±3px), preserve x + width
     const rows = [];
     for (let p = 1; p <= pdf.numPages; p++) {
       const page = await pdf.getPage(p);
       const content = await page.getTextContent();
       content.items.forEach(it => {
-        if (!it.str || !it.str.trim()) return;
+        if (!it.str) return;
         const x = it.transform[4], y = Math.round(it.transform[5]);
         let row = rows.find(r => Math.abs(r.y - y) < 4);
         if (!row) { row = { y, items: [] }; rows.push(row); }
-        row.items.push({ x, str: it.str });
+        row.items.push({ x, str: it.str, w: it.width || 0 });
       });
     }
     rows.forEach(r => r.items.sort((a, b) => a.x - b.x));
+
+    // Smart join: glue spatially-adjacent items together (no extra space).
+    // Whenever previous item ends with a digit/comma/dot and current starts
+    // with a digit/comma/dot, always glue them — pdf.js sometimes splits
+    // "0,47" into ["0", ",", "47"] with wider gaps.
+    function joinRow(items) {
+      let out = '', prev = null;
+      for (const it of items) {
+        const gap = prev ? it.x - (prev.x + prev.w) : 0;
+        const numCont = prev
+          && /[\d.,]$/.test(prev.str.trimEnd())
+          && /^[\d.,]/.test(it.str.trimStart());
+        let sep;
+        if (!prev) sep = '';
+        else if (numCont) sep = '';            // glue split number parts
+        else if (gap > 2) sep = ' ';
+        else sep = '';
+        out += sep + it.str;
+        prev = it;
+      }
+      return out.replace(/\s+/g, ' ').trim();
+    }
 
     // Match params to row labels
     let found = 0;
@@ -2535,11 +2557,17 @@ async function importAnalysisPDF(file) {
       const matchers = PDF_LABEL_MATCHERS[p.id] || [];
       if (!matchers.length) return;
       for (const row of rows) {
-        const text = row.items.map(i => i.str).join(' ').trim();
+        const text = joinRow(row.items);
         if (!matchers.some(rx => rx.test(text))) continue;
-        // Extract numeric values from row. Skip leading row number (1-99 standalone)
-        const nums = [...text.matchAll(/(-?\d+[.,]\d+|-?\d+)/g)]
-          .map(m => ({ raw: m[0], idx: m.index, val: parseFloat(m[0].replace(',', '.')) }))
+        // Forgiving number regex: handles 6,75 / 6.75 / "6 , 75" (split by pdf.js)
+        const nums = [...text.matchAll(/(-?\d+)\s*[.,]\s*(\d+)|(-?\d+)/g)]
+          .map(m => {
+            const raw = m[0];
+            const val = m[1] != null
+              ? parseFloat(m[1] + '.' + m[2])
+              : parseFloat(m[3]);
+            return { raw, idx: m.index, val };
+          })
           .filter(n => isFinite(n.val));
         // Drop the first number if it's a small integer in 1-50 range AND appears right at the row start (row index)
         if (nums.length && /^\d+\s/.test(text) && nums[0].val >= 1 && nums[0].val <= 50 && Number.isInteger(nums[0].val)) {
