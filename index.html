@@ -846,10 +846,30 @@
   .catalog-empty { text-align:center; padding: 48px; color: var(--text-muted); }
 
   @media print {
-    body { background: white; }
-    .modal-bg { position: static; padding: 0; background: white; }
-    .modal { box-shadow: none; max-width: 100%; }
-    .modal-actions { display: none; }
+    @page { size: A4; margin: 12mm; }
+    html, body { background: white !important; margin: 0 !important; padding: 0 !important; }
+    /* Hide every UI element except the KP modal content */
+    body * { visibility: hidden !important; }
+    #modalBg, #modalBg * { visibility: visible !important; }
+    #modalBg {
+      position: static !important;
+      display: block !important;
+      background: white !important;
+      padding: 0 !important;
+      overflow: visible !important;
+      min-height: 0 !important;
+    }
+    #modalBg .modal {
+      box-shadow: none !important;
+      max-width: 100% !important;
+      border-radius: 0 !important;
+      overflow: visible !important;
+    }
+    #modalBg .modal-actions { display: none !important; }
+    .kp { padding: 0 !important; }
+    /* Avoid awkward breaks inside dense blocks */
+    .kp-block, .kp-equipment-detail, .kp-savings-row,
+    .kp-foot, .kp-sign { page-break-inside: avoid; break-inside: avoid; }
   }
 
   /* ===== VIEW ROUTER ===== */
@@ -1487,8 +1507,7 @@
     <div class="kp" id="kpContent"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal()">Закрити</button>
-      <button class="btn" onclick="window.print()">🖨 Друк</button>
-      <button class="btn btn-primary" id="downloadPdfBtn" onclick="downloadKPPdf()">📄 Завантажити PDF</button>
+      <button class="btn btn-primary" id="downloadPdfBtn" onclick="downloadKPPdf()" title="Відкриє діалог друку — у браузері виберіть «Зберегти як PDF»">🖨 Друк / Зберегти PDF</button>
       <button class="btn btn-primary" onclick="alert('У реальній системі: відправка email + Viber клієнту, створення угоди в CRM на стадії «Запропоновано КП»')">📨 Надіслати клієнту</button>
     </div>
   </div>
@@ -2828,42 +2847,16 @@ function generateKP(items, subtotal, discount, total) {
 
 function closeModal() { document.getElementById('modalBg').classList.remove('show'); }
 
-async function downloadKPPdf() {
-  const el  = document.getElementById('kpContent');
-  const num = el.querySelector('.kp-meta strong')?.textContent || 'КП';
-  const btn = document.getElementById('downloadPdfBtn');
-
-  btn.disabled = true;
-  btn.innerHTML = '⏳ Генерую…';
-
-  // Clone the KP content into a detached wrapper sized to A4 width.
-  // That way html2canvas captures the full document at a known width,
-  // and html2pdf can paginate naturally (no «avoid-all» = no empty pages).
-  const A4_PX = 794; // ~210mm at 96dpi
-  const wrap = document.createElement('div');
-  wrap.style.cssText = `position:fixed;left:-10000px;top:0;width:${A4_PX}px;background:white;`;
-  wrap.innerHTML = el.outerHTML;
-  document.body.appendChild(wrap);
-
-  try {
-    await html2pdf()
-      .set({
-        margin:     [10, 10, 10, 10],
-        filename:   num + '.pdf',
-        image:      { type: 'jpeg', quality: 0.97 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: A4_PX, scrollX: 0, scrollY: 0 },
-        jsPDF:      { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
-        pagebreak:  { mode: ['css', 'legacy'] }
-      })
-      .from(wrap.firstElementChild)
-      .save();
-  } catch (err) {
-    alert('Помилка генерації PDF: ' + err.message);
-  } finally {
-    document.body.removeChild(wrap);
-    btn.disabled = false;
-    btn.innerHTML = '📄 Завантажити PDF';
-  }
+function downloadKPPdf() {
+  // Native print is far more reliable than html2pdf for rich layouts.
+  // We rename the document so the print dialog suggests «КП-XXX.pdf» as
+  // the file name when the user picks «Зберегти як PDF».
+  const num = document.querySelector('#kpContent .kp-meta strong')?.textContent || 'КП';
+  const original = document.title;
+  document.title = num;
+  // Restore title shortly after the dialog opens
+  setTimeout(() => { document.title = original; }, 1500);
+  window.print();
 }
 
 // ============== CLIENTS: CONSTANTS ==============
