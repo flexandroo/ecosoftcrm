@@ -2912,28 +2912,74 @@ async function downloadKPPdf() {
       throw new Error('Render порожній — спробуйте натиснути «🖨 Друк» і зберегти PDF звідти');
     }
 
-    // Assemble multipage A4 PDF with white margins clipping each slice
+    // Collect "safe" break points: bottoms of atomic blocks in CSS px,
+    // measured relative to the .kp element. We can end a page at any of
+    // these without splitting content in the middle of a block.
+    const kpRect = el.getBoundingClientRect();
+    const atomicBottoms = [];
+    function walk(node) {
+      for (const child of node.children) {
+        const cls = child.classList || { contains: () => false };
+        const isContainer =
+          cls.contains('kp-equipment-details') ||
+          cls.contains('kp-damage-notes')      ||
+          cls.contains('kp-savings')           ||
+          child.tagName === 'UL' || child.tagName === 'OL';
+        if (isContainer) {
+          walk(child);
+        } else {
+          const r = child.getBoundingClientRect();
+          atomicBottoms.push(r.bottom - kpRect.top);
+        }
+      }
+    }
+    walk(el);
+    atomicBottoms.sort((a, b) => a - b);
+
+    // Assemble multipage A4 PDF with smart page splits
     const pdf = new jsPDFCtor({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
     const pageW = 210, pageH = 297, margin = 10;
     const usableW = pageW - margin * 2;
     const usableH = pageH - margin * 2;
-    const imgH = canvas.height * usableW / canvas.width;
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const cssToCanvas = canvas.height / (el.scrollHeight || height);
+    const cssToMm     = usableW / (el.scrollWidth || width);
+    const fullImgHmm  = canvas.height * usableW / canvas.width;
+    const pageHcanvas = usableH / cssToMm * cssToCanvas; // page height in canvas px
+    const imgData     = canvas.toDataURL('image/jpeg', 0.95);
 
-    let yOffset = 0;
-    let page = 0;
-    while (yOffset < imgH) {
-      if (page > 0) pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', margin, margin - yOffset, usableW, imgH);
-      // Cover any image bleed into the margins
+    const pages = [];
+    let pageStart = 0; // in canvas px
+    let safety = 0;
+    while (pageStart < canvas.height && safety++ < 100) {
+      const ideal = pageStart + pageHcanvas;
+      let chosen = ideal;
+      if (ideal < canvas.height) {
+        // Find the latest atomic break <= ideal and > pageStart
+        let best = -1;
+        for (const cssY of atomicBottoms) {
+          const canvasY = cssY * cssToCanvas;
+          if (canvasY > pageStart + 50 && canvasY <= ideal && canvasY > best) best = canvasY;
+        }
+        if (best > 0) chosen = best;
+      } else {
+        chosen = canvas.height;
+      }
+      pages.push({ start: pageStart, end: chosen });
+      pageStart = chosen;
+    }
+
+    pages.forEach((pg, idx) => {
+      if (idx > 0) pdf.addPage();
+      const startMm = pg.start / canvas.width * usableW;
+      const sliceMm = (pg.end - pg.start) / canvas.width * usableW;
+      pdf.addImage(imgData, 'JPEG', margin, margin - startMm, usableW, fullImgHmm);
+      // Cover everything outside [margin, margin+sliceMm] vertical band
       pdf.setFillColor(255, 255, 255);
       pdf.rect(0, 0, pageW, margin, 'F');
-      pdf.rect(0, pageH - margin, pageW, margin, 'F');
+      pdf.rect(0, margin + sliceMm, pageW, pageH - margin - sliceMm, 'F');
       pdf.rect(0, 0, margin, pageH, 'F');
       pdf.rect(pageW - margin, 0, margin, pageH, 'F');
-      yOffset += usableH;
-      page++;
-    }
+    });
 
     pdf.save(num + '.pdf');
   } catch (err) {
