@@ -586,7 +586,7 @@
     border-bottom: 1px solid var(--border-soft);
     color: var(--ink-soft);
   }
-  .kp-table .num { text-align: right; font-family: var(--font-mono); font-weight: 600; color: var(--ink); }
+  .kp-table .num { text-align: right; font-family: var(--font-mono); font-weight: 600; color: var(--ink); white-space: nowrap; }
   .kp-table tr:last-child td { border-bottom: none; }
   .kp-table .item-name { color: var(--ink); font-weight: 600; }
   .kp-table .item-spec { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
@@ -608,6 +608,7 @@
     color: var(--eco-blue-dark);
     letter-spacing: -0.02em;
     font-family: var(--font-sans);
+    white-space: nowrap;
   }
 
   .kp-list {
@@ -2652,7 +2653,7 @@ function getCategoryIcon(cat) {
   return icons[cat] || icons.mech;
 }
 
-function formatPrice(n) { return n.toLocaleString('uk-UA') + ' ₴'; }
+function formatPrice(n) { return n.toLocaleString('uk-UA') + ' ₴'; }
 
 // ============== KP MODAL ==============
 function generateKP(items, subtotal, discount, total) {
@@ -2760,11 +2761,11 @@ function generateKP(items, subtotal, discount, total) {
 
     <div style="margin-top: 14px; font-size: 13px;">
       <div style="display: flex; justify-content: space-between; padding: 4px 0; color: var(--text-muted);">
-        <span>Сума</span><span style="font-family: var(--font-mono); font-weight: 600; color: var(--ink);">${fmt(subtotal)}</span>
+        <span>Сума</span><span style="font-family: var(--font-mono); font-weight: 600; color: var(--ink); white-space: nowrap;">${fmt(subtotal)}</span>
       </div>
       ${discount > 0 ? `
       <div style="display: flex; justify-content: space-between; padding: 4px 0; color: var(--text-muted);">
-        <span>Знижка партнера</span><span style="font-family: var(--font-mono); font-weight: 600; color: var(--success);">−${fmt(discount)}</span>
+        <span>Знижка партнера</span><span style="font-family: var(--font-mono); font-weight: 600; color: var(--success); white-space: nowrap;">−${fmt(discount)}</span>
       </div>` : ''}
     </div>
 
