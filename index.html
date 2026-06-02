@@ -1245,7 +1245,6 @@
   <aside class="sidebar">
     <div class="brand">
       <img class="brand-mark" src="ecosoft-logo.jpg" alt="Ecosoft — BWT Water Professionals">
-      <div class="brand-sub">Центр чистої води</div>
     </div>
 
     <nav class="nav">
@@ -1290,8 +1289,7 @@
     </nav>
 
     <div class="sidebar-foot">
-      <strong>Центр чистої води</strong><br>
-      BWT Water Professionals
+      <strong>BWT Water Professionals</strong>
     </div>
   </aside>
 
@@ -2687,16 +2685,13 @@ function generateKP(items, subtotal, discount, total) {
     { icon: BENEFIT_ICONS.home, title: 'Комфортніша вода для побуту',
       desc: 'Помʼякшена вода краще підходить для щоденного використання: прання, прибирання, душу та догляду за речами.' },
     { icon: BENEFIT_ICONS.drink, title: 'Якісна питна вода',
-      desc: 'Зворотний осмос додатково очищує воду для пиття та приготування їжі, покращуючи її смак, запах і прозорість.' },
-    { icon: BENEFIT_ICONS.savings, title: 'Менше витрат на обслуговування',
-      desc: 'Система допомагає зменшити навантаження на техніку та сантехніку, що може знизити частоту сервісу й заміни деталей.' }
+      desc: 'Зворотний осмос додатково очищує воду для пиття та приготування їжі, покращуючи її смак, запах і прозорість.' }
   ];
 
   document.getElementById('kpContent').innerHTML = `
     <div class="kp-header">
       <div class="kp-brand">
         <img class="kp-brand-mark" src="ecosoft-logo.jpg" alt="Ecosoft — BWT Water Professionals">
-        <div class="kp-brand-sub">Центр чистої води</div>
       </div>
       <div class="kp-meta">
         <strong>${num}</strong><br>
@@ -2847,8 +2842,13 @@ function closeModal() { document.getElementById('modalBg').classList.remove('sho
 // «🖨 Друк» — native print dialog (reliable vector PDF via Save-as-PDF)
 function printKP() {
   const num = document.querySelector('#kpContent .kp-meta strong')?.textContent || 'КП';
+  const rawName = (document.getElementById('clientName')?.value || '').trim();
+  const safeName = rawName.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, ' ').trim();
+  const d = new Date();
+  const dateStr = String(d.getDate()).padStart(2, '0') + '.' +
+                  String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
   const original = document.title;
-  document.title = num;
+  document.title = safeName ? `${safeName} — ${dateStr}` : num;
   setTimeout(() => { document.title = original; }, 1500);
   window.print();
 }
@@ -2859,6 +2859,13 @@ function printKP() {
 async function downloadKPPdf() {
   const el  = document.getElementById('kpContent');
   const num = el.querySelector('.kp-meta strong')?.textContent || 'КП';
+  // File name: «<Імʼя клієнта> — DD.MM.YYYY.pdf» (fallback to КП-номер if no name)
+  const rawName  = (document.getElementById('clientName')?.value || '').trim();
+  const safeName = rawName.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, ' ').trim();
+  const d = new Date();
+  const dateStr = String(d.getDate()).padStart(2, '0') + '.' +
+                  String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
+  const fileName = (safeName ? `${safeName} — ${dateStr}` : num) + '.pdf';
   const btn = document.getElementById('downloadPdfBtn');
   const modal = el.closest('.modal');
   const modalBg = document.getElementById('modalBg');
@@ -2918,7 +2925,7 @@ async function downloadKPPdf() {
     const imgData = canvas.toDataURL('image/png');
     pdf.addImage(imgData, 'PNG', 0, 0, pageW_mm, pageH_mm, undefined, 'FAST');
 
-    pdf.save(num + '.pdf');
+    pdf.save(fileName);
   } catch (err) {
     alert('Помилка генерації PDF: ' + err.message);
   } finally {
