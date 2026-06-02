@@ -2734,9 +2734,12 @@ function generateKP(items, subtotal, discount, total) {
     </div>
 
     <div class="kp-section-title">Склад комплекту</div>
+    ${(() => {
+      const showQty = items.some(i => (i.qty || 1) > 1);
+      return `
     <table class="kp-table">
       <thead>
-        <tr><th>№</th><th>Найменування</th><th>Артикул</th><th class="num">К-сть</th><th class="num">Вартість, ₴</th></tr>
+        <tr><th>№</th><th>Найменування</th><th>Артикул</th>${showQty ? '<th class="num">К-сть</th>' : ''}<th class="num">Вартість</th></tr>
       </thead>
       <tbody>
         ${items.map((i, idx) => `
@@ -2747,12 +2750,13 @@ function generateKP(items, subtotal, discount, total) {
               <div class="item-spec">${escapeHtml(i.spec)}</div>
             </td>
             <td style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">${escapeHtml(i.sku)}</td>
-            <td class="num">${i.qty}</td>
+            ${showQty ? `<td class="num">${i.qty}</td>` : ''}
             <td class="num">${fmt(i.price * i.qty)}</td>
           </tr>
         `).join('')}
       </tbody>
-    </table>
+    </table>`;
+    })()}
 
     <div style="margin-top: 14px; font-size: 13px;">
       <div style="display: flex; justify-content: space-between; padding: 4px 0; color: var(--text-muted);">
@@ -2829,8 +2833,7 @@ function generateKP(items, subtotal, discount, total) {
     <div class="kp-sign">
       З повагою,<br><br>
       <strong>${escapeHtml(manager.name) || 'Менеджер Ecosoft'}</strong>${manager.position ? ', ' + escapeHtml(manager.position) : ''}<br>
-      ${manager.phone ? escapeHtml(manager.phone) : ''}${manager.phone && manager.email ? ' · ' : ''}${manager.email ? escapeHtml(manager.email) : ''}<br>
-      <span style="color:var(--eco-blue);">${escapeHtml(manager.company) || 'Ecosoft — Центр чистої води'}</span>
+      ${manager.phone ? escapeHtml(manager.phone) : ''}${manager.phone && manager.email ? ' · ' : ''}${manager.email ? escapeHtml(manager.email) : ''}
     </div>
     <div style="height: 2em;"></div>
   `;
