@@ -496,6 +496,58 @@
     margin-bottom: 16px;
   }
 
+  .size-group { margin-bottom: 16px; }
+  .size-group-head {
+    display: flex; align-items: baseline; gap: 10px;
+    margin: 8px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .size-group-num {
+    font-size: 14px; font-weight: 800;
+    color: var(--eco-blue-dark);
+    letter-spacing: -0.01em;
+  }
+  .size-group-hint {
+    font-size: 12px; color: var(--text-muted);
+    font-weight: 500;
+  }
+  .size-group .wizard-cards { margin-bottom: 0; }
+
+  /* ===== MANAGER SWITCHER ===== */
+  .manager-switch-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .manager-switch-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px;
+    background: var(--surface-alt);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    transition: all 0.15s;
+  }
+  .manager-switch-item.active {
+    border-color: var(--eco-blue);
+    background: var(--eco-blue-tint);
+  }
+  .manager-switch-item.editing {
+    box-shadow: 0 0 0 1px var(--eco-blue-light) inset;
+  }
+  .manager-switch-pick {
+    flex: 1; display: flex; align-items: center; gap: 10px;
+    background: transparent; border: 0; cursor: pointer;
+    padding: 4px 0;
+    text-align: left;
+    font-family: inherit;
+  }
+  .manager-switch-radio {
+    width: 18px; height: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--eco-blue);
+    font-size: 16px; line-height: 1;
+    flex-shrink: 0;
+  }
+  .manager-switch-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .manager-switch-pos { font-size: 11px; color: var(--text-muted); }
+
   .ec-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -1499,7 +1551,7 @@
         <div class="header-sub">Введіть параметри води — система запропонує оптимальне рішення Ecosoft</div>
       </div>
       <div class="header-actions">
-        <button class="btn" onclick="openManagerSettings()">👤 Менеджер</button>
+        <button class="btn" id="managerHeaderBtn" onclick="openManagerSettings()">👤 <span id="managerHeaderName">Менеджер</span></button>
         <button class="btn" onclick="loadSample()">🧪 Зразок: жорстка вода</button>
       </div>
     </header>
@@ -2320,6 +2372,38 @@ const MAIN_LINES = [
   { id: 'cabinet', label: 'Кабінетні (Titanium / Anthracite)' }
 ];
 
+// Detect the size of a cabinet / column from its key — items with the same
+// number are alternative models for the same household (Titanium 250 and
+// Anthracite 250 CI both fit «1-2 людини / 1 санвузол», etc.).
+function detectSize(key) {
+  const m = (key || '').match(/(250|370|1054|1252|1354|1465|1665)/);
+  return m ? m[1] : null;
+}
+const SIZE_HINTS = {
+  '250':  'для 1–2 людей · 1 санвузол',
+  '370':  'для 2–4 людей · 1–2 санвузли',
+  '1054': 'для 2–4 людей · 1 санвузол',
+  '1252': 'для 3–5 людей · 1–2 санвузли',
+  '1354': 'для 4–6 людей · 2 санвузли',
+  '1465': 'для 5–8 людей · 2–3 санвузли',
+  '1665': 'для 7–10 людей · 3+ санвузли'
+};
+
+function groupItemsBySize(items) {
+  const groups = new Map();
+  for (const it of items) {
+    const size = detectSize(it.key);
+    const key = size || '__other';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(it);
+  }
+  return [...groups.entries()].sort((a, b) => {
+    const an = parseInt(a[0]) || 9999;
+    const bn = parseInt(b[0]) || 9999;
+    return an - bn;
+  });
+}
+
 const STEP_LABELS = ['Основна система', 'Зворотний осмос', 'Додаткове', 'Підсумок'];
 
 function calculate() {
@@ -2423,14 +2507,27 @@ function renderStepMain() {
             ${escapeHtml(l.label)}<span class="count">· ${l.items.length}</span>
           </button>`).join('')}
       </div>` : ''}
-    <div class="wizard-cards">
-      ${activeItems.map(renderCompactCard).join('')}
-    </div>
+    ${renderSizeGroupedCards(activeItems)}
     <div class="wizard-nav">
       <button class="btn" onclick="wizardSkipMain()">Без основної системи</button>
       <div class="wizard-nav-spacer"></div>
       <button class="btn btn-primary" onclick="wizardNext()">Далі →</button>
     </div>`;
+}
+
+function renderSizeGroupedCards(items) {
+  const groups = groupItemsBySize(items);
+  if (groups.length <= 1) return `<div class="wizard-cards">${items.map(renderCompactCard).join('')}</div>`;
+  return groups.map(([size, list]) => `
+    <div class="size-group">
+      <div class="size-group-head">
+        <span class="size-group-num">${escapeHtml(size === '__other' ? 'Інше' : size)}</span>
+        ${SIZE_HINTS[size] ? `<span class="size-group-hint">${escapeHtml(SIZE_HINTS[size])}</span>` : ''}
+      </div>
+      <div class="wizard-cards">
+        ${list.map(renderCompactCard).join('')}
+      </div>
+    </div>`).join('');
 }
 
 function renderStepRO() {
@@ -2489,19 +2586,13 @@ function renderStepExtras() {
 
 function renderStepSummary() {
   const selected = _variantsCache.filter(i => _selectedKeys.has(i.key));
-  const main = selected.find(i => i.category === 'cabinet' || i.category === 'combo');
-  const ro   = selected.find(i => i.category === 'ro');
-  const others = selected.filter(i => !main || i.key !== main.key).filter(i => !ro || i.key !== ro.key);
+  const mains  = selected.filter(i => i.category === 'cabinet' || i.category === 'combo');
+  const ros    = selected.filter(i => i.category === 'ro');
+  const others = selected.filter(i => !['cabinet','combo','ro'].includes(i.category));
   const sub = selected.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
   const fmt = n => n ? formatPrice(n) : '—';
 
-  function row(label, item, fallback, stepIdx) {
-    if (!item) return `
-      <div class="wizard-summary-row empty">
-        <div>${escapeHtml(fallback)}</div>
-        <div class="wizard-nav-spacer"></div>
-        <button class="wizard-summary-edit" onclick="wizardGoTo(${stepIdx})">Вибрати</button>
-      </div>`;
+  function rowItem(label, item, stepIdx) {
     return `
       <div class="wizard-summary-row">
         <div class="wizard-summary-icon">${getCategoryIcon(item.category)}</div>
@@ -2513,28 +2604,28 @@ function renderStepSummary() {
         <button class="wizard-summary-edit" onclick="wizardGoTo(${stepIdx})">Змінити</button>
       </div>`;
   }
+  function rowEmpty(text, stepIdx) {
+    return `
+      <div class="wizard-summary-row empty">
+        <div>${escapeHtml(text)}</div>
+        <div class="wizard-nav-spacer"></div>
+        <button class="wizard-summary-edit" onclick="wizardGoTo(${stepIdx})">Вибрати</button>
+      </div>`;
+  }
 
   return `
     <div class="wizard-title">Підсумок комплекту</div>
-    <div class="wizard-sub">Перевірте склад. Можете змінити будь-який крок або одразу згенерувати КП.</div>
+    <div class="wizard-sub">Перевірте склад. Можна вибрати кілька позицій у кожному кроці — усі підуть у КП.</div>
     <div>
-      ${_wizardSkipMain ? '' : row('Основна система', main, 'Без основної системи', 0)}
-      ${row('Зворотний осмос', ro, 'Без осмосу', 1)}
-      ${others.map(i => `
-        <div class="wizard-summary-row">
-          <div class="wizard-summary-icon">${getCategoryIcon(i.category)}</div>
-          <div>
-            <div class="wizard-summary-label">Додаткове</div>
-            <div class="wizard-summary-name">${escapeHtml(i.name)}</div>
-          </div>
-          <div class="wizard-summary-price">${fmt(i.price)}</div>
-        </div>`).join('')}
+      ${_wizardSkipMain ? '' : (mains.length ? mains.map(m => rowItem('Основна система', m, 0)).join('') : rowEmpty('Без основної системи', 0))}
+      ${ros.length ? ros.map(r => rowItem('Зворотний осмос', r, 1)).join('') : rowEmpty('Без осмосу', 1)}
+      ${others.map(o => rowItem('Додаткове', o, 2)).join('')}
     </div>
     <div class="wizard-nav">
       <button class="btn" onclick="wizardBack()">← Назад</button>
       <span style="font-size:13px;color:var(--text-muted);align-self:center">${selected.length} ${selected.length === 1 ? 'позиція' : (selected.length < 5 ? 'позиції' : 'позицій')}${sub ? ' · ' + formatPrice(sub) : ''}</span>
       <div class="wizard-nav-spacer"></div>
-      ${ro && !main ? `<button class="btn" onclick="openKpEdit(true)">💧 Лише осмос</button>` : ''}
+      ${ros.length && !mains.length ? `<button class="btn" onclick="openKpEdit(true)">💧 Лише осмос</button>` : ''}
       <button class="btn btn-primary" onclick="openKpEdit(false)" ${selected.length === 0 ? 'disabled' : ''}>📄 Згенерувати КП</button>
     </div>`;
 }
@@ -2558,17 +2649,7 @@ function renderCompactCard(i) {
 }
 
 function wizardPick(key) {
-  const item = _variantsCache.find(x => x.key === key);
-  if (!item) return;
-  const isMain = item.category === 'cabinet' || item.category === 'combo';
-  const isRO   = item.category === 'ro';
-  // Radio-like behaviour within the current category bucket
-  for (const k of [..._selectedKeys]) {
-    const v = _variantsCache.find(x => x.key === k);
-    if (!v) continue;
-    if (isMain && (v.category === 'cabinet' || v.category === 'combo')) _selectedKeys.delete(k);
-    if (isRO   && v.category === 'ro') _selectedKeys.delete(k);
-  }
+  // Multi-select: just toggle this key without affecting others in the same bucket
   if (_selectedKeys.has(key)) _selectedKeys.delete(key);
   else _selectedKeys.add(key);
   renderWizardStep();
@@ -2783,6 +2864,7 @@ async function upsertClientFromCalculator(items, totals) {
   const equipKeys = (items || []).map(i => i.key).filter(Boolean);
   const now = new Date().toISOString();
   // KP snapshot — enough to regenerate the proposal verbatim later
+  const activeManager = loadManager();
   const lastKP = {
     items: (items || []).map(i => ({
       key: i.key, sku: i.sku, name: i.name, spec: i.spec,
@@ -2791,7 +2873,9 @@ async function upsertClientFromCalculator(items, totals) {
     subtotal: totals?.subtotal || 0,
     discount: totals?.discount || 0,
     total:    totals?.total    || 0,
-    date:     now
+    date:     now,
+    managerId: getActiveManagerId(),
+    manager: { ...activeManager }  // frozen snapshot for re-generation later
   };
 
   // Attach pending analysis PDF (if user imported one) to the client record
@@ -2873,8 +2957,13 @@ function regenerateKPFromClient(clientId) {
   if (document.getElementById('clientAddr'))  document.getElementById('clientAddr').value  = c.city || '';
   closeClientForm();
   _kpItems = items; _kpSubtotal = subtotal; _kpDiscount = discount; _kpTotal = total;
+  // If the snapshot remembers which manager made it, use that one for re-generation
+  _kpManagerOverride = (c.lastKP && c.lastKP.manager) ? c.lastKP.manager : null;
   generateKP(items, subtotal, discount, total);
+  _kpManagerOverride = null;
 }
+
+let _kpManagerOverride = null;
 
 // ============== PDF ANALYSIS IMPORT ==============
 let _pendingAnalysisPdfBlob = null;
@@ -3047,7 +3136,7 @@ function generateKP(items, subtotal, discount, total) {
   const people   = parseInt(document.getElementById('people').value) || 3;
   const baths    = parseInt(document.getElementById('bathrooms').value) || 1;
 
-  const manager  = loadManager();
+  const manager  = _kpManagerOverride || loadManager();
   const hasRO    = items.some(i => i.category === 'ro');
   const savings  = hasRO ? calculateROSavings(people) : null;
   const fmt = (n) => n.toLocaleString('uk-UA') + ' ₴';
@@ -4206,8 +4295,10 @@ function deleteCurrentTask() {
   renderTasks();
 }
 
-// ============== MANAGER PROFILE ==============
-const LS_KEY_MANAGER = 'aquacrm_manager_v1';
+// ============== MANAGER PROFILE (multi) ==============
+const LS_KEY_MANAGERS_LIST   = 'aquacrm_managers_v1';
+const LS_KEY_MANAGER_ACTIVE  = 'aquacrm_manager_active_v1';
+const LS_KEY_MANAGER_LEGACY  = 'aquacrm_manager_v1';
 const DEFAULT_MANAGER = {
   name: '',
   position: 'Менеджер з продажу',
@@ -4216,55 +4307,156 @@ const DEFAULT_MANAGER = {
   company: 'Ecosoft — Центр чистої води / BWT Water Professionals'
 };
 
-function loadManager() {
+function loadManagers() {
   try {
-    const m = JSON.parse(localStorage.getItem(LS_KEY_MANAGER));
-    return m && typeof m === 'object' ? { ...DEFAULT_MANAGER, ...m } : { ...DEFAULT_MANAGER };
-  } catch { return { ...DEFAULT_MANAGER }; }
+    const raw = JSON.parse(localStorage.getItem(LS_KEY_MANAGERS_LIST));
+    if (Array.isArray(raw) && raw.length) return raw.map(m => ({ ...DEFAULT_MANAGER, ...m }));
+  } catch {}
+  // Migrate legacy single-manager record
+  try {
+    const legacy = JSON.parse(localStorage.getItem(LS_KEY_MANAGER_LEGACY));
+    if (legacy && legacy.name) {
+      const id = 'm_' + Date.now().toString(36);
+      const arr = [{ id, ...DEFAULT_MANAGER, ...legacy }];
+      localStorage.setItem(LS_KEY_MANAGERS_LIST, JSON.stringify(arr));
+      localStorage.setItem(LS_KEY_MANAGER_ACTIVE, id);
+      return arr;
+    }
+  } catch {}
+  return [];
 }
 
-function saveManager(data) {
-  localStorage.setItem(LS_KEY_MANAGER, JSON.stringify(data));
+function saveManagers(list) {
+  localStorage.setItem(LS_KEY_MANAGERS_LIST, JSON.stringify(list));
 }
+
+function getActiveManagerId() {
+  return localStorage.getItem(LS_KEY_MANAGER_ACTIVE) || null;
+}
+function setActiveManagerId(id) {
+  if (id) localStorage.setItem(LS_KEY_MANAGER_ACTIVE, id);
+  else localStorage.removeItem(LS_KEY_MANAGER_ACTIVE);
+}
+
+function loadManager() {
+  const list = loadManagers();
+  if (!list.length) return { ...DEFAULT_MANAGER };
+  const id = getActiveManagerId();
+  return list.find(m => m.id === id) || list[0];
+}
+
+function updateManagerHeaderName() {
+  const span = document.getElementById('managerHeaderName');
+  if (!span) return;
+  const m = loadManager();
+  span.textContent = m.name || 'Менеджер';
+}
+
+// State for the editor
+let _editingManagerId = null;
 
 function openManagerSettings() {
-  const m = loadManager();
-  document.getElementById('managerModalBody').innerHTML = `
-    <div class="form-section">
-      <div class="form-section-title">Як вас бачитиме клієнт у КП</div>
-      <div class="form-grid cols-2">
-        <div>
-          <div class="field-label">Імʼя та прізвище *</div>
-          <input id="m_name" type="text" value="${escapeHtml(m.name)}" placeholder="Олександр Петренко">
-        </div>
-        <div>
-          <div class="field-label">Посада</div>
-          <input id="m_position" type="text" value="${escapeHtml(m.position)}" placeholder="Менеджер з продажу">
-        </div>
-      </div>
-      <div class="form-grid cols-2" style="margin-top: 12px;">
-        <div>
-          <div class="field-label">Телефон</div>
-          <input id="m_phone" type="text" value="${escapeHtml(m.phone)}" placeholder="+380 67 123-45-67">
-        </div>
-        <div>
-          <div class="field-label">Email</div>
-          <input id="m_email" type="email" value="${escapeHtml(m.email)}" placeholder="manager@ecosoft.ua">
-        </div>
-      </div>
-      <div style="margin-top: 12px;">
-        <div class="field-label">Компанія / підпис</div>
-        <input id="m_company" type="text" value="${escapeHtml(m.company)}" placeholder="Ecosoft — Центр чистої води">
-      </div>
-    </div>
-    <div style="font-size: 12px; color: var(--text-muted); padding: 12px 14px; background: var(--eco-blue-tint); border-radius: 8px; line-height: 1.5;">
-      💡 Ці дані автоматично підставляються у комерційні пропозиції замість стандартного шаблону.
-    </div>`;
+  // Open editor for active manager (or new blank one if none yet)
+  const list = loadManagers();
+  const activeId = getActiveManagerId();
+  _editingManagerId = list.find(m => m.id === activeId) ? activeId : (list[0]?.id || null);
+  renderManagerModal();
   document.getElementById('managerModalBg').classList.add('show');
 }
 
 function closeManagerSettings() {
   document.getElementById('managerModalBg').classList.remove('show');
+  _editingManagerId = null;
+}
+
+function renderManagerModal() {
+  const list = loadManagers();
+  const activeId = getActiveManagerId();
+  const editing = _editingManagerId
+    ? (list.find(m => m.id === _editingManagerId) || { ...DEFAULT_MANAGER })
+    : { ...DEFAULT_MANAGER };
+
+  document.getElementById('managerModalBody').innerHTML = `
+    <div class="form-section">
+      <div class="form-section-title">Перемикач менеджера</div>
+      <div class="manager-switch-list">
+        ${list.length === 0 ? '<div style="font-size:12px;color:var(--text-muted)">Ще немає жодного менеджера — заповніть форму нижче і збережіть.</div>' : ''}
+        ${list.map(m => `
+          <div class="manager-switch-item ${m.id === activeId ? 'active' : ''} ${m.id === _editingManagerId ? 'editing' : ''}">
+            <button class="manager-switch-pick" onclick="switchActiveManager('${m.id}')" title="Зробити активним">
+              <span class="manager-switch-radio">${m.id === activeId ? '●' : '○'}</span>
+              <span class="manager-switch-name">${escapeHtml(m.name) || 'Без імені'}</span>
+              ${m.position ? `<span class="manager-switch-pos">${escapeHtml(m.position)}</span>` : ''}
+            </button>
+            <button class="btn" style="padding:4px 8px;font-size:11px" onclick="editManager('${m.id}')" title="Редагувати">✎</button>
+            ${list.length > 1 ? `<button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="removeManager('${m.id}')" title="Видалити">🗑</button>` : ''}
+          </div>`).join('')}
+        <button class="btn" style="margin-top:6px;font-size:12px" onclick="addManager()">+ Додати нового менеджера</button>
+      </div>
+    </div>
+
+    <div class="form-section" style="margin-top:18px;">
+      <div class="form-section-title">${_editingManagerId ? 'Редагування' : 'Новий менеджер'}</div>
+      <div class="form-grid cols-2">
+        <div>
+          <div class="field-label">Імʼя та прізвище *</div>
+          <input id="m_name" type="text" value="${escapeHtml(editing.name)}" placeholder="Олександр Петренко">
+        </div>
+        <div>
+          <div class="field-label">Посада</div>
+          <input id="m_position" type="text" value="${escapeHtml(editing.position)}" placeholder="Менеджер з продажу">
+        </div>
+      </div>
+      <div class="form-grid cols-2" style="margin-top: 12px;">
+        <div>
+          <div class="field-label">Телефон</div>
+          <input id="m_phone" type="text" value="${escapeHtml(editing.phone)}" placeholder="+380 67 123-45-67">
+        </div>
+        <div>
+          <div class="field-label">Email</div>
+          <input id="m_email" type="email" value="${escapeHtml(editing.email)}" placeholder="manager@ecosoft.ua">
+        </div>
+      </div>
+      <div style="margin-top: 12px;">
+        <div class="field-label">Компанія / підпис</div>
+        <input id="m_company" type="text" value="${escapeHtml(editing.company)}" placeholder="Ecosoft — Центр чистої води">
+      </div>
+    </div>
+    <div style="font-size: 12px; color: var(--text-muted); padding: 12px 14px; background: var(--eco-blue-tint); border-radius: 8px; line-height: 1.5;">
+      💡 Активний менеджер автоматично підставляється у КП. Натисніть «●» поряд з іменем, щоб перемкнути.
+    </div>`;
+}
+
+function switchActiveManager(id) {
+  setActiveManagerId(id);
+  _editingManagerId = id;
+  renderManagerModal();
+  updateManagerHeaderName();
+}
+
+function editManager(id) {
+  _editingManagerId = id;
+  renderManagerModal();
+}
+
+function addManager() {
+  _editingManagerId = null;
+  renderManagerModal();
+  // Clear form fields
+  ['m_name','m_position','m_phone','m_email'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+}
+
+function removeManager(id) {
+  const list = loadManagers();
+  const it = list.find(m => m.id === id);
+  if (!it) return;
+  if (!confirm(`Видалити менеджера «${it.name || 'без імені'}»?`)) return;
+  const next = list.filter(m => m.id !== id);
+  saveManagers(next);
+  if (getActiveManagerId() === id) setActiveManagerId(next[0]?.id || null);
+  if (_editingManagerId === id) _editingManagerId = next[0]?.id || null;
+  renderManagerModal();
+  updateManagerHeaderName();
 }
 
 function saveManagerSettings() {
@@ -4276,8 +4468,21 @@ function saveManagerSettings() {
     company: document.getElementById('m_company').value.trim()
   };
   if (!data.name) { alert('Введіть імʼя менеджера'); return; }
-  saveManager(data);
-  closeManagerSettings();
+  const list = loadManagers();
+  if (_editingManagerId) {
+    const idx = list.findIndex(m => m.id === _editingManagerId);
+    if (idx >= 0) list[idx] = { ...list[idx], ...data, id: _editingManagerId };
+    else list.push({ id: _editingManagerId, ...data });
+  } else {
+    const id = 'm_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    list.push({ id, ...data });
+    if (!getActiveManagerId()) setActiveManagerId(id);
+    _editingManagerId = id;
+  }
+  saveManagers(list);
+  if (!getActiveManagerId() && list.length) setActiveManagerId(list[0].id);
+  updateManagerHeaderName();
+  renderManagerModal();
 }
 
 // ============== KP: SAVINGS & WARNINGS ==============
@@ -4464,6 +4669,7 @@ function deleteCurrentEquipment() {
 
 // ============== INIT ==============
 renderParams();
+updateManagerHeaderName();
 </script>
 </body>
 </html>
