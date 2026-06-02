@@ -2484,12 +2484,11 @@ function renderWizardStep() {
 }
 
 function renderStepMain() {
-  // Build cabinets / combos from variants, then bring in same-size siblings
-  // from the catalog so the user sees ALL alternatives at each size class
-  // (e.g. Anthracite 370 next to Titanium 370 even when the water analysis
-  // wouldn't otherwise auto-pick Anthracite).
+  // Cabinets only: include same-size siblings as alternatives so Titanium
+  // Gold 370 and Anthracite Gold 370 CI sit side-by-side, etc.
+  // Columns and any future equipment keep the original water-issue filter.
   const cabinets = expandWithSizeSiblings(_variantsCache.filter(i => i.category === 'cabinet'), 'cabinet');
-  const combos   = expandWithSizeSiblings(_variantsCache.filter(i => i.category === 'combo'),   'combo');
+  const combos   = _variantsCache.filter(i => i.category === 'combo');
   const lines = MAIN_LINES.map(l => ({ ...l, items: (l.id === 'cabinet' ? cabinets : combos) })).filter(l => l.items.length);
   if (!lines.length) {
     return `
