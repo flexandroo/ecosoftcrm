@@ -415,6 +415,201 @@
   .step-title { font-weight: 700; color: var(--ink); }
   .step-sub { color: var(--text-muted); font-size: 13px; margin-left: auto; }
 
+  /* ===== WIZARD ===== */
+  .wizard-progress {
+    display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .wizard-step-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 12px 6px 6px;
+    border-radius: 100px;
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    font-size: 12px; font-weight: 600;
+    transition: all 0.2s;
+  }
+  .wizard-step-pill .wizard-step-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--border); color: var(--text-muted);
+    font-weight: 700; font-size: 11px;
+    transition: all 0.2s;
+  }
+  .wizard-step-pill.active {
+    background: var(--eco-blue); color: white;
+  }
+  .wizard-step-pill.active .wizard-step-num {
+    background: rgba(255,255,255,0.3); color: white;
+  }
+  .wizard-step-pill.done {
+    background: var(--eco-blue-soft); color: var(--eco-blue-dark);
+  }
+  .wizard-step-pill.done .wizard-step-num {
+    background: var(--eco-blue); color: white;
+  }
+
+  .wizard-title {
+    font-size: 17px; font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin-top: 4px;
+  }
+  .wizard-sub {
+    font-size: 13px; color: var(--text-muted);
+    margin-top: 4px; margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .wizard-tabs {
+    display: flex; gap: 2px; flex-wrap: wrap;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .wizard-tab {
+    padding: 8px 14px;
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+  }
+  .wizard-tab:hover { color: var(--eco-blue); }
+  .wizard-tab.active {
+    color: var(--eco-blue);
+    border-bottom-color: var(--eco-blue);
+  }
+  .wizard-tab .count {
+    margin-left: 4px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+  .wizard-tab.active .count { color: var(--eco-blue); opacity: 0.7; }
+
+  .wizard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .ec-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; flex-direction: column;
+    gap: 6px;
+    position: relative;
+  }
+  .ec-card:hover {
+    border-color: var(--eco-blue-light);
+    box-shadow: var(--shadow-sm);
+  }
+  .ec-card.selected {
+    border-color: var(--eco-blue);
+    background: var(--eco-blue-tint);
+    box-shadow: 0 0 0 1px var(--eco-blue) inset;
+  }
+  .ec-card-head { display: flex; gap: 8px; align-items: flex-start; }
+  .ec-name {
+    font-size: 13px; font-weight: 700;
+    color: var(--ink); line-height: 1.3; flex: 1;
+  }
+  .ec-sku {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    background: var(--surface-alt);
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    border: 1px solid var(--border-soft);
+  }
+  .ec-spec {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+  .ec-foot {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 2px; padding-top: 4px;
+  }
+  .ec-price {
+    font-size: 14px; font-weight: 700;
+    color: var(--eco-blue-dark);
+    white-space: nowrap;
+  }
+  .ec-check-mark {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--eco-blue);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .ec-card.selected .ec-check-mark { opacity: 1; }
+
+  .wizard-nav {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-top: 20px; padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .wizard-nav-spacer { flex: 1; }
+
+  .wizard-summary-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    background: var(--surface-alt);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .wizard-summary-row.empty {
+    background: transparent;
+    border-style: dashed;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 13px;
+  }
+  .wizard-summary-icon {
+    width: 36px; height: 36px;
+    background: var(--eco-blue-soft);
+    color: var(--eco-blue-dark);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .wizard-summary-label {
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+  }
+  .wizard-summary-name {
+    font-size: 13px; font-weight: 700; color: var(--ink);
+  }
+  .wizard-summary-price {
+    font-size: 14px; font-weight: 700;
+    color: var(--eco-blue-dark);
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  .wizard-summary-edit {
+    font-size: 12px; color: var(--eco-blue);
+    cursor: pointer; font-weight: 600;
+    background: none; border: 0;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  .wizard-summary-edit:hover { background: var(--eco-blue-tint); }
+
   .equipment-img {
     width: 56px; height: 56px;
     background: var(--eco-blue-tint);
@@ -2102,25 +2297,66 @@ function selectEquipment() {
   return { items: variants, issues, source, people, bathrooms };
 }
 
-// ============== RENDER RESULTS ==============
-let _variantsCache = [];        // last selectEquipment().items
+// ============== WIZARD-BASED RESULTS ==============
+let _variantsCache = [];        // last selectEquipment().items (or full RO list in quick mode)
 let _selectedKeys  = new Set();  // keys selected for KP
+let _wizardStep    = 0;          // 0=main, 1=ro, 2=extras, 3=summary
+let _wizardActiveTab = {};       // per-step active sub-line tab
+let _wizardSkipMain = false;     // entered via «Підібрати лише осмос»
+
+const RO_LINES = [
+  { id: 'standard', label: 'Standard', test: k => k.startsWith('ro_standard') },
+  { id: 'absolute', label: 'Absolute', test: k => k.startsWith('ro_absolute') },
+  { id: 'pure',     label: 'PURE',     test: k => k.startsWith('ro_pure') },
+  { id: 'cross',    label: 'CROSS',    test: k => k.startsWith('ro_cross') }
+];
+function roLineOf(key) {
+  for (const l of RO_LINES) if (l.test(key)) return l.id;
+  return 'other';
+}
+
+const MAIN_LINES = [
+  { id: 'combo',   label: 'Колонні (FK)' },
+  { id: 'cabinet', label: 'Кабінетні (Titanium / Anthracite)' }
+];
+
+const STEP_LABELS = ['Основна система', 'Зворотний осмос', 'Додаткове', 'Підсумок'];
 
 function calculate() {
   const { items, issues } = selectEquipment();
   _variantsCache = items;
-  _selectedKeys  = new Set(); // reset selection on each new pick
+  _selectedKeys  = new Set();
   _kpItems = null;
+  _wizardStep = 0;
+  _wizardSkipMain = false;
+  _wizardActiveTab = {};
 
-  const hasIssues = issues.length > 0;
-  const issueText = issues.map(i => ISSUE_LABELS[i] || i).join(', ');
+  document.getElementById('resultSub').textContent = `Покрокове налаштування · ${new Date().toLocaleTimeString('uk-UA', {hour:'2-digit', minute:'2-digit'})}`;
+  renderWizardIssuesBanner(issues);
+  renderWizardStep();
+}
 
-  const wholeHouse = items.filter(i => i.category !== 'ro');
-  const roItems    = items.filter(i => i.category === 'ro');
+// Quick RO-only entry — skips Step 1 directly into Step 2
+function showROOnly() {
+  const roItems = Object.entries(CATALOG)
+    .filter(([k, it]) => it.category === 'ro')
+    .map(([key, item]) => ({ key, ...item, solvesForUser: [], qty: 1 }))
+    .sort((a, b) => (a.price || 0) - (b.price || 0));
+  _variantsCache = roItems;
+  _selectedKeys  = new Set();
+  _kpItems = null;
+  _wizardStep = 1;
+  _wizardSkipMain = true;
+  _wizardActiveTab = {};
+  document.getElementById('resultSub').textContent = `Швидке КП на осмос · ${new Date().toLocaleTimeString('uk-UA', {hour:'2-digit', minute:'2-digit'})}`;
+  document.getElementById('results').innerHTML = ''; // clear any banner
+  renderWizardStep();
+}
 
-  document.getElementById('resultSub').textContent = `${items.length} ${items.length === 1 ? 'варіант' : (items.length < 5 ? 'варіанти' : 'варіантів')} · ${new Date().toLocaleTimeString('uk-UA', {hour:'2-digit', minute:'2-digit'})}`;
-
-  document.getElementById('results').innerHTML = `
+function renderWizardIssuesBanner(issues) {
+  const hasIssues = issues && issues.length > 0;
+  const issueText = (issues || []).map(i => ISSUE_LABELS[i] || i).join(', ');
+  const banner = `
     <div class="summary-banner ${hasIssues ? 'alert' : ''}">
       <div class="summary-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -2129,99 +2365,246 @@ function calculate() {
       </div>
       <div class="summary-text">
         ${hasIssues
-          ? `Виявлено перевищення: <span class="summary-strong">${escapeHtml(issueText)}</span>. Натисніть на потрібне обладнання, щоб додати в КП.`
-          : `Всі показники в нормі. Виберіть обладнання для КП.`}
+          ? `Виявлено перевищення: <span class="summary-strong">${escapeHtml(issueText)}</span>. Налаштовуємо комплект по кроках.`
+          : `Усі показники в нормі. Налаштовуємо комплект по кроках.`}
       </div>
-    </div>
-
-    ${items.length === 0 ? `
-      <div class="empty-state" style="margin-top:16px">
-        <div class="empty-state-title">Не знайдено варіантів</div>
-        <div>Каталог не містить обладнання, що вирішує виявлені проблеми. Додайте товари у вкладці «Обладнання».</div>
-      </div>
-    ` : ''}
-
-    ${wholeHouse.length ? `
-      <div class="step-header">
-        <div class="step-num">1</div>
-        <div class="step-title">Обладнання для всього будинку</div>
-        <div class="step-sub">${wholeHouse.length} ${wholeHouse.length === 1 ? 'варіант' : (wholeHouse.length < 5 ? 'варіанти' : 'варіантів')}</div>
-      </div>
-      <div class="equipment-list" id="variants-wholehouse">
-        ${wholeHouse.map(i => renderVariantCard(i)).join('')}
-      </div>` : ''}
-
-    ${roItems.length ? `
-      <div class="step-header">
-        <div class="step-num">${wholeHouse.length ? 2 : 1}</div>
-        <div class="step-title">Зворотний осмос (питна вода)</div>
-        <div class="step-sub">${roItems.length} ${roItems.length === 1 ? 'варіант' : (roItems.length < 5 ? 'варіанти' : 'варіантів')}</div>
-      </div>
-      <div class="equipment-list" id="variants-ro">
-        ${roItems.map(i => renderVariantCard(i)).join('')}
-      </div>` : ''}
-
-    ${items.length > 0 ? `
-    <div class="actions-row" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-primary" id="kpFullBtn" onclick="openKpEdit(false)" disabled>📄 Згенерувати повне КП</button>
-      <button class="btn" id="kpROBtn" onclick="openKpEdit(true)" disabled>💧 Лише осмос</button>
-      <span id="kpSelInfo" style="color:var(--text-muted);font-size:13px;align-self:center;margin-left:auto">Не вибрано жодної позиції</span>
-    </div>` : ''}
-  `;
-
-  updateKPButtonsState();
+    </div>`;
+  document.getElementById('results').innerHTML = banner;
 }
 
-// Skip water analysis — show only RO catalog for quick under-sink KP
-function showROOnly() {
-  const roItems = Object.entries(CATALOG)
-    .filter(([k, it]) => it.category === 'ro')
-    .map(([key, item]) => ({ key, ...item, solvesForUser: [], qty: 1 }))
-    .sort((a, b) => (a.price || 0) - (b.price || 0));
+function renderWizardProgress() {
+  return `
+    <div class="wizard-progress">
+      ${STEP_LABELS.map((label, i) => `
+        <div class="wizard-step-pill ${i === _wizardStep ? 'active' : i < _wizardStep ? 'done' : ''}">
+          <span class="wizard-step-num">${i < _wizardStep ? '✓' : (i + 1)}</span>
+          <span>${escapeHtml(label)}</span>
+        </div>
+      `).join('')}
+    </div>`;
+}
 
-  _variantsCache = roItems;
-  _selectedKeys  = new Set();
-  _kpItems = null;
+function renderWizardStep() {
+  // Keep the banner (rendered once on calculate/showROOnly), append progress + current step
+  const root = document.getElementById('results');
+  // Re-render everything except possibly preserved banner; banner is part of results too
+  // We'll fully rebuild content (including banner if present)
+  const banner = root.querySelector('.summary-banner');
+  const bannerHTML = banner ? banner.outerHTML : '';
+  let stepHTML = '';
+  if (_wizardStep === 0) stepHTML = renderStepMain();
+  else if (_wizardStep === 1) stepHTML = renderStepRO();
+  else if (_wizardStep === 2) stepHTML = renderStepExtras();
+  else stepHTML = renderStepSummary();
+  root.innerHTML = bannerHTML + renderWizardProgress() + `<div class="wizard-step-body">${stepHTML}</div>`;
+}
 
-  document.getElementById('resultSub').textContent = `${roItems.length} ${roItems.length === 1 ? 'модель' : (roItems.length < 5 ? 'моделі' : 'моделей')} осмосу · ${new Date().toLocaleTimeString('uk-UA', {hour:'2-digit', minute:'2-digit'})}`;
-
-  document.getElementById('results').innerHTML = `
-    <div class="summary-banner">
-      <div class="summary-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
-      </div>
-      <div class="summary-text">
-        Швидке КП на зворотний осмос — оберіть модель для пропозиції клієнту.
-      </div>
+function renderStepMain() {
+  const cabinets = _variantsCache.filter(i => i.category === 'cabinet');
+  const combos   = _variantsCache.filter(i => i.category === 'combo');
+  const lines = MAIN_LINES.map(l => ({ ...l, items: (l.id === 'cabinet' ? cabinets : combos) })).filter(l => l.items.length);
+  if (!lines.length) {
+    return `
+      <div class="wizard-title">Основна система очищення</div>
+      <div class="wizard-sub">За вашим аналізом не знайдено відповідних колонних/кабінетних систем.</div>
+      <div class="wizard-nav">
+        <button class="btn btn-primary" onclick="wizardNext()">Без основної системи →</button>
+      </div>`;
+  }
+  const activeTab = _wizardActiveTab.main || lines[0].id;
+  const activeItems = (lines.find(l => l.id === activeTab) || lines[0]).items;
+  return `
+    <div class="wizard-title">Виберіть основну систему очищення</div>
+    <div class="wizard-sub">Одна система на весь будинок (на холодну лінію). Можна також пропустити цей крок.</div>
+    ${lines.length > 1 ? `
+      <div class="wizard-tabs">
+        ${lines.map(l => `
+          <button class="wizard-tab ${l.id === activeTab ? 'active' : ''}" onclick="wizardSetTab('main','${l.id}')">
+            ${escapeHtml(l.label)}<span class="count">· ${l.items.length}</span>
+          </button>`).join('')}
+      </div>` : ''}
+    <div class="wizard-cards">
+      ${activeItems.map(renderCompactCard).join('')}
     </div>
+    <div class="wizard-nav">
+      <button class="btn" onclick="wizardSkipMain()">Без основної системи</button>
+      <div class="wizard-nav-spacer"></div>
+      <button class="btn btn-primary" onclick="wizardNext()">Далі →</button>
+    </div>`;
+}
 
-    ${roItems.length === 0 ? `
-      <div class="empty-state" style="margin-top:16px">
-        <div class="empty-state-title">У каталозі немає осмосу</div>
-        <div>Додайте моделі у вкладці «Обладнання» (категорія «Зворотний осмос»).</div>
-      </div>
-    ` : `
-      <div class="step-header">
-        <div class="step-num">💧</div>
-        <div class="step-title">Зворотний осмос (питна вода)</div>
-        <div class="step-sub">${roItems.length} ${roItems.length === 1 ? 'модель' : (roItems.length < 5 ? 'моделі' : 'моделей')}</div>
-      </div>
-      <div class="equipment-list" id="variants-ro">
-        ${roItems.map(i => renderVariantCard(i)).join('')}
-      </div>
+function renderStepRO() {
+  const ros = _variantsCache.filter(i => i.category === 'ro');
+  if (!ros.length) {
+    return `
+      <div class="wizard-title">Зворотний осмос (питна вода)</div>
+      <div class="wizard-sub">У каталозі немає моделей RO. Додайте товари у вкладці «Обладнання».</div>
+      <div class="wizard-nav">
+        <button class="btn" onclick="wizardBack()">← Назад</button>
+        <div class="wizard-nav-spacer"></div>
+        <button class="btn btn-primary" onclick="wizardNext()">Далі →</button>
+      </div>`;
+  }
+  const byLine = {};
+  ros.forEach(r => { (byLine[roLineOf(r.key)] = byLine[roLineOf(r.key)] || []).push(r); });
+  const lines = RO_LINES.filter(l => byLine[l.id]?.length);
+  if (byLine.other?.length) lines.push({ id: 'other', label: 'Інші', items: byLine.other });
+  const activeTab = _wizardActiveTab.ro || lines[0].id;
+  const activeItems = byLine[activeTab] || lines[0].items;
+  return `
+    <div class="wizard-title">Виберіть зворотний осмос</div>
+    <div class="wizard-sub">Питна вода для родини. Виберіть одну модель з потрібної лінійки або пропустіть.</div>
+    ${lines.length > 1 ? `
+      <div class="wizard-tabs">
+        ${lines.map(l => `
+          <button class="wizard-tab ${l.id === activeTab ? 'active' : ''}" onclick="wizardSetTab('ro','${l.id}')">
+            ${escapeHtml(l.label)}<span class="count">· ${(byLine[l.id] || []).length}</span>
+          </button>`).join('')}
+      </div>` : ''}
+    <div class="wizard-cards">
+      ${activeItems.map(renderCompactCard).join('')}
+    </div>
+    <div class="wizard-nav">
+      ${_wizardSkipMain ? '' : '<button class="btn" onclick="wizardBack()">← Назад</button>'}
+      <button class="btn" onclick="wizardSkipRO()">Без осмосу</button>
+      <div class="wizard-nav-spacer"></div>
+      <button class="btn btn-primary" onclick="wizardNext()">Далі →</button>
+    </div>`;
+}
 
-      <div class="actions-row" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-primary" id="kpFullBtn" onclick="openKpEdit(false)" disabled>📄 Згенерувати КП на осмос</button>
-        <span id="kpSelInfo" style="color:var(--text-muted);font-size:13px;align-self:center;margin-left:auto">Не вибрано жодної моделі</span>
+function renderStepExtras() {
+  return `
+    <div class="wizard-title">Додаткове обладнання</div>
+    <div class="wizard-sub">Картриджи, сольові таблетки, аксесуари — додавайте позиції зі своєї бази товарів. Поки що цей крок порожній.</div>
+    <div class="empty-state" style="margin-top:0">
+      <div class="empty-state-title">Цей крок ще порожній</div>
+      <div>Додайте товари у вкладці «Обладнання», вони зʼявляться тут автоматично.</div>
+    </div>
+    <div class="wizard-nav">
+      <button class="btn" onclick="wizardBack()">← Назад</button>
+      <div class="wizard-nav-spacer"></div>
+      <button class="btn btn-primary" onclick="wizardNext()">До підсумку →</button>
+    </div>`;
+}
+
+function renderStepSummary() {
+  const selected = _variantsCache.filter(i => _selectedKeys.has(i.key));
+  const main = selected.find(i => i.category === 'cabinet' || i.category === 'combo');
+  const ro   = selected.find(i => i.category === 'ro');
+  const others = selected.filter(i => !main || i.key !== main.key).filter(i => !ro || i.key !== ro.key);
+  const sub = selected.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+  const fmt = n => n ? formatPrice(n) : '—';
+
+  function row(label, item, fallback, stepIdx) {
+    if (!item) return `
+      <div class="wizard-summary-row empty">
+        <div>${escapeHtml(fallback)}</div>
+        <div class="wizard-nav-spacer"></div>
+        <button class="wizard-summary-edit" onclick="wizardGoTo(${stepIdx})">Вибрати</button>
+      </div>`;
+    return `
+      <div class="wizard-summary-row">
+        <div class="wizard-summary-icon">${getCategoryIcon(item.category)}</div>
+        <div>
+          <div class="wizard-summary-label">${escapeHtml(label)}</div>
+          <div class="wizard-summary-name">${escapeHtml(item.name)}</div>
+        </div>
+        <div class="wizard-summary-price">${fmt(item.price)}</div>
+        <button class="wizard-summary-edit" onclick="wizardGoTo(${stepIdx})">Змінити</button>
+      </div>`;
+  }
+
+  return `
+    <div class="wizard-title">Підсумок комплекту</div>
+    <div class="wizard-sub">Перевірте склад. Можете змінити будь-який крок або одразу згенерувати КП.</div>
+    <div>
+      ${_wizardSkipMain ? '' : row('Основна система', main, 'Без основної системи', 0)}
+      ${row('Зворотний осмос', ro, 'Без осмосу', 1)}
+      ${others.map(i => `
+        <div class="wizard-summary-row">
+          <div class="wizard-summary-icon">${getCategoryIcon(i.category)}</div>
+          <div>
+            <div class="wizard-summary-label">Додаткове</div>
+            <div class="wizard-summary-name">${escapeHtml(i.name)}</div>
+          </div>
+          <div class="wizard-summary-price">${fmt(i.price)}</div>
+        </div>`).join('')}
+    </div>
+    <div class="wizard-nav">
+      <button class="btn" onclick="wizardBack()">← Назад</button>
+      <span style="font-size:13px;color:var(--text-muted);align-self:center">${selected.length} ${selected.length === 1 ? 'позиція' : (selected.length < 5 ? 'позиції' : 'позицій')}${sub ? ' · ' + formatPrice(sub) : ''}</span>
+      <div class="wizard-nav-spacer"></div>
+      ${ro && !main ? `<button class="btn" onclick="openKpEdit(true)">💧 Лише осмос</button>` : ''}
+      <button class="btn btn-primary" onclick="openKpEdit(false)" ${selected.length === 0 ? 'disabled' : ''}>📄 Згенерувати КП</button>
+    </div>`;
+}
+
+function renderCompactCard(i) {
+  const selected = _selectedKeys.has(i.key);
+  return `
+    <div class="ec-card ${selected ? 'selected' : ''}" onclick="wizardPick('${escapeHtml(i.key)}')">
+      <div class="ec-card-head">
+        <div class="ec-name">${escapeHtml(i.name)}</div>
+        ${i.sku ? `<span class="ec-sku">${escapeHtml(i.sku)}</span>` : ''}
       </div>
-    `}
-  `;
+      ${i.spec ? `<div class="ec-spec">${escapeHtml(i.spec)}</div>` : ''}
+      <div class="ec-foot">
+        <span class="ec-price">${i.price ? formatPrice(i.price) : '<span style="color:var(--text-dim);font-size:12px;font-weight:500">ціну вкажете</span>'}</span>
+        <div class="ec-check-mark">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+        </div>
+      </div>
+    </div>`;
+}
 
-  // hide RO-only button (only relevant when both whole-house and RO are present)
-  const roBtn = document.getElementById('kpROBtn');
-  if (roBtn) roBtn.style.display = 'none';
+function wizardPick(key) {
+  const item = _variantsCache.find(x => x.key === key);
+  if (!item) return;
+  const isMain = item.category === 'cabinet' || item.category === 'combo';
+  const isRO   = item.category === 'ro';
+  // Radio-like behaviour within the current category bucket
+  for (const k of [..._selectedKeys]) {
+    const v = _variantsCache.find(x => x.key === k);
+    if (!v) continue;
+    if (isMain && (v.category === 'cabinet' || v.category === 'combo')) _selectedKeys.delete(k);
+    if (isRO   && v.category === 'ro') _selectedKeys.delete(k);
+  }
+  if (_selectedKeys.has(key)) _selectedKeys.delete(key);
+  else _selectedKeys.add(key);
+  renderWizardStep();
+}
 
-  updateKPButtonsState();
+function wizardSetTab(stepName, tabId) {
+  _wizardActiveTab[stepName] = tabId;
+  renderWizardStep();
+}
+
+function wizardNext() { _wizardStep = Math.min(STEP_LABELS.length - 1, _wizardStep + 1); renderWizardStep(); }
+function wizardBack() {
+  // If quick RO mode, Back from step 1 collapses to step 1 (no main step available)
+  if (_wizardSkipMain && _wizardStep === 1) return;
+  _wizardStep = Math.max(0, _wizardStep - 1);
+  renderWizardStep();
+}
+function wizardGoTo(step) {
+  if (_wizardSkipMain && step === 0) return;
+  _wizardStep = step;
+  renderWizardStep();
+}
+function wizardSkipMain() {
+  // clear any main selection then advance
+  for (const k of [..._selectedKeys]) {
+    const v = _variantsCache.find(x => x.key === k);
+    if (v && (v.category === 'cabinet' || v.category === 'combo')) _selectedKeys.delete(k);
+  }
+  wizardNext();
+}
+function wizardSkipRO() {
+  for (const k of [..._selectedKeys]) {
+    const v = _variantsCache.find(x => x.key === k);
+    if (v && v.category === 'ro') _selectedKeys.delete(k);
+  }
+  wizardNext();
 }
 
 function renderVariantCard(i) {
