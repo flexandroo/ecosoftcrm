@@ -2669,7 +2669,7 @@ function generateKP(items, subtotal, discount, total) {
   const manager  = loadManager();
   const hasRO    = items.some(i => i.category === 'ro');
   const savings  = hasRO ? calculateROSavings(people) : null;
-  const fmt = (n) => n.toLocaleString('uk-UA') + ' ₴';
+  const fmt = (n) => n.toLocaleString('uk-UA') + ' ₴';
 
   // Universal benefits — same for every КП, не залежить від набору товарів
   const BENEFIT_ICONS = {
@@ -3159,7 +3159,7 @@ function renderCatalog() {
           </div>
           <div class="catalog-card-spec">${escapeHtml(item.spec || '')}</div>
           <div class="catalog-card-reason">${escapeHtml(item.reason || '')}</div>
-          <div class="catalog-card-price">${item.price ? item.price.toLocaleString('uk-UA') + ' ₴' : '—'}</div>
+          <div class="catalog-card-price">${item.price ? item.price.toLocaleString('uk-UA') + ' ₴' : '—'}</div>
         </div>`;
     }
     html += '</div>';
@@ -3310,7 +3310,7 @@ function openClientForm(id) {
       reKPBtn.style.display = '';
       if (client.lastKP) {
         const d = new Date(client.lastKP.date);
-        reKPBtn.title = 'Згенеровано ' + d.toLocaleDateString('uk-UA') + ' · ' + (client.lastKP.total || 0).toLocaleString('uk-UA') + ' ₴';
+        reKPBtn.title = 'Згенеровано ' + d.toLocaleDateString('uk-UA') + ' · ' + (client.lastKP.total || 0).toLocaleString('uk-UA') + ' ₴';
       } else {
         reKPBtn.title = 'КП буде зібране з обладнання клієнта за поточними цінами';
       }
