@@ -2484,8 +2484,12 @@ function renderWizardStep() {
 }
 
 function renderStepMain() {
-  const cabinets = _variantsCache.filter(i => i.category === 'cabinet');
-  const combos   = _variantsCache.filter(i => i.category === 'combo');
+  // Build cabinets / combos from variants, then bring in same-size siblings
+  // from the catalog so the user sees ALL alternatives at each size class
+  // (e.g. Anthracite 370 next to Titanium 370 even when the water analysis
+  // wouldn't otherwise auto-pick Anthracite).
+  const cabinets = expandWithSizeSiblings(_variantsCache.filter(i => i.category === 'cabinet'), 'cabinet');
+  const combos   = expandWithSizeSiblings(_variantsCache.filter(i => i.category === 'combo'),   'combo');
   const lines = MAIN_LINES.map(l => ({ ...l, items: (l.id === 'cabinet' ? cabinets : combos) })).filter(l => l.items.length);
   if (!lines.length) {
     return `
@@ -2513,6 +2517,38 @@ function renderStepMain() {
       <div class="wizard-nav-spacer"></div>
       <button class="btn btn-primary" onclick="wizardNext()">Далі →</button>
     </div>`;
+}
+
+// Returns the input items plus any catalog siblings of the same category and
+// same detected size that also fit the household size. Lets the wizard show
+// Titanium 370 + Anthracite 370 side-by-side for a 4p/2b user even when only
+// Titanium matches the water-issue filter.
+function expandWithSizeSiblings(items, category) {
+  if (!items.length) return [];
+  const people    = parseInt(document.getElementById('people')?.value) || 3;
+  const bathrooms = parseInt(document.getElementById('bathrooms')?.value) || 1;
+  const present = new Map();
+  for (const it of items) present.set(it.key, it);
+  const sizes = new Set(items.map(i => detectSize(i.key)).filter(Boolean));
+  for (const [key, item] of Object.entries(CATALOG)) {
+    if (item.category !== category) continue;
+    if (present.has(key)) continue;
+    const size = detectSize(key);
+    if (!size || !sizes.has(size)) continue;
+    const meta = ITEM_SOLVES[key] || {};
+    if (!fitsHousehold(meta, people, bathrooms)) continue;
+    present.set(key, { key, ...item, solvesForUser: [], qty: 1 });
+  }
+  // Also remember these in the variants cache so wizardPick / summary find them
+  for (const v of present.values()) {
+    if (!_variantsCache.find(x => x.key === v.key)) _variantsCache.push(v);
+  }
+  return [...present.values()].sort((a, b) => {
+    const as = parseInt(detectSize(a.key)) || 9999;
+    const bs = parseInt(detectSize(b.key)) || 9999;
+    if (as !== bs) return as - bs;
+    return a.name.localeCompare(b.name);
+  });
 }
 
 function renderSizeGroupedCards(items) {
