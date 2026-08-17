@@ -15,6 +15,7 @@ import {
   verifyPassword,
 } from "./src/auth.mjs";
 import { dispatchConversion, trackingConfigured } from "./src/analytics.mjs";
+import { createCatalogService } from "./src/catalog.mjs";
 import {
   DEAL_STATUSES,
   DEAL_TYPES,
@@ -34,11 +35,15 @@ const PORT = Number(process.env.CRM_PORT || 3100);
 const BASE_URL = process.env.CRM_BASE_URL || `http://${HOST}:${PORT}`;
 const DATABASE_PATH = process.env.CRM_DATABASE_PATH || path.join(ROOT, "data", "ecosoftcrm.sqlite");
 const BACKUP_DIR = process.env.CRM_BACKUP_DIR || path.join(ROOT, "backups");
+const CATALOG_URL = process.env.CRM_STORE_CATALOG_URL || "https://sofiivkawater.com/api/catalog";
+const CATALOG_CACHE_PATH = process.env.CRM_CATALOG_CACHE_PATH || path.join(path.dirname(DATABASE_PATH), "catalog-cache.json");
+const CATALOG_TTL_MS = Math.max(60, Number(process.env.CRM_CATALOG_TTL_SECONDS || 60)) * 1000;
 const INTAKE_TOKEN = process.env.CRM_INTAKE_TOKEN || "";
 const SESSION_DAYS = Math.min(30, Math.max(1, Number(process.env.SESSION_DAYS || 14)));
 const MAX_JSON_BYTES = 1_000_000;
 
 const db = openCrmDatabase(DATABASE_PATH);
+const catalog = createCatalogService({ url: CATALOG_URL, cachePath: CATALOG_CACHE_PATH, ttlMs: CATALOG_TTL_MS });
 const loginAttempts = new Map();
 
 const MIME = {
@@ -360,6 +365,16 @@ async function route(req, res) {
 
     if (req.method === "GET" && pathname === "/api/dashboard") {
       return json(res, 200, { ok: true, ...db.dashboard() });
+    }
+
+    if (req.method === "GET" && pathname === "/api/catalog") {
+      try {
+        const force = url.searchParams.get("refresh") === "1";
+        const result = await catalog.getCatalog({ force });
+        return json(res, 200, { ok: true, count: result.products.length, ...result });
+      } catch (error) {
+        return json(res, 503, { ok: false, error: "catalog_unavailable", detail: error.message });
+      }
     }
 
     if (req.method === "GET" && pathname === "/api/deals") {

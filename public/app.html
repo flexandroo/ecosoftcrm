@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260817-2">
+  <link rel="stylesheet" href="/assets/styles.css?v=20260817-5">
 </head>
 <body>
   <div class="app-shell">
@@ -41,7 +41,11 @@
       <nav class="nav-list">
         <button class="nav-item" data-view="selection">
           <svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5-5L12 3.6 9.6 6 7.3 3.7a4 4 0 0 0 5 5L4 17l3 3 8.3-8.3a4 4 0 0 0 5-5L18 9l-2.4-2.4 2.3-2.3a4 4 0 0 0-3.2 2Z"/></svg>
-          <span>Підбір та КП</span>
+          <span>Підбір за аналізом</span>
+        </button>
+        <button class="nav-item" data-view="proposal">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
+          <span>Створити КП</span>
         </button>
         <button class="nav-item" data-view="settings">
           <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.09A1.7 1.7 0 0 0 8.97 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.51-1H3v-4h.09A1.7 1.7 0 0 0 4.6 8.97a1.7 1.7 0 0 0-.34-1.88l-.06-.06L7.03 4.2l.06.06A1.7 1.7 0 0 0 8.97 4.6 1.7 1.7 0 0 0 10 3.09V3h4v.09a1.7 1.7 0 0 0 1.03 1.51 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06a1.7 1.7 0 0 0-.34 1.88A1.7 1.7 0 0 0 20.91 10H21v4h-.09A1.7 1.7 0 0 0 19.4 15Z"/></svg>
@@ -132,8 +136,61 @@
         <div id="customersTable" class="table-wrap data-table" hidden><table><thead><tr><th>Клієнт</th><th>Контакти</th><th>Звернень</th><th>Успішні продажі</th><th>Остання активність</th><th><span class="visually-hidden">Дії</span></th></tr></thead><tbody id="customersBody"></tbody></table></div>
       </section>
 
-      <section class="view selection-view" id="view-selection" aria-label="Підбір обладнання та генерація комерційної пропозиції">
+      <section class="view selection-view" id="view-selection" aria-labelledby="selectionTitle">
+        <div class="page-heading compact selection-heading">
+          <div><p class="page-context">Автоматичний розрахунок</p><h1 id="selectionTitle">Підбір за аналізом води</h1><p>Введіть показники — система сформує рішення Ecosoft і комерційну пропозицію.</p></div>
+          <div class="heading-actions"><button class="button" id="selectionManagerButton"><svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0m8-11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/></svg>Менеджер</button><button class="button" id="selectionSampleButton"><svg viewBox="0 0 24 24"><path d="M9 3h6m-5 0v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3M8 15h8"/></svg>Заповнити приклад</button></div>
+        </div>
         <iframe id="selectionFrame" class="selection-frame" src="/selection" title="Підбір за аналізом води та генерація КП" loading="eager"></iframe>
+      </section>
+
+      <section class="view proposal-view" id="view-proposal" aria-labelledby="proposalTitle">
+        <div class="page-heading compact">
+          <div><p class="page-context">Ручне комплектування</p><h1 id="proposalTitle">Створити комерційну пропозицію</h1><p>Оберіть обладнання з актуального каталогу, вкажіть кількість і сформуйте PDF.</p></div>
+          <button class="button" id="refreshCatalogButton"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>Оновити ціни</button>
+        </div>
+
+        <div class="catalog-sync-bar" id="catalogSyncBar" aria-live="polite">
+          <span class="sync-dot"></span><span id="catalogSyncText">Завантажуємо каталог із сайту…</span>
+        </div>
+
+        <div class="proposal-layout">
+          <aside class="proposal-sidebar">
+            <section class="panel proposal-client-panel">
+              <div class="panel-heading"><div><h2>Дані клієнта</h2><p>Будуть вказані у готовому КП</p></div></div>
+              <div class="proposal-fields">
+                <label><span>Ім’я / компанія</span><input id="proposalClientName" maxlength="120" placeholder="Іван Петренко"></label>
+                <label><span>Телефон</span><input id="proposalClientPhone" type="tel" maxlength="32" placeholder="+380501112233"></label>
+                <label><span>Email</span><input id="proposalClientEmail" type="email" maxlength="254" placeholder="client@example.com"></label>
+                <label><span>Об’єкт / адреса</span><input id="proposalClientAddress" maxlength="400" placeholder="Київська область"></label>
+                <div class="form-grid">
+                  <label><span>Знижка, %</span><input id="proposalDiscount" type="number" min="0" max="100" step="0.1" value="0"></label>
+                  <label><span>Діє, днів</span><input id="proposalValidity" type="number" min="1" max="90" value="14"></label>
+                </div>
+                <label><span>Коментар до пропозиції</span><textarea id="proposalNote" rows="3" maxlength="1000" placeholder="Монтаж та пусконалагодження узгоджуються окремо"></textarea></label>
+              </div>
+            </section>
+          </aside>
+
+          <div class="proposal-workspace">
+            <section class="panel catalog-picker">
+              <div class="panel-heading proposal-catalog-heading"><div><h2>Каталог обладнання</h2><p id="catalogCount">Очікуємо дані</p></div><div class="catalog-tools"><label class="search-field"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="proposalCatalogSearch" type="search" placeholder="Назва або артикул"></label><select id="proposalCategoryFilter" aria-label="Категорія"><option value="all">Усі категорії</option></select></div></div>
+              <div id="proposalCatalogSkeleton" class="catalog-skeleton" aria-label="Завантаження каталогу"></div>
+              <div id="proposalCatalogList" class="catalog-product-list" hidden></div>
+              <div id="proposalCatalogEmpty" class="catalog-empty" hidden>За цим запитом товарів не знайдено.</div>
+            </section>
+
+            <section class="panel proposal-cart-panel">
+              <div class="panel-heading"><div><h2>Комплектація КП</h2><p id="proposalItemCount">Обладнання ще не додано</p></div></div>
+              <div id="proposalEmpty" class="proposal-empty"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg><strong>Почніть із каталогу</strong><span>Додайте потрібне обладнання — кількість і ціни можна відредагувати.</span></div>
+              <div id="proposalItemsWrap" class="proposal-items-wrap" hidden><div id="proposalItems" class="proposal-items"></div></div>
+              <footer class="proposal-summary">
+                <div class="proposal-totals"><span>Сума обладнання <strong id="proposalSubtotal">0 ₴</strong></span><span id="proposalDiscountRow" hidden>Знижка <strong id="proposalDiscountAmount">0 ₴</strong></span><span class="proposal-grand-total">До сплати <strong id="proposalTotal">0 ₴</strong></span></div>
+                <div class="proposal-actions"><button class="button" id="clearProposalButton" type="button">Очистити</button><button class="button" id="previewProposalButton" type="button">Переглянути</button><button class="button button-primary" id="downloadProposalButton" type="button"><svg viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M5 21h14"/></svg>Завантажити PDF</button></div>
+              </footer>
+            </section>
+          </div>
+        </div>
       </section>
 
       <section class="view" id="view-settings" aria-labelledby="settingsTitle">
@@ -151,6 +208,7 @@
       <button data-view="leads"><svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0m8-11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/></svg><span>Заявки</span></button>
       <button data-view="customers"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/></svg><span>Клієнти</span></button>
       <button data-view="selection"><svg viewBox="0 0 24 24"><path d="M12 2.7 17.7 8.4a8 8 0 1 1-11.4 0L12 2.7Z"/></svg><span>Підбір</span></button>
+      <button data-view="proposal"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z"/><path d="M14 2v6h6"/></svg><span>КП</span></button>
     </nav>
   </div>
 
@@ -175,7 +233,16 @@
     </form>
   </dialog>
 
+  <dialog id="proposalPreviewDialog" class="proposal-preview-dialog">
+    <div class="proposal-preview-shell">
+      <header class="dialog-header"><div><p class="page-context">Попередній перегляд</p><h2>Комерційна пропозиція</h2></div><button class="icon-button dialog-close" type="button" data-close-proposal aria-label="Закрити"><svg viewBox="0 0 24 24"><path d="m18 6-12 12M6 6l12 12"/></svg></button></header>
+      <div class="proposal-preview-stage"><article id="proposalDocument" class="proposal-document"></article></div>
+      <footer class="dialog-footer"><button class="button" type="button" data-close-proposal>Закрити</button><button class="button button-primary" id="downloadProposalFromPreview" type="button"><svg viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M5 21h14"/></svg>Завантажити PDF</button></footer>
+    </div>
+  </dialog>
+
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-  <script src="/assets/app.js?v=20260817-2" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
+  <script src="/assets/app.js?v=20260817-5" defer></script>
 </body>
 </html>

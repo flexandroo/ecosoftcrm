@@ -1466,14 +1466,58 @@
   body.crm-selection-mode .app { display: block; min-height: 0; }
   body.crm-selection-mode .sidebar { display: none; }
   body.crm-selection-mode .main { max-width: none; padding: 0; }
+  body.crm-selection-mode .header { display: none; }
   body.crm-selection-mode .demo-note,
   body.crm-selection-mode .view:not(#view-calc) { display: none !important; }
+  body.crm-selection-mode {
+    --eco-blue: #0085ca;
+    --eco-blue-dark: #006ba6;
+    --eco-blue-soft: #e6f4fa;
+    --eco-blue-tint: #f2f8fb;
+    --ink: #102433;
+    --ink-soft: #334c5e;
+    --text-muted: #647b8c;
+    --text-dim: #8da0ad;
+    --surface-alt: #f5f8fa;
+    --border: #dbe5eb;
+    --border-soft: #eaf0f4;
+    background: #f5f8fa;
+  }
+  body.crm-selection-mode .workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+  body.crm-selection-mode .panel { border-radius: 12px; padding: 20px; box-shadow: none; }
+  body.crm-selection-mode .panel-head { gap: 9px; }
+  body.crm-selection-mode .panel-icon { width: 30px; height: 30px; border-radius: 8px; }
+  body.crm-selection-mode .panel-title { font-size: 15px; font-weight: 800; }
+  body.crm-selection-mode .panel-sub { margin: 4px 0 18px 39px; font-size: 11px; }
+  body.crm-selection-mode .client-card { border: 0; border-radius: 0; background: transparent; padding: 0; }
+  body.crm-selection-mode .field-label { color: var(--ink-soft); font-size: 11px; font-weight: 700; }
+  body.crm-selection-mode input,
+  body.crm-selection-mode select,
+  body.crm-selection-mode textarea { min-height: 42px; border-color: var(--border); border-radius: 9px; background: #fff; color: var(--ink); font-family: var(--font-sans); }
+  body.crm-selection-mode input:focus,
+  body.crm-selection-mode select:focus,
+  body.crm-selection-mode textarea:focus { border-color: var(--eco-blue); box-shadow: 0 0 0 3px rgb(0 133 202 / .23); outline: 0; }
+  body.crm-selection-mode .btn { min-height: 42px; border-radius: 9px; padding: 0 15px; box-shadow: none; font-size: 13px; font-weight: 700; }
+  body.crm-selection-mode .btn:hover { border-color: #a9beca; background: #f9fbfc; color: var(--ink); }
+  body.crm-selection-mode .btn-primary,
+  body.crm-selection-mode .calc-btn { min-height: 44px; border: 1px solid var(--eco-blue); border-radius: 9px; background: var(--eco-blue); box-shadow: none; color: #fff; font-size: 13px; font-weight: 800; }
+  body.crm-selection-mode .btn-primary:hover,
+  body.crm-selection-mode .calc-btn:hover { background: var(--eco-blue-dark); border-color: var(--eco-blue-dark); box-shadow: none; transform: none; }
+  body.crm-selection-mode .section-title { color: var(--ink); font-size: 12px; font-weight: 800; }
+  body.crm-selection-mode .param-card,
+  body.crm-selection-mode .equipment,
+  body.crm-selection-mode .wizard-card,
+  body.crm-selection-mode .wizard-summary-row { border-color: var(--border); border-radius: 9px; box-shadow: none; }
+  body.crm-selection-mode .results-empty { border-color: var(--border); border-radius: 10px; background: var(--surface-alt); }
+  body.crm-selection-mode .modal-bg { background: rgb(16 36 51 / .48); backdrop-filter: none; }
+  body.crm-selection-mode .modal,
+  body.crm-selection-mode .modal-form { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 40px rgb(16 36 51 / .12); }
   body.legacy-tools-mode .nav-item[data-view="calc"],
   body.legacy-tools-mode #view-calc,
   body.legacy-tools-mode #clientReKPBtn { display: none !important; }
 
   @media (max-width: 900px) {
-    body.crm-selection-mode .main { padding: 16px; }
+    body.crm-selection-mode .main { padding: 0; }
     body.crm-selection-mode .header { align-items: flex-start; flex-direction: column; gap: 14px; margin-bottom: 16px; padding-bottom: 14px; }
     body.crm-selection-mode .header-title { font-size: 23px; }
     body.crm-selection-mode .header-sub { font-size: 12px; line-height: 1.5; }
@@ -1613,11 +1657,11 @@
           <div class="client-row">
             <div>
               <div class="field-label">Клієнт</div>
-              <input type="text" id="clientName" value="Іваненко Олександр">
+              <input type="text" id="clientName" value="" placeholder="Ім’я або назва компанії">
             </div>
             <div>
               <div class="field-label">Телефон</div>
-              <input type="text" id="clientPhone" value="+380 67 123-45-67">
+              <input type="text" id="clientPhone" value="" placeholder="+380 50 111 22 33">
             </div>
           </div>
           <div class="client-row">
@@ -1627,7 +1671,7 @@
             </div>
             <div>
               <div class="field-label">Обʼєкт (адреса)</div>
-              <input type="text" id="clientAddr" value="с. Софіївська Борщагівка">
+              <input type="text" id="clientAddr" value="" placeholder="Населений пункт або адреса">
             </div>
           </div>
           <div class="client-row">
@@ -2183,6 +2227,28 @@ function loadCatalog() {
 }
 
 let CATALOG = loadCatalog();
+
+async function syncStoreCatalog() {
+  try {
+    const response = await fetch('/api/catalog');
+    if (!response.ok) return;
+    const payload = await response.json();
+    if (!payload.ok || !Array.isArray(payload.products)) return;
+    const bySku = new Map(payload.products.filter(item => item.sku).map(item => [String(item.sku).toUpperCase(), item]));
+    let changed = false;
+    Object.values(CATALOG).forEach(item => {
+      const product = item.sku ? bySku.get(String(item.sku).toUpperCase()) : null;
+      if (!product) return;
+      item.price = Number(product.price) || 0;
+      item.name = product.name || item.name;
+      item.photo = product.image || item.photo || '';
+      item.siteUrl = product.url || '';
+      changed = true;
+    });
+    if (changed) saveCatalog();
+    if (location.pathname.startsWith('/tools')) renderCatalog();
+  } catch {}
+}
 
 // ============== EQUIPMENT METADATA (used by auto-selection) ==============
 // Maps catalog item keys to "what they solve" tags + (for RO) input water limits.
@@ -4747,6 +4813,7 @@ function deleteCurrentEquipment() {
 // ============== INIT ==============
 renderParams();
 updateManagerHeaderName();
+syncStoreCatalog();
 if (location.pathname.startsWith('/tools')) showView('clients');
 </script>
 </body>

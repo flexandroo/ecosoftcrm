@@ -9,6 +9,11 @@ const state = {
   status: "all",
   query: "",
   currentDeal: null,
+  catalog: [],
+  catalogSyncedAt: null,
+  catalogStale: false,
+  proposalItems: [],
+  proposalLoaded: false,
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -38,6 +43,10 @@ function formatDate(value, withTime = false) {
   return new Intl.DateTimeFormat("uk-UA", withTime
     ? { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }
     : { day: "2-digit", month: "short", year: "numeric" }).format(date);
+}
+
+function formatPlainDate(value) {
+  return new Intl.DateTimeFormat("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" }).format(value);
 }
 
 async function api(path, options = {}) {
@@ -199,6 +208,7 @@ async function loadCustomers() {
 
 function switchView(view) {
   state.currentView = view;
+  window.scrollTo({ top: 0, behavior: "instant" });
   const target = ["orders", "leads"].includes(view) ? "deals" : view;
   $$(".view").forEach((element) => element.classList.toggle("active", element.id === `view-${target}`));
   $$('[data-view]').forEach((element) => element.classList.toggle("active", element.dataset.view === view));
@@ -213,6 +223,263 @@ function switchView(view) {
   }
   if (view === "customers") loadCustomers().catch(showLoadError);
   if (view === "selection") $("#selectionFrame")?.focus();
+  if (view === "proposal" && !state.proposalLoaded) loadCatalog().catch(showCatalogError);
+}
+
+function catalogSyncLabel(result) {
+  const synced = result.syncedAt ? formatDate(result.syncedAt, true) : "щойно";
+  return result.stale
+    ? `Показано останню збережену версію (${synced}). Сайт тимчасово недоступний.`
+    : `${result.count} товарів · ціни синхронізовано із sofiivkawater.com ${synced}`;
+}
+
+async function loadCatalog(force = false) {
+  const button = $("#refreshCatalogButton");
+  const bar = $("#catalogSyncBar");
+  button.disabled = true;
+  bar.className = "catalog-sync-bar";
+  $("#catalogSyncText").textContent = force ? "Оновлюємо ціни із сайту…" : "Завантажуємо каталог із сайту…";
+  $("#proposalCatalogSkeleton").hidden = false;
+  $("#proposalCatalogList").hidden = true;
+  try {
+    const result = await api(`/api/catalog${force ? "?refresh=1" : ""}`);
+    state.catalog = result.products;
+    state.catalogSyncedAt = result.syncedAt;
+    state.catalogStale = result.stale;
+    state.proposalLoaded = true;
+    bar.classList.add(result.stale ? "stale" : "ready");
+    $("#catalogSyncText").textContent = catalogSyncLabel(result);
+    renderCatalogFilters();
+    refreshProposalPrices();
+    renderProposalCatalog();
+    renderProposalItems();
+    if (force) toast("Каталог і ціни оновлено із сайту.");
+  } finally {
+    button.disabled = false;
+    $("#proposalCatalogSkeleton").hidden = true;
+  }
+}
+
+function showCatalogError() {
+  $("#proposalCatalogSkeleton").hidden = true;
+  $("#proposalCatalogEmpty").hidden = false;
+  $("#proposalCatalogEmpty").textContent = "Не вдалося завантажити каталог. Натисніть «Оновити ціни», щоб повторити.";
+  $("#catalogSyncBar").className = "catalog-sync-bar stale";
+  $("#catalogSyncText").textContent = "Каталог зараз недоступний.";
+}
+
+function renderCatalogFilters() {
+  const select = $("#proposalCategoryFilter");
+  const current = select.value;
+  const categories = [...new Map(state.catalog.map((item) => [item.category, item.categoryName || item.category])).entries()]
+    .filter(([id]) => id)
+    .sort((a, b) => a[1].localeCompare(b[1], "uk"));
+  select.innerHTML = `<option value="all">Усі категорії</option>${categories.map(([id, label]) => `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`).join("")}`;
+  if (["all", ...categories.map(([id]) => id)].includes(current)) select.value = current;
+}
+
+function renderProposalCatalog() {
+  const query = $("#proposalCatalogSearch").value.trim().toLowerCase();
+  const category = $("#proposalCategoryFilter").value;
+  const products = state.catalog.filter((item) => {
+    const matchesCategory = category === "all" || item.category === category;
+    const haystack = `${item.name} ${item.sku}`.toLowerCase();
+    return matchesCategory && (!query || haystack.includes(query));
+  });
+  $("#catalogCount").textContent = `${products.length} із ${state.catalog.length} товарів`;
+  const list = $("#proposalCatalogList");
+  const empty = $("#proposalCatalogEmpty");
+  empty.hidden = products.length > 0;
+  empty.textContent = "За цим запитом товарів не знайдено.";
+  list.hidden = products.length === 0;
+  list.innerHTML = products.map((item) => `<div class="catalog-product">
+    ${item.image ? `<img class="catalog-product-image" src="${escapeHtml(item.image)}" alt="" loading="lazy">` : `<span class="catalog-product-image"></span>`}
+    <div class="catalog-product-copy"><strong class="catalog-product-name">${escapeHtml(item.name)}</strong><span class="catalog-product-meta">${escapeHtml(item.sku || "Без артикулу")} · ${escapeHtml(item.categoryName)}</span></div>
+    <span class="catalog-stock ${item.inStock ? "" : "out"}">${item.inStock ? "В наявності" : "Під замовлення"}</span>
+    <strong class="catalog-product-price">${formatMoney(item.price, item.currency)}</strong>
+    <button class="button button-small catalog-add" type="button" data-add-product="${escapeHtml(item.id)}">Додати</button>
+  </div>`).join("");
+  $$('[data-add-product]', list).forEach((button) => button.addEventListener("click", () => addProposalProduct(button.dataset.addProduct)));
+}
+
+function addProposalProduct(id) {
+  const product = state.catalog.find((item) => item.id === id);
+  if (!product) return;
+  const existing = state.proposalItems.find((item) => item.id === id);
+  if (existing) existing.quantity += 1;
+  else state.proposalItems.push({ id: product.id, sku: product.sku, name: product.name, quantity: 1, price: product.price, sitePrice: product.price, currency: product.currency });
+  saveProposalDraft();
+  renderProposalItems();
+  toast(existing ? "Кількість товару збільшено." : "Товар додано до КП.");
+}
+
+function refreshProposalPrices() {
+  for (const item of state.proposalItems) {
+    const current = state.catalog.find((product) => product.id === item.id || (item.sku && product.sku === item.sku));
+    if (!current) continue;
+    const hadManualPrice = Number(item.price) !== Number(item.sitePrice);
+    item.sitePrice = current.price;
+    item.name = current.name;
+    if (!hadManualPrice) item.price = current.price;
+  }
+  saveProposalDraft();
+}
+
+function proposalTotals() {
+  const subtotal = state.proposalItems.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 0), 0);
+  const discountPercent = Math.min(100, Math.max(0, Number($("#proposalDiscount").value) || 0));
+  const discount = subtotal * discountPercent / 100;
+  return { subtotal, discountPercent, discount, total: subtotal - discount };
+}
+
+function renderProposalItems() {
+  const empty = $("#proposalEmpty");
+  const wrap = $("#proposalItemsWrap");
+  const hasItems = state.proposalItems.length > 0;
+  empty.hidden = hasItems;
+  wrap.hidden = !hasItems;
+  $("#proposalItemCount").textContent = hasItems
+    ? `${state.proposalItems.length} ${plural(state.proposalItems.length, ["позиція", "позиції", "позицій"])}`
+    : "Обладнання ще не додано";
+  $("#proposalItems").innerHTML = state.proposalItems.map((item) => `<div class="proposal-item" data-proposal-item="${escapeHtml(item.id)}">
+    <div class="proposal-item-copy"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.sku || "Без артикулу")}${Number(item.price) !== Number(item.sitePrice) ? ` · ціна змінена менеджером (на сайті ${formatMoney(item.sitePrice)})` : " · актуальна ціна сайту"}</span></div>
+    <label><span>Кількість</span><input type="number" min="1" max="999" step="1" value="${item.quantity}" data-item-quantity></label>
+    <label><span>Ціна, ₴</span><input type="number" min="0" step="1" value="${item.price}" data-item-price></label>
+    <strong class="proposal-line-total">${formatMoney(item.quantity * item.price)}</strong>
+    <button class="icon-button icon-button-danger" type="button" data-remove-item aria-label="Видалити"><svg viewBox="0 0 24 24"><path d="M4 7h16m-10 4v6m4-6v6M9 7l1-3h4l1 3m-9 0 1 14h10l1-14"/></svg></button>
+  </div>`).join("");
+  $$('[data-proposal-item]', $("#proposalItems")).forEach((row) => {
+    const item = state.proposalItems.find((entry) => entry.id === row.dataset.proposalItem);
+    row.querySelector('[data-item-quantity]').addEventListener("change", (event) => {
+      item.quantity = Math.min(999, Math.max(1, Math.floor(Number(event.target.value) || 1)));
+      saveProposalDraft();
+      renderProposalItems();
+    });
+    row.querySelector('[data-item-price]').addEventListener("change", (event) => {
+      item.price = Math.max(0, Number(event.target.value) || 0);
+      saveProposalDraft();
+      renderProposalItems();
+    });
+    row.querySelector('[data-remove-item]').addEventListener("click", () => {
+      state.proposalItems = state.proposalItems.filter((entry) => entry.id !== item.id);
+      saveProposalDraft();
+      renderProposalItems();
+    });
+  });
+  const totals = proposalTotals();
+  $("#proposalSubtotal").textContent = formatMoney(totals.subtotal);
+  $("#proposalDiscountRow").hidden = totals.discount <= 0;
+  $("#proposalDiscountAmount").textContent = `−${formatMoney(totals.discount)}`;
+  $("#proposalTotal").textContent = formatMoney(totals.total);
+}
+
+function proposalFormData() {
+  return {
+    name: $("#proposalClientName").value.trim(),
+    phone: $("#proposalClientPhone").value.trim(),
+    email: $("#proposalClientEmail").value.trim(),
+    address: $("#proposalClientAddress").value.trim(),
+    validity: Math.min(90, Math.max(1, Number($("#proposalValidity").value) || 14)),
+    note: $("#proposalNote").value.trim(),
+  };
+}
+
+function saveProposalDraft() {
+  if (!$("#proposalClientName")) return;
+  localStorage.setItem("ecosoftcrm_proposal_draft_v1", JSON.stringify({ form: proposalFormData(), discount: $("#proposalDiscount").value, items: state.proposalItems }));
+}
+
+function restoreProposalDraft() {
+  try {
+    const draft = JSON.parse(localStorage.getItem("ecosoftcrm_proposal_draft_v1") || "null");
+    if (!draft) return;
+    state.proposalItems = Array.isArray(draft.items) ? draft.items.slice(0, 100) : [];
+    const fields = { proposalClientName: "name", proposalClientPhone: "phone", proposalClientEmail: "email", proposalClientAddress: "address", proposalValidity: "validity", proposalNote: "note" };
+    for (const [id, key] of Object.entries(fields)) if (draft.form?.[key] != null) $(`#${id}`).value = draft.form[key];
+    if (draft.discount != null) $("#proposalDiscount").value = draft.discount;
+  } catch {
+    localStorage.removeItem("ecosoftcrm_proposal_draft_v1");
+  }
+}
+
+function proposalNumber() {
+  const now = new Date();
+  const date = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`;
+  const time = `${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
+  return `КП-${date}-${time}`;
+}
+
+function buildProposalDocument() {
+  if (!state.proposalItems.length) {
+    toast("Додайте хоча б одну позицію обладнання.");
+    return false;
+  }
+  const client = proposalFormData();
+  const totals = proposalTotals();
+  const created = new Date();
+  const validUntil = new Date(created.getTime() + client.validity * 86400000);
+  const number = proposalNumber();
+  $("#proposalDocument").innerHTML = `
+    <header class="proposal-doc-header"><img class="proposal-doc-logo" src="/ecosoft-logo.jpg" alt="Ecosoft"><div class="proposal-doc-meta"><strong>${number}</strong>Дата: ${formatPlainDate(created)}<br>Дійсна до: ${formatPlainDate(validUntil)}</div></header>
+    <h1 class="proposal-doc-title">Комерційна пропозиція</h1>
+    <p class="proposal-doc-intro">Обладнання для очищення води Ecosoft. Ціни сформовані за актуальним каталогом sofiivkawater.com.</p>
+    <section class="proposal-doc-client">
+      <div><span>Клієнт / компанія</span><strong>${escapeHtml(client.name || "Не вказано")}</strong></div>
+      <div><span>Телефон</span><strong>${escapeHtml(client.phone || "Не вказано")}</strong></div>
+      <div><span>Email</span><strong>${escapeHtml(client.email || "Не вказано")}</strong></div>
+      <div><span>Об’єкт</span><strong>${escapeHtml(client.address || "Не вказано")}</strong></div>
+    </section>
+    <table class="proposal-doc-table"><thead><tr><th>№</th><th>Обладнання</th><th>К-сть</th><th>Ціна</th><th>Сума</th></tr></thead><tbody>${state.proposalItems.map((item, index) => `<tr><td>${index + 1}</td><td><span class="proposal-doc-product">${escapeHtml(item.name)}</span><span class="proposal-doc-sku">${escapeHtml(item.sku || "")}</span></td><td>${item.quantity}</td><td>${formatMoney(item.price)}</td><td>${formatMoney(item.price * item.quantity)}</td></tr>`).join("")}</tbody></table>
+    <div class="proposal-doc-total"><div><span>Сума обладнання</span><strong>${formatMoney(totals.subtotal)}</strong></div>${totals.discount ? `<div><span>Знижка ${totals.discountPercent}%</span><strong>−${formatMoney(totals.discount)}</strong></div>` : ""}<div class="grand"><span>Разом</span><strong>${formatMoney(totals.total)}</strong></div></div>
+    ${client.note ? `<div class="proposal-doc-note"><strong>Примітка</strong><br>${escapeHtml(client.note)}</div>` : ""}
+    <footer class="proposal-doc-footer"><div><strong>Софіївська вода</strong><br>Офіційне обладнання Ecosoft<br>sofiivkawater.com</div><div>+380 50 358 22 84<br>+380 73 889 64 94</div><div>Умови монтажу, доставки та оплати<br>узгоджуються з менеджером.</div></footer>`;
+  $("#proposalDocument").dataset.proposalNumber = number;
+  return true;
+}
+
+function previewProposal() {
+  if (!buildProposalDocument()) return;
+  $("#proposalPreviewDialog").showModal();
+}
+
+async function downloadProposal() {
+  if (!buildProposalDocument()) return;
+  if (typeof window.html2pdf !== "function") {
+    document.body.classList.add("printing-proposal");
+    window.print();
+    setTimeout(() => document.body.classList.remove("printing-proposal"), 500);
+    toast("Відкрито друк — виберіть «Зберегти як PDF».");
+    return;
+  }
+  const button = $("#downloadProposalButton");
+  const previewButton = $("#downloadProposalFromPreview");
+  button.disabled = true;
+  previewButton.disabled = true;
+  const clientName = proposalFormData().name.replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 50);
+  const filename = `${$("#proposalDocument").dataset.proposalNumber}${clientName ? `-${clientName}` : ""}.pdf`;
+  try {
+    await window.html2pdf().set({
+      margin: 0,
+      filename,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+      jsPDF: { unit: "px", format: [794, 1123], orientation: "portrait", hotfixes: ["px_scaling"] },
+      pagebreak: { mode: ["css", "legacy"] },
+    }).from($("#proposalDocument")).save();
+    toast("Комерційну пропозицію сформовано.");
+  } catch {
+    toast("Не вдалося сформувати PDF. Повторіть спробу.");
+  } finally {
+    button.disabled = false;
+    previewButton.disabled = false;
+  }
+}
+
+function clearProposal() {
+  if (state.proposalItems.length && !window.confirm("Очистити всю комплектацію комерційної пропозиції?")) return;
+  state.proposalItems = [];
+  saveProposalDraft();
+  renderProposalItems();
 }
 
 function showLoadError(error) {
@@ -365,6 +632,18 @@ function bindEvents() {
   $("#newDealForm").addEventListener("submit", createManualDeal);
   $("#logoutButton").addEventListener("click", async () => { await api("/api/auth/logout", { method: "POST", body: "{}" }); window.location.replace("/login"); });
   $("#passwordForm").addEventListener("submit", changePassword);
+  $("#refreshCatalogButton").addEventListener("click", () => loadCatalog(true).catch(showCatalogError));
+  $("#proposalCatalogSearch").addEventListener("input", debounce(renderProposalCatalog, 180));
+  $("#proposalCategoryFilter").addEventListener("change", renderProposalCatalog);
+  $("#proposalDiscount").addEventListener("input", () => { saveProposalDraft(); renderProposalItems(); });
+  $$('[id^="proposalClient"], #proposalValidity, #proposalNote').forEach((field) => field.addEventListener("input", saveProposalDraft));
+  $("#clearProposalButton").addEventListener("click", clearProposal);
+  $("#previewProposalButton").addEventListener("click", previewProposal);
+  $("#downloadProposalButton").addEventListener("click", downloadProposal);
+  $("#downloadProposalFromPreview").addEventListener("click", downloadProposal);
+  $$('[data-close-proposal]').forEach((button) => button.addEventListener("click", () => $("#proposalPreviewDialog").close()));
+  $("#selectionSampleButton").addEventListener("click", () => $("#selectionFrame").contentWindow?.loadSample?.());
+  $("#selectionManagerButton").addEventListener("click", () => $("#selectionFrame").contentWindow?.openManagerSettings?.());
   for (const dialog of $$('dialog')) {
     dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
   }
@@ -424,8 +703,13 @@ async function changePassword(event) {
 async function init() {
   $("#todayLabel").textContent = new Intl.DateTimeFormat("uk-UA", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
   bindEvents();
+  restoreProposalDraft();
+  renderProposalItems();
   await loadBootstrap();
   await loadDashboard();
+  setInterval(() => {
+    if (state.proposalLoaded) loadCatalog().catch(() => {});
+  }, 5 * 60 * 1000);
 }
 
 init().catch(showLoadError);
