@@ -1464,12 +1464,64 @@
     border-color: var(--border);
   }
   .btn-danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* The calculator is embedded inside the authenticated CRM. The legacy tools
+     page keeps clients, tasks and catalogue only. */
+  body.crm-selection-mode { background: transparent; }
+  body.crm-selection-mode .app { display: block; min-height: 0; }
+  body.crm-selection-mode .sidebar { display: none; }
+  body.crm-selection-mode .main { max-width: none; padding: 0; }
+  body.crm-selection-mode .demo-note,
+  body.crm-selection-mode .view:not(#view-calc) { display: none !important; }
+  body.legacy-tools-mode .nav-item[data-view="calc"],
+  body.legacy-tools-mode #view-calc,
+  body.legacy-tools-mode #clientReKPBtn { display: none !important; }
+
+  @media (max-width: 900px) {
+    body.crm-selection-mode .main { padding: 16px; }
+    body.crm-selection-mode .header { align-items: flex-start; flex-direction: column; gap: 14px; margin-bottom: 16px; padding-bottom: 14px; }
+    body.crm-selection-mode .header-title { font-size: 23px; }
+    body.crm-selection-mode .header-sub { font-size: 12px; line-height: 1.5; }
+    body.crm-selection-mode .header-actions { width: 100%; flex-wrap: wrap; }
+    body.crm-selection-mode .header-actions .btn { flex: 1 1 170px; justify-content: center; }
+    body.crm-selection-mode .workspace { grid-template-columns: 1fr; }
+    body.crm-selection-mode .panel { padding: 16px; }
+    body.crm-selection-mode .panel-sub { margin: 4px 0 16px; }
+    body.crm-selection-mode .client-row,
+    body.crm-selection-mode .params-grid { grid-template-columns: 1fr; }
+    body.crm-selection-mode .section-title { align-items: flex-start !important; flex-wrap: wrap; }
+    body.crm-selection-mode .section-title .btn { margin-left: 26px; }
+    body.crm-selection-mode .results-empty { min-height: 260px; }
+    body.crm-selection-mode .wizard-cards { grid-template-columns: 1fr; }
+    body.crm-selection-mode .wizard-step-pill { padding-right: 8px; font-size: 10px; }
+    body.crm-selection-mode .wizard-summary-row { align-items: flex-start; flex-wrap: wrap; }
+    body.crm-selection-mode .wizard-summary-price { margin-left: 48px; }
+    body.crm-selection-mode .equipment { grid-template-columns: 44px minmax(0, 1fr); padding: 13px; }
+    body.crm-selection-mode .equipment-img { width: 44px; height: 44px; }
+    body.crm-selection-mode .equipment-price { grid-column: 2; justify-self: start; }
+    body.crm-selection-mode .modal-bg { padding: 10px; }
+    body.crm-selection-mode .modal-form-head,
+    body.crm-selection-mode .modal-form-body,
+    body.crm-selection-mode .modal-form-foot { padding-inline: 16px; }
+    body.crm-selection-mode .form-grid.cols-2,
+    body.crm-selection-mode .form-grid.cols-3,
+    body.crm-selection-mode .kp-meta-row,
+    body.crm-selection-mode .kp-benefits { grid-template-columns: 1fr; }
+    body.crm-selection-mode .kp { padding: 24px 20px; }
+    body.crm-selection-mode .kp-header { gap: 20px; }
+    body.crm-selection-mode .kp-brand-mark { width: 160px; }
+    body.crm-selection-mode .kp-table { min-width: 620px; }
+    body.crm-selection-mode .modal { overflow-x: auto; }
+  }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
+<script>
+  document.body.classList.add(location.pathname.startsWith('/selection') ? 'crm-selection-mode' : 'legacy-tools-mode');
+</script>
 
 <!-- Reusable SVG drop logo -->
 <svg width="0" height="0" style="position:absolute">
@@ -1513,11 +1565,6 @@
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
         Задачі
       </a>
-      <a class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-        КП та угоди
-      </a>
-
       <div class="nav-section">Каталог</div>
       <a class="nav-item" data-view="catalog" onclick="showView('catalog')" style="cursor:pointer">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
@@ -4705,6 +4752,7 @@ function deleteCurrentEquipment() {
 // ============== INIT ==============
 renderParams();
 updateManagerHeaderName();
+if (location.pathname.startsWith('/tools')) showView('clients');
 </script>
 </body>
 </html>

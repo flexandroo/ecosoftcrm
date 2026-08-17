@@ -190,9 +190,11 @@ async function loadCustomers() {
   const query = encodeURIComponent($("#customerSearch").value.trim());
   const data = await api(`/api/customers?q=${query}`);
   state.customers = data.customers;
-  $("#customersBody").innerHTML = data.customers.length ? data.customers.map((customer) => `<tr><td><span class="cell-primary">${escapeHtml(customer.name)}</span><span class="cell-secondary">Клієнт з ${formatDate(customer.created_at)}</span></td><td><span class="cell-primary">${escapeHtml(customer.phone)}</span><span class="cell-secondary">${escapeHtml(customer.email || "—")}</span></td><td class="money">${customer.deal_count}</td><td class="money">${formatMoney(customer.completed_revenue)}</td><td>${formatDate(customer.last_deal_at || customer.updated_at, true)}</td></tr>`).join("") : `<tr><td colspan="5">Клієнтів поки немає.</td></tr>`;
+  const canDelete = state.user?.role === "admin";
+  $("#customersBody").innerHTML = data.customers.length ? data.customers.map((customer) => `<tr><td><span class="cell-primary">${escapeHtml(customer.name)}</span><span class="cell-secondary">Клієнт з ${formatDate(customer.created_at)}</span></td><td><span class="cell-primary">${escapeHtml(customer.phone)}</span><span class="cell-secondary">${escapeHtml(customer.email || "—")}</span></td><td class="money">${customer.deal_count}</td><td class="money">${formatMoney(customer.completed_revenue)}</td><td>${formatDate(customer.last_deal_at || customer.updated_at, true)}</td><td class="row-actions">${canDelete ? `<button class="icon-button icon-button-danger" data-delete-customer="${escapeHtml(customer.id)}" aria-label="Видалити клієнта ${escapeHtml(customer.name)}"><svg viewBox="0 0 24 24"><path d="M4 7h16m-10 4v6m4-6v6M9 7l1-3h4l1 3m-9 0 1 14h10l1-14"/></svg></button>` : ""}</td></tr>`).join("") : `<tr><td colspan="6">Клієнтів поки немає.</td></tr>`;
   $("#customersSkeleton").hidden = true;
   $("#customersTable").hidden = false;
+  bindCustomerActions();
 }
 
 function switchView(view) {
@@ -210,6 +212,7 @@ function switchView(view) {
     loadDeals().catch(showLoadError);
   }
   if (view === "customers") loadCustomers().catch(showLoadError);
+  if (view === "selection") $("#selectionFrame")?.focus();
 }
 
 function showLoadError(error) {
@@ -256,9 +259,54 @@ function renderDeal(deal) {
     <section class="detail-section"><p class="detail-section-title">РОБОТА ІЗ ЗАМОВЛЕННЯМ</p><div class="deal-controls"><label><span>Статус</span><select id="dealStatus">${optionList(state.meta.statuses, deal.status)}</select></label><label><span>Менеджер</span><select id="dealManager"><option value="">Не призначено</option>${state.meta.users.filter((user) => user.active).map((user) => `<option value="${user.id}" ${user.id === deal.manager_id ? "selected" : ""}>${escapeHtml(user.name)}</option>`).join("")}</select></label><label><span>Спосіб оплати</span><select id="dealPaymentMethod">${optionList(state.meta.paymentMethods, deal.payment_method)}</select></label><label><span>Стан оплати</span><select id="dealPaymentStatus">${optionList(state.meta.paymentStatuses, deal.payment_status)}</select></label></div><label style="margin-top:14px;display:block"><span>Коментар менеджера</span><textarea id="dealComment" rows="3">${escapeHtml(deal.comment || "")}</textarea></label><label style="margin-top:14px;display:block"><span>Нотатка до зміни статусу</span><input id="dealNote" placeholder="Наприклад: клієнт підтвердив післяплату"></label><div style="display:flex;justify-content:flex-end;margin-top:14px"><button id="saveDealButton" class="button button-primary">Зберегти зміни</button></div></section>
     <section class="detail-section"><p class="detail-section-title">ТОВАРИ</p><div class="items-list">${items}</div><div class="deal-total"><span>Сума замовлення</span><strong>${formatMoney(deal.total, deal.currency)}</strong></div></section>
     <section class="detail-section"><p class="detail-section-title">ДЖЕРЕЛО ТА АНАЛІТИКА</p><div class="detail-grid"><div class="detail-field"><span>Джерело</span><strong>${escapeHtml(sourceLabel(deal))}</strong></div><div class="detail-field"><span>Кампанія</span><strong>${escapeHtml(deal.utm_campaign || "—")}</strong></div><div class="detail-field"><span>Lead</span><strong class="tracking-state ${leadTracking[0]}">${escapeHtml(leadTracking[1])}</strong></div><div class="detail-field"><span>Purchase</span><strong class="tracking-state ${purchaseTracking[0]}">${escapeHtml(purchaseTracking[1])}</strong></div><div class="detail-field"><span>Сторінка входу</span><a href="${escapeHtml(deal.landing_page || "#")}" target="_blank" rel="noopener">${escapeHtml(deal.landing_page || "—")}</a></div><div class="detail-field"><span>Referrer</span><strong>${escapeHtml(deal.referrer || "—")}</strong></div></div>${deal.tracking_error ? `<p class="form-error" style="margin-top:14px">${escapeHtml(deal.tracking_error)}</p><button id="retryTracking" class="button" style="margin-top:10px">Повторити передачу</button>` : ""}</section>
-    <section class="detail-section"><p class="detail-section-title">ІСТОРІЯ</p><div class="timeline">${history}</div></section>`;
+    <section class="detail-section"><p class="detail-section-title">ІСТОРІЯ</p><div class="timeline">${history}</div></section>
+    ${state.user?.role === "admin" ? `<section class="danger-zone"><div><strong>Видалити звернення</strong><p>Запис, товари та історію статусів буде видалено без можливості відновлення.</p></div><button id="deleteDealButton" class="button button-danger">Видалити</button></section>` : ""}`;
   $("#saveDealButton").addEventListener("click", saveCurrentDeal);
   $("#retryTracking")?.addEventListener("click", retryTracking);
+  $("#deleteDealButton")?.addEventListener("click", deleteCurrentDeal);
+}
+
+async function deleteCurrentDeal() {
+  const deal = state.currentDeal;
+  if (!deal) return;
+  const label = deal.external_id || deal.id;
+  if (!window.confirm(`Видалити звернення ${label}? Цю дію неможливо скасувати.`)) return;
+  const button = $("#deleteDealButton");
+  button.disabled = true;
+  try {
+    await api(`/api/deals/${encodeURIComponent(deal.id)}`, { method: "DELETE" });
+    $("#dealDialog").close();
+    state.currentDeal = null;
+    toast("Звернення видалено.");
+    if (["orders", "leads"].includes(state.currentView)) await loadDeals();
+    await loadDashboard();
+  } catch (error) {
+    button.disabled = false;
+    toast(error.message === "admin_required" ? "Видаляти звернення може лише адміністратор." : "Не вдалося видалити звернення.");
+  }
+}
+
+function bindCustomerActions() {
+  $$('[data-delete-customer]').forEach((button) => {
+    button.addEventListener("click", async () => {
+      const customer = state.customers.find((item) => item.id === button.dataset.deleteCustomer);
+      if (!customer) return;
+      const suffix = customer.deal_count
+        ? ` Разом із клієнтом буде видалено ${customer.deal_count} ${plural(customer.deal_count, ["звернення", "звернення", "звернень"])}.`
+        : "";
+      if (!window.confirm(`Видалити клієнта «${customer.name}»?${suffix} Цю дію неможливо скасувати.`)) return;
+      button.disabled = true;
+      try {
+        await api(`/api/customers/${encodeURIComponent(customer.id)}`, { method: "DELETE" });
+        toast("Клієнта та пов’язані звернення видалено.");
+        await loadCustomers();
+        await loadDashboard();
+      } catch (error) {
+        button.disabled = false;
+        toast(error.message === "admin_required" ? "Видаляти клієнтів може лише адміністратор." : "Не вдалося видалити клієнта.");
+      }
+    });
+  });
 }
 
 async function saveCurrentDeal() {

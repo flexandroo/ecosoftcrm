@@ -244,7 +244,7 @@ function sanitizeDealChanges(body) {
   return changes;
 }
 
-async function serveFile(res, filePath, cache = false) {
+async function serveFile(res, filePath, cache = false, allowSameOriginFrame = false) {
   const resolved = path.resolve(filePath);
   const allowedRoots = [path.resolve(PUBLIC_DIR), path.resolve(ROOT)];
   if (!allowedRoots.some((root) => resolved.startsWith(`${root}${path.sep}`))) {
@@ -254,8 +254,14 @@ async function serveFile(res, filePath, cache = false) {
     const stat = await fsp.stat(resolved);
     if (!stat.isFile()) throw new Error("not_file");
     const contentType = MIME[path.extname(resolved).toLowerCase()] || "application/octet-stream";
+    const headers = securityHeaders(contentType);
+    if (allowSameOriginFrame) {
+      headers["X-Frame-Options"] = "SAMEORIGIN";
+      headers["Content-Security-Policy"] = headers["Content-Security-Policy"]
+        .replace("frame-ancestors 'none'", "frame-ancestors 'self'");
+    }
     res.writeHead(200, {
-      ...securityHeaders(contentType),
+      ...headers,
       "Content-Length": stat.size,
       "Cache-Control": cache ? "public, max-age=3600" : "no-store",
     });
@@ -390,6 +396,13 @@ async function route(req, res) {
       }
       return json(res, 200, { ok: true, deal, tracking });
     }
+    if (dealMatch && req.method === "DELETE") {
+      if (user.role !== "admin") return json(res, 403, { ok: false, error: "admin_required" });
+      const deleted = db.deleteDeal(dealMatch[1]);
+      return deleted
+        ? json(res, 200, { ok: true, deleted })
+        : json(res, 404, { ok: false, error: "not_found" });
+    }
 
     const retryMatch = pathname.match(/^\/api\/deals\/([^/]+)\/retry-tracking$/);
     if (retryMatch && req.method === "POST") {
@@ -403,6 +416,15 @@ async function route(req, res) {
     if (req.method === "GET" && pathname === "/api/customers") {
       const customers = db.listCustomers({ search: clean(url.searchParams.get("q"), 200) });
       return json(res, 200, { ok: true, customers });
+    }
+
+    const customerMatch = pathname.match(/^\/api\/customers\/([^/]+)$/);
+    if (customerMatch && req.method === "DELETE") {
+      if (user.role !== "admin") return json(res, 403, { ok: false, error: "admin_required" });
+      const deleted = db.deleteCustomer(customerMatch[1]);
+      return deleted
+        ? json(res, 200, { ok: true, deleted })
+        : json(res, 404, { ok: false, error: "not_found" });
     }
 
     return json(res, 404, { ok: false, error: "not_found" });
@@ -419,6 +441,10 @@ async function route(req, res) {
   if (pathname === "/tools" || pathname === "/tools/") {
     if (!sessionUser(req)) return redirect(res, "/login");
     return serveFile(res, path.join(ROOT, "index.html"));
+  }
+  if (pathname === "/selection" || pathname === "/selection/") {
+    if (!sessionUser(req)) return redirect(res, "/login");
+    return serveFile(res, path.join(ROOT, "index.html"), false, true);
   }
   if (pathname === "/ecosoft-logo.jpg") {
     return serveFile(res, path.join(ROOT, "ecosoft-logo.jpg"), true);

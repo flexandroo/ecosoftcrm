@@ -39,11 +39,10 @@
 
       <p class="nav-label">Робочі інструменти</p>
       <nav class="nav-list">
-        <a class="nav-item" href="/tools">
+        <button class="nav-item" data-view="selection">
           <svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5-5L12 3.6 9.6 6 7.3 3.7a4 4 0 0 0 5 5L4 17l3 3 8.3-8.3a4 4 0 0 0 5-5L18 9l-2.4-2.4 2.3-2.3a4 4 0 0 0-3.2 2Z"/></svg>
           <span>Підбір та КП</span>
-          <svg class="nav-external" viewBox="0 0 24 24"><path d="M14 3h7v7m0-7L10 14M5 7v12h12v-5"/></svg>
-        </a>
+        </button>
         <button class="nav-item" data-view="settings">
           <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.09A1.7 1.7 0 0 0 8.97 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.51-1H3v-4h.09A1.7 1.7 0 0 0 4.6 8.97a1.7 1.7 0 0 0-.34-1.88l-.06-.06L7.03 4.2l.06.06A1.7 1.7 0 0 0 8.97 4.6 1.7 1.7 0 0 0 10 3.09V3h4v.09a1.7 1.7 0 0 0 1.03 1.51 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06a1.7 1.7 0 0 0-.34 1.88A1.7 1.7 0 0 0 20.91 10H21v4h-.09A1.7 1.7 0 0 0 19.4 15Z"/></svg>
           <span>Налаштування</span>
@@ -130,7 +129,11 @@
         <div class="page-heading compact"><div><p class="page-context">Єдина база</p><h1 id="customersTitle">Клієнти</h1><p>Контакти, історія звернень і загальний результат.</p></div></div>
         <div class="toolbar"><label class="search-field"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="customerSearch" type="search" placeholder="Пошук клієнта"></label></div>
         <div id="customersSkeleton" class="skeleton table-skeleton"></div>
-        <div id="customersTable" class="table-wrap data-table" hidden><table><thead><tr><th>Клієнт</th><th>Контакти</th><th>Звернень</th><th>Успішні продажі</th><th>Остання активність</th></tr></thead><tbody id="customersBody"></tbody></table></div>
+        <div id="customersTable" class="table-wrap data-table" hidden><table><thead><tr><th>Клієнт</th><th>Контакти</th><th>Звернень</th><th>Успішні продажі</th><th>Остання активність</th><th><span class="visually-hidden">Дії</span></th></tr></thead><tbody id="customersBody"></tbody></table></div>
+      </section>
+
+      <section class="view selection-view" id="view-selection" aria-label="Підбір обладнання та генерація комерційної пропозиції">
+        <iframe id="selectionFrame" class="selection-frame" src="/selection" title="Підбір за аналізом води та генерація КП" loading="eager"></iframe>
       </section>
 
       <section class="view" id="view-settings" aria-labelledby="settingsTitle">
@@ -147,6 +150,7 @@
       <button data-view="orders"><svg viewBox="0 0 24 24"><path d="M6 2h12l1 4H5l1-4Zm-1 6h14l1 14H4L5 8Z"/></svg><span>Замовлення</span></button>
       <button data-view="leads"><svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0m8-11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/></svg><span>Заявки</span></button>
       <button data-view="customers"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/></svg><span>Клієнти</span></button>
+      <button data-view="selection"><svg viewBox="0 0 24 24"><path d="M12 2.7 17.7 8.4a8 8 0 1 1-11.4 0L12 2.7Z"/></svg><span>Підбір</span></button>
     </nav>
   </div>
 

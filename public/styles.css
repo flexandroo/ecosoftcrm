@@ -36,6 +36,7 @@ button { color: inherit; }
 a { color: inherit; }
 svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 [hidden] { display: none !important; }
+.visually-hidden { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
 :focus-visible { outline: none; box-shadow: var(--focus); }
 
 .button { min-height: 42px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); padding: 0 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 180ms ease; }
@@ -44,10 +45,13 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .button:disabled { cursor: wait; opacity: .62; }
 .button-primary { color: #fff; background: var(--brand); border-color: var(--brand); }
 .button-primary:hover { color: #fff; background: var(--brand-dark); border-color: var(--brand-dark); }
+.button-danger { color: var(--danger); border-color: #e7b7bd; background: var(--surface); }
+.button-danger:hover { color: #fff; border-color: var(--danger); background: var(--danger); }
 .button-block { width: 100%; }
 .button-small { min-height: 36px; padding-inline: 12px; }
 .icon-button { width: 38px; height: 38px; border: 0; border-radius: 8px; background: transparent; display: grid; place-items: center; color: var(--muted); cursor: pointer; transition: 160ms ease; }
 .icon-button:hover { color: var(--ink); background: var(--surface-alt); }
+.icon-button-danger:hover { color: var(--danger); background: var(--danger-bg); }
 .text-button { border: 0; background: transparent; color: var(--brand-dark); font-weight: 700; cursor: pointer; padding: 6px; }
 .text-button:hover { text-decoration: underline; text-underline-offset: 3px; }
 
@@ -151,6 +155,7 @@ tbody tr[data-deal-id] { cursor: pointer; }
 tbody tr:hover { background: var(--surface-blue); }
 .data-table { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
 .data-table table { min-width: 850px; }
+.row-actions { width: 58px; text-align: right; }
 .cell-primary { display: block; color: var(--ink); font-weight: 750; }
 .cell-secondary { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
 .money { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -210,6 +215,13 @@ dialog::backdrop { background: rgb(16 36 51 / .45); }
 .tracking-state::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--dim); }
 .tracking-state.sent::before { background: var(--success); }
 .tracking-state.failed::before { background: var(--danger); }
+.danger-zone { display: flex; align-items: center; justify-content: space-between; gap: 20px; border: 1px solid #edc5ca; border-radius: 10px; background: var(--danger-bg); padding: 15px; }
+.danger-zone strong { display: block; color: var(--danger); font-size: 12px; }
+.danger-zone p { max-width: 48ch; margin: 4px 0 0; color: #6d3940; font-size: 11px; line-height: 1.5; }
+
+/* Selection and proposal tool */
+.selection-view { max-width: none; height: calc(100vh - 72px); }
+.selection-frame { display: block; width: 100%; height: 100%; min-height: 760px; border: 0; border-radius: var(--radius); background: var(--surface-alt); }
 
 /* Settings and feedback */
 .settings-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
@@ -244,7 +256,7 @@ dialog::backdrop { background: rgb(16 36 51 / .45); }
   .main-content { margin-left: 0; padding: 0 14px 32px; }
   .mobile-header { height: 62px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); margin: 0 -14px; padding: 0 14px; background: var(--surface); }
   .mobile-logo { width: 128px; height: 36px; object-fit: contain; }
-  .mobile-nav { position: fixed; z-index: var(--z-sidebar); inset: auto 0 0; height: 68px; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--border); background: var(--surface); }
+  .mobile-nav { position: fixed; z-index: var(--z-sidebar); inset: auto 0 0; height: 68px; display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid var(--border); background: var(--surface); }
   .mobile-nav button { border: 0; background: transparent; color: var(--muted); display: grid; place-items: center; align-content: center; gap: 3px; font-size: 9px; font-weight: 700; }
   .mobile-nav button.active { color: var(--brand-dark); }
   .mobile-nav svg { width: 20px; height: 20px; }
@@ -268,6 +280,9 @@ dialog::backdrop { background: rgb(16 36 51 / .45); }
   .dialog-body { padding: 16px; }
   .dialog-footer { padding-inline: 15px; }
   .form-grid, .detail-grid, .deal-controls { grid-template-columns: 1fr; }
+  .selection-view { height: calc(100vh - 98px); margin-inline: -14px; }
+  .selection-frame { min-height: 720px; border-radius: 0; }
+  .danger-zone { align-items: flex-start; flex-direction: column; }
   .login-shell { grid-template-columns: 1fr; }
   .login-brand { min-height: 42vh; padding: 30px 22px; gap: 28px; }
   .login-logo { width: 185px; }

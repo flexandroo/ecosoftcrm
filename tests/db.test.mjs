@@ -60,4 +60,19 @@ test("intake is idempotent and status history is recorded", async (t) => {
   assert.equal(completed.purchase_tracking_state, "pending");
   assert.equal(completed.history.length, 2);
   assert.equal(database.dashboard().totals.completed_deals, 1);
+
+  const deletedDeal = database.deleteDeal(created.id);
+  assert.equal(deletedDeal.dealId, created.id);
+  assert.equal(database.getDeal(created.id), null);
+  assert.equal(database.listCustomers().length, 1);
+
+  const second = database.createIntake({
+    ...payload,
+    externalId: "ECO-TEST-2",
+  });
+  const customer = database.listCustomers()[0];
+  const deletedCustomer = database.deleteCustomer(customer.id);
+  assert.equal(deletedCustomer.deletedDeals, 1);
+  assert.equal(database.getDeal(second.id), null);
+  assert.equal(database.listCustomers().length, 0);
 });

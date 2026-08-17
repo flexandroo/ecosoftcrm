@@ -444,6 +444,29 @@ export function openCrmDatabase(databasePath) {
       return transaction();
     },
 
+    deleteDeal(dealId) {
+      const transaction = db.transaction(() => {
+        const deal = db.prepare("SELECT id, customer_id FROM deals WHERE id = ?").get(dealId);
+        if (!deal) return null;
+        db.prepare("DELETE FROM deals WHERE id = ?").run(dealId);
+        return { dealId: deal.id, customerId: deal.customer_id };
+      });
+      return transaction();
+    },
+
+    deleteCustomer(customerId) {
+      const transaction = db.transaction(() => {
+        const customer = db.prepare("SELECT id, name FROM customers WHERE id = ?").get(customerId);
+        if (!customer) return null;
+        const dealCount = db.prepare("SELECT COUNT(*) AS count FROM deals WHERE customer_id = ?")
+          .get(customerId).count;
+        db.prepare("DELETE FROM deals WHERE customer_id = ?").run(customerId);
+        db.prepare("DELETE FROM customers WHERE id = ?").run(customerId);
+        return { customerId: customer.id, customerName: customer.name, deletedDeals: dealCount };
+      });
+      return transaction();
+    },
+
     listCustomers({ search, limit = 100 } = {}) {
       const params = [];
       const where = search ? "WHERE c.name LIKE ? OR c.phone LIKE ? OR c.email LIKE ?" : "";
