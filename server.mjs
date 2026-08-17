@@ -54,7 +54,7 @@ const MIME = {
 };
 
 function securityHeaders(contentType = "application/json; charset=utf-8") {
-  return {
+  const headers = {
     "Content-Type": contentType,
     "Cache-Control": "no-store",
     "X-Content-Type-Options": "nosniff",
@@ -75,6 +75,10 @@ function securityHeaders(contentType = "application/json; charset=utf-8") {
       "worker-src 'self' blob: https://cdnjs.cloudflare.com",
     ].join("; "),
   };
+  if (BASE_URL.startsWith("https://")) {
+    headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+  }
+  return headers;
 }
 
 function json(res, status, body, extraHeaders = {}) {
