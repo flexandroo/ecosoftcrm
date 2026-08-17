@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Вхід · Ecosoft CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body class="login-body">
+  <main class="login-shell">
+    <section class="login-brand" aria-label="Ecosoft CRM">
+      <img src="/ecosoft-logo.jpg" alt="Ecosoft — центр чистої води" class="login-logo">
+      <div>
+        <p class="login-brand-name">Центр керування продажами</p>
+        <h1>Замовлення, клієнти й реальні результати — в одному місці.</h1>
+        <p class="login-brand-copy">Приватна CRM магазину Sofiivka Water. Доступ мають лише авторизовані співробітники.</p>
+      </div>
+      <ul class="login-points" aria-label="Можливості">
+        <li><span>01</span> Усі заявки із сайту без ручного перенесення</li>
+        <li><span>02</span> Історія статусів і відповідальний менеджер</li>
+        <li><span>03</span> Purchase тільки після завершеного продажу</li>
+      </ul>
+    </section>
+
+    <section class="login-panel" aria-labelledby="login-title">
+      <div class="login-form-wrap">
+        <p class="login-kicker">Захищений доступ</p>
+        <h2 id="login-title">Увійти в CRM</h2>
+        <p class="login-help">Використайте робочу електронну адресу та пароль.</p>
+
+        <form id="loginForm" class="auth-form" novalidate>
+          <label>
+            <span>Електронна адреса</span>
+            <input id="email" name="email" type="email" autocomplete="username" required placeholder="admin@sofiivkawater.com">
+          </label>
+          <label>
+            <span>Пароль</span>
+            <input id="password" name="password" type="password" autocomplete="current-password" required minlength="12" placeholder="Ваш пароль">
+          </label>
+          <p id="loginError" class="form-error" role="alert" hidden></p>
+          <button id="loginButton" class="button button-primary button-block" type="submit">
+            <span>Увійти</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6M15 12H3m12-8h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/></svg>
+          </button>
+        </form>
+        <p class="login-security">З’єднання захищене HTTPS. Сесія автоматично завершується після періоду бездіяльності.</p>
+      </div>
+    </section>
+  </main>
+  <script src="/assets/login.js" defer></script>
+</body>
+</html>

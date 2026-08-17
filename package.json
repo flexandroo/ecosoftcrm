@@ -1,0 +1,19 @@
+{
+  "name": "ecosoftcrm",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Private CRM for Sofiivka Water orders, leads and customer operations.",
+  "scripts": {
+    "dev": "node --watch server.mjs",
+    "start": "node server.mjs",
+    "check": "node --check server.mjs && node --check src/db.mjs && node --check src/auth.mjs && node --check src/analytics.mjs && node --check public/app.js && node --check public/login.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20 <25"
+  },
+  "dependencies": {
+    "better-sqlite3": "12.11.1"
+  }
+}
